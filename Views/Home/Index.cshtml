@@ -5,4 +5,12 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <hr />
+    <h4>Accesos rápidos (demostración de avance de equipo)</h4>
+    <ul>
+        <li><a asp-controller="Invitado" asp-action="Inicio">Inicio (Invitado) — I1</a></li>
+        <li><a asp-controller="Servicio" asp-action="Detalle" asp-route-id="1">Detalle Servicio (Invitado) — I1</a></li>
+        <li><a asp-controller="AdminDashboard" asp-action="Index">Admin Dashboard (I1)</a></li>
+        <li><a asp-controller="AdminConfig" asp-action="Index">Configuración Sitio (I1)</a></li>
+    </ul>
 </div>

@@ -1,0 +1,14 @@
+@model PetConnect.Models.Comentario
+<h3>Dejar comentario (simulado)</h3>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="Usuario">Usuario</label>
+        <input asp-for="Usuario" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Texto">Comentario</label>
+        <textarea asp-for="Texto" class="form-control"></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit">Enviar comentario</button>
+</form>

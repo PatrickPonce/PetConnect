@@ -15,21 +15,10 @@ public class DirectorioController : Controller
 
 public async Task<IActionResult> Veterinaria()
 {
-    var serviciosConCategoria = await (
-        from servicio in _context.Servicios
-        join categoria in _context.Categorias on servicio.CategoriaId equals categoria.Id
-        select new 
-        {
-            Id = servicio.Id,
-            Nombre = servicio.Nombre,
-            ImagenUrl = servicio.ImagenPrincipalUrl,
-            Direccion = servicio.Direccion,
-            NombreCategoria = categoria.Nombre 
-        }
-    ).ToListAsync();
-
-    ViewBag.Servicios = serviciosConCategoria;
+    var servicios = await _context.Servicios
+                                .Include(s => s.Categoria) // Ahora esto funciona
+                                .ToListAsync();
     
-    return View();
+    return View(servicios); // Pasamos el modelo fuertemente tipado
 }
 }

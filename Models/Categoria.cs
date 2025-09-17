@@ -21,4 +21,6 @@ public class Categoria
 
     [Column("tipo")]
     public string Tipo { get; set; } = string.Empty; // Se maneja como string
+
+    public ICollection<Servicio>? Servicios { get; set; }
 }

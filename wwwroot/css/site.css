@@ -111,7 +111,7 @@ NUEVOS ESTILOS PARA LA PÁGINA DE SERVICIOS
 .services-page-container {
     padding-top: 20px;
     width: 100%;
-    background-color: #fdfaf1; /* Color crema de fondo */
+    background-color: #FFFDEC; /* Color crema de fondo */
     height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
 }
 
@@ -212,4 +212,231 @@ NUEVOS ESTILOS PARA LA PÁGINA DE SERVICIOS
         
 .category-card .chevron {
     color: #888;
+}
+
+/* Estilo para que las tarjetas de categoría se comporten como enlaces sin perder su diseño */
+.category-link {
+    text-decoration: none; /* Quita el subrayado del enlace */
+    color: inherit; /* Hace que el texto herede el color de su contenedor, en lugar de ser azul */
+}
+
+.category-link:hover {
+    color: inherit; /* Mantiene el color del texto incluso cuando pasas el ratón por encima */
+}
+
+
+
+.directorio-container {
+    padding-top: 20px;
+    width: 100%;
+    background-color: #FFFDEC; /* Color crema de fondo */
+    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+}
+
+.directorio-title {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+    
+    /* --- CÓDIGO PARA LA ANIMACIÓN DE MÁQUINA DE ESCRIBIR --- */
+
+    color: #FFCFCF; 
+    overflow: hidden; 
+    white-space: nowrap; 
+    width: 0;
+    animation: typing 4s steps(48, end) forwards;
+}
+
+/* Definición de la animación para el efecto de máquina de escribir */
+@keyframes typing {
+    to { 
+        width: 100%; 
+    }
+}
+
+/* === ESTILOS PARA LAS TARJETAS DE SERVICIO === */
+
+.servicios-listado {
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 30px; 
+    width: 100%;
+}
+
+.servicio-card {
+    background-color: white;
+    border: 1px solid #EBEBEB;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    width: 350px; 
+    display: flex; 
+    flex-direction: column; 
+
+    /* --- Animación (sin cambios) --- */
+    opacity: 0;
+    transform: scale(0.6) rotateX(60deg);
+    transform-origin: bottom;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: transform, opacity;
+    transform-style: preserve-3d;
+}
+
+/* Pequeños detalles de rotación (sin cambios) */
+.servicio-card:nth-child(2n) { transform: scale(0.6) rotateX(60deg) rotateZ(-2deg); }
+.servicio-card:nth-child(3n) { transform: scale(0.6) rotateX(60deg) rotateZ(2deg); }
+
+.servicio-card.is-visible {
+    opacity: 1;
+    transform: scale(1) rotateX(0deg);
+}
+
+.servicio-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* --- CONTROL DE ALTURA Y CONTENIDO (NUEVO) --- */
+
+.card-image-container {
+    height: 200px;
+    flex-shrink: 0; /* Evita que la imagen se encoja */
+}
+
+.servicio-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-info {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; 
+}
+
+.servicio-nombre {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    flex-grow: 1; 
+}
+
+.card-actions {
+    padding: 0 20px 20px 20px;
+    margin-top: auto; 
+}
+
+/* === ESTILOS PARA EL NUEVO BOTÓN DE FAVORITO ANIMADO === */
+
+.card-actions {
+    display: flex;
+    justify-content: space-between; /* Alinea los elementos a los extremos */
+    align-items: center;
+    padding: 0 20px 20px 20px;
+    margin-top: auto;
+}
+
+.favorite-btn-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fav-icon {
+    display: block;
+    font-size: 34px; /* Tamaño inicial del corazón */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #CBCDCE; /* Color del corazón inactivo (gris) */
+    position: relative;
+}
+
+.fav-icon::before {
+    content: '♥'; /* El carácter de corazón */
+}
+
+/* ESTILO CUANDO EL CORAZÓN ESTÁ ACTIVO */
+.fav-icon.active {
+    color: #DC3232 !important; /* Color del corazón activo (rojo) */
+}
+
+/* ANIMACIÓN DE EXPLOSIÓN AL HACER CLIC */
+.fav-icon.is-animating {
+    animation: favme-anime 0.5s;
+}
+
+@keyframes favme-anime {
+  0% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    25% { 
+        transform: scale(1.3);
+        color: #FFF;
+        /* Simula el borde con una sombra de texto */
+        text-shadow: 
+            -1px -1px 0 #DC3232,  
+             1px -1px 0 #DC3232,
+            -1px  1px 0 #DC3232,
+             1px  1px 0 #DC3232;
+    }
+    75% { 
+        transform: scale(1.1);
+        color: #FFF;
+        text-shadow: 
+            -1px -1px 0 #DC3232,  
+             1px -1px 0 #DC3232,
+            -1px  1px 0 #DC3232,
+             1px  1px 0 #DC3232;
+    }
+  100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ANIMACIÓN SUTIL AL PASAR EL RATÓN */
+.fav-icon:hover {
+    transform: scale(1.1);
+}
+
+/* === ESTILOS PARA EL BOTÓN 'VER MÁS' DEL DIRECTORIO === */
+
+.btn-directorio {
+    background-color: #86A788; /* Tu color verde */
+    color: #FFFDEC; /* Tu color de letra */
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: bold;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease-out, box-shadow 0.3s ease-out;
+}
+
+.btn-directorio:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-directorio::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 75%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255, 253, 236, 0) 0%, rgba(255, 253, 236, 0.4) 50%, rgba(255, 253, 236, 0) 100%);
+    transform: skewX(-25deg);
+    transition: left 1s ease-in-out;
+}
+
+.btn-directorio:hover::before {
+    left: 125%; 
 }

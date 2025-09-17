@@ -15,3 +15,36 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    // --- SCRIPT DE ANIMACIÓN DE TARJETAS AL HACER SCROLL ---
+    const animatedCards = document.querySelectorAll('.servicio-card, .noticia-card'); // Buscamos ambos tipos de tarjetas
+    if (animatedCards.length > 0) {
+        const options = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, options);
+        animatedCards.forEach(card => observer.observe(card));
+    }
+
+    // --- SCRIPT PARA EL BOTÓN DE FAVORITO ANIMADO ---
+    const favIcons = document.querySelectorAll('.fav-icon');
+    favIcons.forEach(icon => {
+        icon.addEventListener('click', function() {
+            this.classList.toggle('active');
+            this.classList.add('is-animating');
+        });
+
+        icon.addEventListener('animationend', function() {
+            this.classList.remove('is-animating');
+        });
+    });
+});

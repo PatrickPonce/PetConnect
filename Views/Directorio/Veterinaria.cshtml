@@ -1,0 +1,50 @@
+@{
+    ViewData["Title"] = "Directorio de Servicios";
+    var servicios = ViewBag.Servicios as IEnumerable<dynamic>;
+}
+
+<div class="directorio-container">
+    <h1 class="directorio-title">Encuentra la mejor veterinaria para tu mascota</h1>
+
+    <div class="search-bar-container">
+        <input type="text" placeholder="¿Qué estás buscando?" class="search-input">
+        <button class="search-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+    </div>
+
+    @if (servicios != null && servicios.Any())
+    {
+        <div class="servicios-listado">
+            @foreach (var servicio in servicios)
+            {
+                <div class="servicio-card">
+                    <div class="card-image-container">
+                        <img src="@(servicio.ImagenUrl ?? "/images/placeholder.png")" alt="Logo de @servicio.Nombre" class="servicio-img">
+                    </div>
+                    <div class="card-info">
+                        <span class="servicio-categoria">@servicio.NombreCategoria</span>
+                        <h5 class="servicio-nombre">@servicio.Nombre</h5>
+                        <p class="servicio-ubicacion">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            @servicio.Direccion
+                        </p>
+                    </div>
+                    <div class="card-actions">
+                         <button class="favorite-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                        </button>
+                        <a href="#" class="btn-ver-mas">
+                            Ver más 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-center">No hay servicios disponibles en este momento.</p>
+    }
+</div>

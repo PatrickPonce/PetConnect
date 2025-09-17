@@ -1,4 +1,17 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿// Opcional: Script para manejar el estado activo al hacer clic
+document.addEventListener('DOMContentLoaded', function () {
+    const navLinks = document.querySelectorAll('.main-nav a');
 
-// Write your JavaScript code.
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(event) {
+            // Si no es una SPA real, quita la siguiente línea para permitir la navegación
+            // event.preventDefault(); 
+
+            // Quita la clase 'active' de cualquier enlace que la tuviera
+            document.querySelector('.main-nav a.active')?.classList.remove('active');
+            
+            // Añade la clase 'active' al enlace que fue clickeado
+            this.classList.add('active');
+        });
+    });
+});

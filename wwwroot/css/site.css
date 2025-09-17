@@ -9,6 +9,13 @@
     --nav-text-color: #FFCFCF;   /* Rosa pálido del texto */
     --nav-icon-color: #5c5c5c;     /* Gris oscuro para los iconos */
     --nav-highlight-color: #ffffff; /* Blanco para el hover/activo */
+    --bg-color: #FFFDEC;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 /* --- Estructura Principal del Header --- */
@@ -92,4 +99,117 @@
 .main-nav a.active::after {
     transform: scaleX(1); /* Muestra el subrayado */
     transform-origin: bottom left;
+}
+
+/*
+============================================================
+NUEVOS ESTILOS PARA LA PÁGINA DE SERVICIOS
+============================================================
+*/
+
+/* --- Contenedor principal de la página --- */
+.services-page-container {
+    padding-top: 20px;
+    width: 100%;
+    background-color: #fdfaf1; /* Color crema de fondo */
+    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+}
+
+/* --- NUEVA BARRA DE BÚSQUEDA --- */
+.search-section {
+    margin-bottom: 50px;
+}
+
+.search-form {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.search-input {
+    width: 100%;
+    height: 60px;
+    padding: 0 60px 0 25px; /* Espacio para el placeholder y el botón */
+    border: none;
+    border-radius: 30px;
+    background-color: #fdebe9; /* Rosa pálido */
+    font-size: 18px;
+    color: #333;
+    box-sizing: border-box; /* Asegura que el padding no aumente el ancho */
+}
+
+.search-input:focus {
+    outline: 2px solid #e16868;
+}
+
+.search-input::placeholder {
+  color: #c5b5b4;
+}
+
+.search-button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    background-color: #333;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.search-button:hover {
+    background-color: #555;
+}
+
+/* --- Tarjetas de Categorías (Ajuste de borde) --- */
+.categories-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.category-card {
+    background-color: white;
+    border: 1px solid #333; /* Borde más oscuro como en la imagen */
+    border-radius: 35px;
+    padding: 40px;
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+}
+
+.category-card .icon {
+    font-size: 48px;
+    color: #4b9ca4;
+}
+
+.category-card p {
+    font-weight: 600;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #333;
+}
+        
+.category-card .chevron {
+    color: #888;
 }

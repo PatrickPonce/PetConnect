@@ -18,7 +18,8 @@
                 </a>
             </li>
             <li>
-                <a asp-controller="Services" asp-action="Index">
+                <a asp-controller="Servicio" asp-action="Index" 
+                class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Servicio" ? "active" : "")">
                     <span class="material-symbols-outlined">volunteer_activism</span>
                     <span class="nav-text">Servicios</span>
                 </a>

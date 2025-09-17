@@ -1,0 +1,49 @@
+@{
+    ViewData["Title"] = "Nuestros Servicios";
+}
+
+<div class="services-page-container">
+
+    <!-- =========== SECCIÓN DE BÚSQUEDA ACTUALIZADA =========== -->
+    <section class="search-section">
+        <!-- Usamos los Tag Helpers de ASP.NET para que el formulario apunte a la acción Index de este mismo controlador -->
+        <form asp-controller="Servicio" asp-action="Index" method="get" class="search-form">
+            <input name="busqueda" type="text" class="search-input" placeholder="¿Qué estas buscando?" required />
+            <button type="submit" class="search-button">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+        </form>
+    </section>
+
+    <!-- =========== SECCIÓN DE CATEGORÍAS CON ICONOS ACTUALIZADOS =========== -->
+    <section class="categories-grid">
+        <div class="category-card">
+            <!-- Icono actualizado para Veterinarias -->
+            <span class="material-symbols-outlined icon">shower</span>
+            <p>Veterinarias</p>
+            <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+        <div class="category-card">
+            <span class="material-symbols-outlined icon">shopping_bag</span>
+            <p>Pet Shop</p>
+            <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+        <div class="category-card">
+            <span class="material-symbols-outlined icon">pets</span>
+            <p>Lugares Pet Friendly</p>
+            <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+        <div class="category-card">
+            <!-- Icono actualizado para Guardería (usamos uno que representa cuidado/hogar) -->
+            <span class="material-symbols-outlined icon">night_shelter</span>
+            <p>Guardería</p>
+            <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+        <div class="category-card">
+            <span class="material-symbols-outlined icon">volunteer_activism</span>
+            <p>Adopción De Mascotas</p>
+            <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+    </section>
+
+</div>

@@ -1,4 +1,9 @@
-namespace PetConnect.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace PetConnect.Models; // Asegúrate de que el namespace sea el de tu proyecto
 
 public class ErrorViewModel
 {

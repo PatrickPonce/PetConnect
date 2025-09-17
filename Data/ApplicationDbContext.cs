@@ -4,36 +4,32 @@ using PetConnect.Models;
 
 namespace PetConnect.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
-    public DbSet<Usuario> Usuarios { get; set; }
-    public DbSet<Rol> Roles { get; set; }
-    public DbSet<UsuarioRol> UsuarioRoles { get; set; }
-    
+
+    // Tablas personalizadas de la aplicación
+    public DbSet<Categoria> Categorias { get; set; }
+    public DbSet<Noticia> Noticias { get; set; }
+    public DbSet<Servicio> Servicios { get; set; }
+    public DbSet<Comentario> Comentarios { get; set; }
+    public DbSet<Resena> Resenas { get; set; }
+    public DbSet<Favorito> Favoritos { get; set; }
+    public DbSet<ConfiguracionSitio> ConfiguracionSitio { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(modelBuilder); // Configura las tablas de Identity
 
-        // Configuración para la clave primaria compuesta de la tabla UsuarioRoles
-        modelBuilder.Entity<UsuarioRol>()
-            .HasKey(ur => new { ur.UsuarioId, ur.RolId });
-
-        // Configuración de la relación muchos a muchos entre Usuario y Rol
-        modelBuilder.Entity<UsuarioRol>()
-            .HasOne(ur => ur.Usuario)
-            .WithMany(u => u.UsuarioRoles)
-            .HasForeignKey(ur => ur.UsuarioId);
-
-        modelBuilder.Entity<UsuarioRol>()
-            .HasOne(ur => ur.Rol)
-            .WithMany(r => r.UsuarioRoles)
-            .HasForeignKey(ur => ur.RolId);
-            
-        // Puedes añadir aquí más configuraciones "fluent API" si son necesarias
+        // Mapeo a nombres en minúsculas para PostgreSQL
+        modelBuilder.Entity<Categoria>().ToTable("categorias");
+        modelBuilder.Entity<Noticia>().ToTable("noticias");
+        modelBuilder.Entity<Servicio>().ToTable("servicios");
+        modelBuilder.Entity<Comentario>().ToTable("comentarios");
+        modelBuilder.Entity<Resena>().ToTable("resenas");
+        modelBuilder.Entity<Favorito>().ToTable("favoritos");
+        modelBuilder.Entity<ConfiguracionSitio>().ToTable("configuracionsitio");
     }
 }

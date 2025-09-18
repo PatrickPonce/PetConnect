@@ -1,0 +1,67 @@
+@model PetConnect.ViewModels.ServicioDetalleViewModel
+@{
+    ViewData["Title"] = Model.Servicio.Nombre;
+}
+
+<div class="detalle-servicio-container">
+
+    <header class="detalle-header">
+        <div class="header-logo">
+            <img src="@(Model.Servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Logo de @Model.Servicio.Nombre">
+        </div>
+        <div class="header-info">
+            <h1>@Model.Servicio.Nombre</h1>
+            <p class="info-item"><i class="icon-location"></i>@Model.Servicio.Direccion</p>
+            <p class="info-item"><i class="icon-phone"></i>@Model.Servicio.Telefono</p>
+            <a href="@Model.Servicio.SitioWeb" target="_blank" class="info-item"><i class="icon-facebook"></i>Facebook</a>
+        </div>
+        <button class="header-fav-btn"><i class="icon-heart"></i></button>
+    </header>
+
+    <nav class="detalle-nav">
+        <a href="#" class="nav-tab active">Descripción</a>
+        <a href="#" class="nav-tab">Galería</a>
+        <a href="#" class="nav-tab">Ubicación</a>
+        <a href="#" class="nav-tab">Comentarios</a>
+    </nav>
+
+    <main class="detalle-main">
+        <div class="main-content">
+            <p>@Model.Servicio.DescripcionLarga</p>
+        </div>
+        <aside class="main-sidebar">
+            
+        </aside>
+    </main>
+
+    <section class="reviews-section">
+        <div class="reviews-list">
+            <h3>Reviews</h3>
+            <div class="reviews-summary">
+                <span class="stars">★★★★☆</span> <span>(@Model.Resenas.Count() reseñas)</span>
+            </div>
+
+            @foreach (var resena in Model.Resenas)
+            {
+                <div class="review-card">
+                    <div class="review-author">
+                        <img src="/images/avatar.png" alt="Avatar">
+                        <div>
+                            <strong>@resena.NombreUsuario</strong>
+                            <small>@resena.OcupacionUsuario</small>
+                        </div>
+                    </div>
+                    <div class="review-stars">
+                        @for (int i = 0; i < resena.Puntuacion; i++) { <span class="star-filled">★</span> }
+                        @for (int i = resena.Puntuacion; i < 5; i++) { <span class="star-empty">☆</span> }
+                    </div>
+                    <p class="review-text">@resena.Contenido</p>
+                </div>
+            }
+        </div>
+        <div class="review-form">
+            <textarea placeholder="Escribe tu reseña"></textarea>
+            <button type="button">Publicar</button>
+        </div>
+    </section>
+</div>

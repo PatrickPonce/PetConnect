@@ -32,6 +32,7 @@ public class DirectorioController : Controller
 
         return View(servicios); // Pasamos el modelo fuertemente tipado
     }
+
     // --- NUEVO MÉTODO PARA LA PÁGINA DE DETALLE ---
     public async Task<IActionResult> Detalle(int id)
     {
@@ -66,6 +67,16 @@ public class DirectorioController : Controller
         };
 
         return View(viewModel);
+    }
+    
+    public async Task<IActionResult> Guarderia()
+    {
+        var servicios = await _context.Servicios
+                                    .Include(s => s.Categoria)
+                                    .Where(s => s.Categoria.Nombre == "Guardería")
+                                    .ToListAsync();
+        
+        return View(servicios);
     }
 
 

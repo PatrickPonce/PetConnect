@@ -18,11 +18,11 @@
     <!-- =========== SECCIÓN DE CATEGORÍAS CON ICONOS ACTUALIZADOS =========== -->
     <section class="categories-grid">
         <a asp-controller="Directorio" asp-action="Veterinaria" class="category-link">
-        <div class="category-card">
-            <span class="material-symbols-outlined icon">shower</span>
-            <p>Veterinarias</p>
-            <span class="material-symbols-outlined chevron">expand_more</span>
-        </div>
+            <div class="category-card">
+                <span class="material-symbols-outlined icon">shower</span>
+                <p>Veterinarias</p>
+                <span class="material-symbols-outlined chevron">expand_more</span>
+            </div>
         </a>
         <div class="category-card">
             <span class="material-symbols-outlined icon">shopping_bag</span>
@@ -40,11 +40,13 @@
             <p>Guardería</p>
             <span class="material-symbols-outlined chevron">expand_more</span>
         </div>
-        <div class="category-card">
-            <span class="material-symbols-outlined icon">volunteer_activism</span>
-            <p>Adopción De Mascotas</p>
-            <span class="material-symbols-outlined chevron">expand_more</span>
-        </div>
+        <a asp-controller="Adopcion" asp-action="Index" class="category-link">
+            <div class="category-card">
+                <span class="material-symbols-outlined icon">volunteer_activism</span>
+                <p>Adopción De Mascotas</p>
+                <span class="material-symbols-outlined chevron">expand_more</span>
+            </div>
+        </a>
     </section>
 
 </div>

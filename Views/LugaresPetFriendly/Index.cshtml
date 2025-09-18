@@ -1,0 +1,56 @@
+@model List<PetConnect.Models.Servicio>
+@{
+    ViewData["Title"] = "Lugares Pet Friendly";
+}
+
+<div class="directorio-container">
+    <h1 class="directorio-title">Descubre lugares para disfrutar con tu mascota</h1>
+    @if(ViewData["BusquedaActual"] != null)
+    {
+        <h3 class="directorio-subtitle">Resultados para "@ViewData["BusquedaActual"]"</h3>
+    }
+
+    <section class="search-section">
+        <form asp-controller="LugaresPetFriendly" asp-action="Index" method="get" class="search-form">
+            <input name="busqueda" type="text" class="search-input" placeholder="Buscar por nombre o ciudad..." />
+            <button type="submit" class="search-button">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+        </form>
+    </section>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="servicios-listado">
+            @foreach (var servicio in Model)
+            {
+                <div class="servicio-card">
+                    <div class="card-image-container">
+                        <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Imagen de @servicio.Nombre" class="servicio-img">
+                    </div>
+                    <div class="card-info">
+                        <span class="servicio-categoria">@servicio.Categoria?.Nombre</span>
+                        <h5 class="servicio-nombre">@servicio.Nombre</h5>
+                        <p class="servicio-ubicacion">
+                            <span class="material-symbols-outlined">location_on</span>
+                            @servicio.Direccion
+                        </p>
+                    </div>
+                    <div class="card-actions">
+                        <div class="favorite-btn-wrapper">
+                            <span class="fav-icon"></span> 
+                        </div>
+                        <a asp-controller="Servicio" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn-directorio">Ver más</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center">
+            <p>No se encontraron lugares pet friendly que coincidan con tu búsqueda.</p>
+            <a asp-controller="LugaresPetFriendly" asp-action="Index">Ver todos los lugares</a>
+        </div>
+    }
+</div>

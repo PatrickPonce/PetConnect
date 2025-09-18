@@ -29,11 +29,13 @@
             <p>Pet Shop</p>
             <span class="material-symbols-outlined chevron">expand_more</span>
         </div>
-        <div class="category-card">
-            <span class="material-symbols-outlined icon">pets</span>
-            <p>Lugares Pet Friendly</p>
-            <span class="material-symbols-outlined chevron">expand_more</span>
-        </div>
+        <a asp-controller="LugaresPetFriendly" asp-action="Index" class="category-link">
+            <div class="category-card">
+                <span class="material-symbols-outlined icon">pets</span>
+                <p>Lugares Pet Friendly</p>
+                <span class="material-symbols-outlined chevron">expand_more</span>
+            </div>
+        </a>
         <div class="category-card">
             <!-- Icono actualizado para Guardería (usamos uno que representa cuidado/hogar) -->
             <span class="material-symbols-outlined icon">night_shelter</span>

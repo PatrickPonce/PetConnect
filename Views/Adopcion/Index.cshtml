@@ -1,0 +1,58 @@
+@model List<PetConnect.Models.Servicio>
+@{
+    ViewData["Title"] = "Adopción de Mascotas";
+}
+
+<div class="directorio-container">
+    <h1 class="directorio-title">Encuentra a tu nuevo mejor amigo</h1>
+    @if(ViewData["BusquedaActual"] != null)
+    {
+        <h3 class="directorio-subtitle">Resultados para "@ViewData["BusquedaActual"]"</h3>
+    }
+
+    <section class="search-section">
+        <!-- El formulario apunta a la acción Index de este mismo controlador -->
+        <form asp-controller="Adopcion" asp-action="Index" method="get" class="search-form">
+            <input name="busqueda" type="text" class="search-input" placeholder="Buscar por nombre o descripción..." />
+            <button type="submit" class="search-button">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+        </form>
+    </section>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="servicios-listado">
+            @foreach (var servicio in Model)
+            {
+                <div class="servicio-card">
+                    <div class="card-image-container">
+                        <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Imagen de @servicio.Nombre" class="servicio-img">
+                    </div>
+                    <div class="card-info">
+                        <span class="servicio-categoria">@servicio.Categoria?.Nombre</span>
+                        <h5 class="servicio-nombre">@servicio.Nombre</h5>
+                        <p class="servicio-ubicacion">
+                            <span class="material-symbols-outlined">location_on</span>
+                            @servicio.Direccion
+                        </p>
+                    </div>
+                    <div class="card-actions">
+                        <div class="favorite-btn-wrapper">
+                            <span class="fav-icon"></span> 
+                        </div>
+                        <!-- Este enlace ahora apunta a la página de Detalle de un servicio específico -->
+                        <a asp-controller="Servicio" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn-directorio">Ver más</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center">
+            <p>No se encontraron centros de adopción que coincidan con tu búsqueda.</p>
+            <a asp-controller="Adopcion" asp-action="Index">Ver todos los centros de adopción</a>
+        </div>
+    }
+</div>

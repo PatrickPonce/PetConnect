@@ -6,9 +6,9 @@
 }
 :root {
     --nav-bg-color: #86A788;      /* Verde olivo de tu imagen */
-    --nav-text-color: #FFCFCF;   /* Rosa pálido del texto */
+    --nav-text-color: #fdebe9;   /* Rosa pálido del texto */
     --nav-icon-color: #5c5c5c;     /* Gris oscuro para los iconos */
-    --nav-highlight-color: #ffffff; /* Blanco para el hover/activo */
+    --nav-highlight-color: #262020; /* Blanco para el hover/activo */
     --bg-color: #FFFDEC;
 }
 
@@ -196,6 +196,7 @@ NUEVOS ESTILOS PARA LA PÁGINA DE SERVICIOS
 .category-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    background-color: var(--nav-text-color);
 }
 
 .category-card .icon {

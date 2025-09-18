@@ -1,0 +1,51 @@
+<!-- Archivo: Views/Directorio/Guarderia.cshtml -->
+
+@model List<PetConnect.Models.Servicio>
+@{
+    ViewData["Title"] = "Directorio de Guarderías";
+}
+
+<div class="directorio-container">
+    <h1 class="directorio-title">Encuentra la mejor guardería para tu mascota</h1>
+
+    <section class="search-section">
+        <form asp-controller="Servicio" asp-action="Index" method="get" class="search-form">
+            <input name="busqueda" type="text" class="search-input" placeholder="¿Qué estas buscando?" />
+            <button type="submit" class="search-button">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+        </form>
+    </section>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="servicios-listado">
+            @foreach (var servicio in Model)
+            {
+                <div class="servicio-card">
+                    <div class="card-image-container">
+                        <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Logo de @servicio.Nombre" class="servicio-img">
+                    </div>
+                    <div class="card-info">
+                        <span class="servicio-categoria">@servicio.Categoria?.Nombre</span>
+                        <h5 class="servicio-nombre">@servicio.Nombre</h5>
+                        <p class="servicio-ubicacion">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            @servicio.Direccion
+                        </p>
+                    </div>
+                    <div class="card-actions">
+                         <div class="favorite-btn-wrapper">
+                            <span class="fav-icon"></span> 
+                        </div>
+                         <a asp-controller="Directorio" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn-directorio">Ver más</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-center">No hay guarderías disponibles en este momento.</p>
+    }
+</div>

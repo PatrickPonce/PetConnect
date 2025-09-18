@@ -36,7 +36,7 @@
                          <div class="favorite-btn-wrapper">
                             <span class="fav-icon"></span> 
                         </div>
-                         <a href="#" class="btn-directorio">Ver más</a>
+                         <a asp-controller="Directorio" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn-directorio">Ver más</a>
                     </div>
                 </div>
             }
@@ -47,5 +47,3 @@
         <p class="text-center">No hay servicios disponibles en este momento.</p>
     }
 </div>
-
-@* Ya no necesitamos la sección de Scripts aquí, porque la hemos movido a site.js *@

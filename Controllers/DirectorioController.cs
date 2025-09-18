@@ -23,7 +23,15 @@ public class DirectorioController : Controller
 
         return View(servicios); // Pasamos el modelo fuertemente tipado
     }
-    
+    public async Task<IActionResult> PetShop()
+    {
+        var servicios = await _context.Servicios
+                                    .Include(s => s.Categoria) // Ahora esto funciona
+                                    .Where(s => s.Categoria.Nombre == "Pet Shop")
+                                    .ToListAsync();
+
+        return View(servicios); // Pasamos el modelo fuertemente tipado
+    }
     // --- NUEVO MÉTODO PARA LA PÁGINA DE DETALLE ---
     public async Task<IActionResult> Detalle(int id)
     {

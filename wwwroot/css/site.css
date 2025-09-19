@@ -441,3 +441,262 @@ NUEVOS ESTILOS PARA LA PÁGINA DE SERVICIOS
 .btn-directorio:hover::before {
     left: 125%; 
 }
+
+        :root {
+            --primary-pink: #f7a9a9;
+            --light-pink: #ffe9ec;
+            --dark-grey: #6c5f5b;
+            --light-bg: #f9f0ec; /* Fondo principal claro */
+            --bg-pattern: url('/images/background_pattern.png'); /* Ruta a tu imagen de patrón */
+            --logo-top-left: url('/images/logo-corner.png'); /* Ruta al logo para la esquina */
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark-grey);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden; /* Oculta cualquier desbordamiento de las imágenes de fondo */
+            background-image: var(--bg-pattern); /* Patrón de fondo */
+            background-repeat: repeat; /* Repetir el patrón */
+            background-size: 150px; /* Tamaño del patrón */
+        }
+        
+        /* Contenido principal centrado */
+        .home-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 50px 20px;
+            position: relative;
+            z-index: 1; /* Asegura que el contenido esté sobre las imágenes de fondo */
+            background-color: rgba(255, 255, 255, 0.5); /* Ligero fondo translúcido para el texto */
+            border-radius: 15px;
+            padding: 40px 60px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .home-main h1 {
+            font-size: 3.5em; /* Un poco más grande para destacar */
+            color: var(--primary-pink);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .home-main p {
+            font-size: 1.3em; /* Un poco más grande */
+            color: var(--dark-grey);
+            margin-bottom: 50px; /* Más espacio entre el texto y los botones */
+        }
+
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Más espacio entre botones */
+            width: 280px; /* Botones un poco más anchos */
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 15px 30px; /* Botones más grandes */
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s; /* Añadir transform para efecto hover */
+            border: none;
+            text-align: center;
+            color: white;
+            font-size: 1.1em; /* Texto más grande en los botones */
+        }
+
+        .btn-primary {
+            background-color: var(--dark-grey);
+        }
+
+        .btn-secondary {
+            background-color: #a0a0a0;
+        }
+
+        .btn-primary:hover, .btn-secondary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px); /* Pequeño efecto al pasar el ratón */
+        }
+        
+        /* Posicionamiento y tamaño de las imágenes flotantes */
+        .dog-image { /* Nombre de clase para el perro, si usas otra imagen */
+            position:  absolute;
+            left: 5%; /* Más alejado del centro */
+            bottom: 5%; /* Más arriba del borde */
+            height: 500px; /* Tamaño ajustado */
+            z-index: 2;
+            transform: rotate(-10deg); /* Pequeña rotación para darle dinamismo */
+        }
+        
+        .person-cat-image { /* Nombre de clase para la persona con el gato */
+            position: absolute;
+            right: 1%; /* Más alejado del centro */
+            bottom: 0.001%; /* Más arriba del borde */
+            height: 400px; /* Tamaño ajustado */
+            z-index: 2;
+            transform: rotate(10deg); /* Pequeña rotación para darle dinamismo */
+        }
+
+        /* Logo en la esquina superior izquierda */
+        .corner-logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            height: 70px; /* Ajusta el tamaño del logo */
+            z-index: 3; /* Asegura que el logo esté al frente */
+            opacity: 0.8; /* Ligera opacidad */
+        }
+
+:root {
+    --primary-pink: #f7a9a9;
+    --light-pink: #ffe9ec;
+    --dark-grey: #6c5f5b;
+    --light-bg: #f9f0ec;
+    --mint-green: #d1e4d3;
+}
+
+/* Estilos de la página de registro */
+body {
+    background-color: var(--light-bg);
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-grey);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 50%;
+    text-align: center;
+}
+
+.welcome-section h1 {
+    font-size: 4em;
+    color: var(--primary-pink);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.welcome-section p {
+    font-size: 1.5em;
+    color: var(--dark-grey);
+}
+
+.form-section {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.register-form-container {
+    background-color: var(--mint-green);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.8em;
+    color: var(--dark-grey);
+    margin-bottom: 20px;
+}
+
+.social-login-btn {
+    background-color: #fff;
+    color: var(--dark-grey);
+    border: 1px solid #ccc;
+    padding: 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.social-login-btn img {
+    height: 20px;
+    margin-right: 10px;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #888;
+    margin: 20px 0;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+}
+
+.divider:not(:empty)::before {
+    margin-right: .25em;
+}
+
+.divider:not(:empty)::after {
+    margin-left: .25em;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.register-btn {
+    background-color: var(--primary-pink);
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    border: none;
+    width: 100%;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.register-btn:hover {
+    background-color: #e59797;
+}
+
+.login-link {
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    color: var(--dark-grey);
+    text-decoration: none;
+}

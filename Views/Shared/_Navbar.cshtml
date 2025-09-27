@@ -1,0 +1,40 @@
+@* /Views/Shared/_Navbar.cshtml *@
+
+<header class="app-header">
+    <div class="logo-container">
+        <div class="logo-icon">
+            <img src="~/images/logoP.png" alt="Purr & Paws Logo">
+        </div>
+        <span class="logo-text">Purr & Paws</span>
+    </div>
+    
+    <nav class="main-nav">
+        <ul>
+            <li>
+                @* El "asp-action" y "asp-controller" son la forma correcta en .NET de crear enlaces *@
+                <a asp-controller="Noticias" asp-action="Index" class="active">
+                    <span class="material-symbols-outlined">newspaper</span>
+                    <span class="nav-text">Noticias</span>
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Services" asp-action="Index">
+                    <span class="material-symbols-outlined">volunteer_activism</span>
+                    <span class="nav-text">Servicios</span>
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Favorites" asp-action="Index">
+                    <span class="material-symbols-outlined">favorite</span>
+                    <span class="nav-text">Favoritos</span>
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Account" asp-action="Login">
+                    <span class="material-symbols-outlined">login</span>
+                    <span class="nav-text">Iniciar Sesión</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>

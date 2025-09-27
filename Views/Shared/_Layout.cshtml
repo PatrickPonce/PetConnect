@@ -1,64 +1,33 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PetConnect</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - Purr & Paws</title>
+    
+    <!-- Importar Google Fonts y Material Symbols (necesarios para los iconos) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+
+    <!-- Referencia a tu archivo CSS principal -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/PetConnect.styles.css" asp-append-version="true" />
+    
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <img src="~/images/logoP.png" alt="Logo" class="navbar-logo">
-            <div class="navbar-links">
-                <a href="#" class="icon-btn">
-                    <i class="fas fa-newspaper"></i> Noticias
-                </a>
-                <a href="#" class="icon-btn">
-                    <i class="fas fa-paw"></i> Servicios
-                </a>
-                <a href="#" class="icon-btn">
-                    <i class="fas fa-heart"></i> Favoritos
-                </a>
-                <div class="navbar-links">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <a href="#" class="icon-btn">
-                            <i class="fas fa-user-circle"></i> @User.Identity.Name
-                        </a>
-                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Guest", "Home", new { area = "" })">
-                            <button type="submit" class="nav-link btn btn-link text-dark">
-                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="icon-btn">
-                            <i class="fas fa-user-circle"></i> Iniciar Sesión
-                        </a>
-                    }
-                </div>
-            </div>
-        </nav>
-    </header>
+
+    @* AQUÍ ESTÁ LA MAGIA: Llamamos a nuestra vista parcial reutilizable *@
+    @await Html.PartialAsync("_Navbar")
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - PetConnect - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Referencia a tu archivo JavaScript principal -->
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

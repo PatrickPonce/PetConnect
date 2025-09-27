@@ -9,4 +9,6 @@ public class ApplicationDbContext : IdentityDbContext
         : base(options)
     {
     }
+    public DbSet<PetConnect.Models.Noticia> Noticias { get; set; }
+    public DbSet<PetConnect.Models.Comentario> Comentarios { get; set; }
 }

@@ -391,3 +391,70 @@ body {
     transform: translateY(-5px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
+
+
+/* ==================================== */
+/* Página de Listado de Servicios       */
+/* ==================================== */
+
+.service-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+}
+
+.service-card {
+    background-color: #fff;
+    border-radius: 15px; /* Bordes redondeados */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    width: 320px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card .card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.service-card .card-body {
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Hace que el cuerpo de la tarjeta ocupe el espacio restante */
+}
+
+.service-card .card-title {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.service-card .card-text {
+    color: #8a7a7a;
+    flex-grow: 1; /* Empuja el botón hacia abajo */
+    margin-bottom: 20px;
+}
+
+/* Reutilizamos el estilo del botón .btn.btn-primary de tu CSS general */
+.service-card .btn.btn-primary {
+    width: 80%;
+    margin: 0 auto; /* Centra el botón */
+    padding: 12px;
+    border-radius: 30px;
+    font-weight: bold;
+    background-color: #8a7a7a;
+    border: none;
+    text-decoration: none;
+    color: white;
+    display: inline-block;
+}
+
+.service-card .btn.btn-primary:hover {
+    background-color: #6a5a5a;
+}

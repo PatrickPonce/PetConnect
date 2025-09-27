@@ -11,41 +11,6 @@ body {
     min-height: 100vh;
 }
 
-/* ==================================== */
-/* Navbar y Layout                      */
-/* ==================================== */
-.navbar {
-    background-color: #f7e6e3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 50px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-.navbar-logo {
-    width: 50px;
-}
-.navbar-links {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.navbar-links a {
-    color: #8a7a7a;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 8px 15px;
-    border-radius: 20px;
-    transition: background-color 0.3s;
-}
-.navbar-links a:hover {
-    background-color: #f0d5d5;
-}
-.icon-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
 
 /* Contenido Principal para páginas con Layout */
 .main-content {

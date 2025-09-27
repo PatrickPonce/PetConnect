@@ -1,0 +1,31 @@
+<!-- Archivo: Views/PetShop/Index.cshtml -->
+@model List<Servicio>
+@{
+    ViewData["Title"] = "Pet Shops";
+}
+
+<div class="main-content directorio-page">
+    <h1 class="directorio-title">Pet Shops</h1>
+
+    <div class="search-bar-container">
+        <input type="text" placeholder="Buscar en pet shops..." class="search-input"/>
+        <button class="search-button">
+            <span class="material-symbols-outlined">search</span>
+        </button>
+    </div>
+
+    <div class="service-cards-container">
+        @foreach (var servicio in Model)
+        {
+            <div class="service-card">
+                <img src="@servicio.UrlImagen" alt="@servicio.Nombre" class="card-img-top" />
+                <div class="card-body">
+                    <h5 class="card-title">@servicio.Nombre</h5>
+                    <p class="card-text">@servicio.DescripcionCorta</p>
+                    <!-- Este enlace apunta al PetShopController -->
+                    <a asp-controller="PetShop" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn btn-primary">Ver Detalles</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

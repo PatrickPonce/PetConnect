@@ -15,19 +15,27 @@
     
 </head>
 <body>
+    <header class="navbar-container">
+        <a class="logo-link" asp-controller="Home" asp-action="Index">
+            <img src="~/images/logoP.png" alt="Purr & Paws Logo" class="navbar-logo">
+        </a>
+        <nav class="navbar-links">
+            <a class="nav-item" asp-controller="Noticias" asp-action="Index"><i class="fas fa-newspaper"></i> Noticias</a>
+            <a class="nav-item" href="#"><i class="fas fa-paw"></i> Servicios</a>
+            <a class="nav-item" href="#"><i class="fas fa-heart"></i> Favoritos</a>
+            <a class="nav-item" asp-area="Identity" asp-page="/Account/Login"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a>
+        </nav>
+    </header>
 
-    @* AQUÍ ESTÁ LA MAGIA: Llamamos a nuestra vista parcial reutilizable *@
-    @await Html.PartialAsync("_Navbar")
-
-    <div class="container">
+    <div class="container-main">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <!-- Referencia a tu archivo JavaScript principal -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

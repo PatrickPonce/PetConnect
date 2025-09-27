@@ -1,0 +1,64 @@
+@{
+    ViewData["Title"] = "Configuración del Administrador";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/admin.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="admin-container">
+    <h1 class="admin-title">Configuración General de la Página</h1>
+
+    <div class="logo-banner-section">
+        <div class="setting-card">
+            <span class="card-label">Logo</span>
+            <div class="card-content logo-card">
+                <img src="~/images/purr_paws_logo.png" alt="Logo" class="config-logo" />
+                <a href="#" class="edit-icon"><i class="fas fa-pencil-alt"></i></a>
+            </div>
+        </div>
+
+        <div class="setting-card">
+            <span class="card-label">Banner</span>
+            <div class="card-content banner-card">
+                <img src="~/images/banner_placeholder.png" alt="Banner" class="config-banner" />
+                <a href="#" class="edit-icon"><i class="fas fa-pencil-alt"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="admin-subtitle">Modificar Categorías</h2>
+
+    <div class="categories-section">
+        <div class="category-item">
+            <div class="category-icon">
+                <i class="fas fa-hand-holding-medical"></i>
+            </div>
+            <span>Veterinarias</span>
+        </div>
+        <div class="category-item">
+            <div class="category-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <span>Pet Shop</span>
+        </div>
+        <div class="category-item">
+            <div class="category-icon">
+                <i class="fas fa-paw"></i>
+            </div>
+            <span>Lugares Pet Friendly</span>
+        </div>
+        <div class="category-item">
+            <div class="category-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <span>Guardería</span>
+        </div>
+        <div class="category-item">
+            <div class="category-icon">
+                <i class="fas fa-dog"></i>
+            </div>
+            <span>Adopción De Mascotas</span>
+        </div>
+    </div>
+</div>

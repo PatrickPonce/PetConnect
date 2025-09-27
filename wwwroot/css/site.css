@@ -295,3 +295,55 @@ body {
 .read-more-btn:hover {
     background-color: #6a5a5a;
 }
+/* Horizontal Navigation Bar */
+.navbar-container {
+    display: flex;
+    justify-content: space-between; /* Space out logo and links */
+    align-items: center;
+    padding: 10px 30px;
+    background-color: #F7F3EB;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-logo {
+    height: 50px;
+}
+
+.navbar-links {
+    display: flex;
+    gap: 25px; /* Space between links */
+}
+
+.nav-item {
+    color: #8a7a7a;
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.nav-item:hover {
+    color: #e57373;
+}
+
+.nav-item i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Main content container below the navbar */
+.container-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Estilos de la tarjeta principal que me habías enviado */
+.main-content-card {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}

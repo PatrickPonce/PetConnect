@@ -1,0 +1,55 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewData["Title"] - Purr & Paws</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="login-container">
+        <div class="welcome-section">
+            <h1>Bienvenido a Purr & Paws</h1>
+            <p>Amor, cuidado y diversión para cada patita.</p>
+        </div>
+        <div class="form-section">
+            <form id="account" method="post">
+                <h4>Iniciar sesión</h4>
+                <button type="button" class="login-button google-login-button">
+                    <img src="~/images/google-icon.png" alt="Google Icon" style="height: 1.2em; vertical-align: middle; margin-right: 10px;" />
+                    Iniciar sesión con Google
+                </button>
+                <p>o con el Email</p>
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="form-group">
+                    <label asp-for="Input.Email">Correo electrónico</label>
+                    <input asp-for="Input.Email" class="form-control form-control-custom" autocomplete="username" aria-required="true" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.Password">Contraseña</label>
+                    <input asp-for="Input.Password" class="form-control form-control-custom" autocomplete="current-password" aria-required="true" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <button id="login-submit" type="submit" class="login-button">Iniciar sesión</button>
+                <p>
+                    <a id="forgot-password" asp-page="./ForgotPassword" class="login-link">¿Te olvidaste tu contraseña? Haz click aquí</a>
+                </p>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-secondary">Registrarse</a>
+                <p>
+                    <a href="~/Home/Index" class="btn-custom btn-link">Volver a la página de inicio</a>
+                </p>
+            </form>
+        </div>
+    </div>
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

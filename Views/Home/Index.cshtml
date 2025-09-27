@@ -1,0 +1,27 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bienvenido a Purr & Paws</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="landing-page-container">
+        <div class="main-card">
+            <h1>Bienvenido a Purr & Paws</h1>
+            <p>Donde cada momento con tu mascota importa</p>
+            <div class="button-group">
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Iniciar Sesión</a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-secondary">Registrarse</a>
+                <a asp-controller="Home" asp-action="Guest" class="btn btn-guest">Invitado</a>
+            </div>
+        </div>
+        <img src="~/images/perro-feliz.png" alt="Perro feliz" class="dog-image">
+        <img src="~/images/persona-con-gato.png" alt="Persona con un gato" class="cat-image">
+    </div>
+</body>
+</html>

@@ -1,0 +1,318 @@
+/* ==================================== */
+/* Estilos Generales           */
+/* ==================================== */
+body {
+    background-color: #f7e6e3;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+/* ==================================== */
+/* Página de Inicio (Index)       */
+/* ==================================== */
+.landing-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden; /* Para evitar barras de desplazamiento si las imágenes se salen */
+}
+.main-card {
+    background-color: #fff;
+    padding: 40px 60px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    z-index: 10;
+}
+.main-card h1 {
+    color: #e57373;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+.main-card p {
+    color: #8a7a7a;
+    font-size: 1rem;
+    margin-bottom: 30px;
+}
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.btn {
+    width: 250px;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    color: #fff;
+    display: block;
+}
+.btn-primary {
+    background-color: #8a7a7a;
+}
+.btn-primary:hover {
+    background-color: #6a5a5a;
+}
+.btn-secondary {
+    background-color: #a39595;
+}
+.btn-secondary:hover {
+    background-color: #8a7a7a;
+}
+.btn-guest {
+    background-color: #c0b3b3;
+    color: white;
+}
+.btn-guest:hover {
+    background-color: #a39595;
+}
+.dog-image {
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 300px;
+    z-index: 5;
+}
+.cat-image {
+    position: absolute;
+    bottom: 0;
+    right: 10%;
+    width: 250px;
+    z-index: 5;
+}
+
+/* ==================================== */
+/* Página de Login             */
+/* ==================================== */
+.login-container, .register-container {
+    display: flex;
+    width: 80%;
+    max-width: 1000px;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+.welcome-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: left;
+    background-color: #fff;
+    border-radius: 20px 0 0 20px;
+}
+.welcome-section h1 {
+    color: #e57373;
+    font-size: 3.5rem;
+    line-height: 1;
+    margin-bottom: 20px;
+}
+.welcome-section p {
+    color: #888;
+}
+.form-section {
+    flex: 1;
+    background-color: #f9f0f0;
+    padding: 40px;
+    border-radius: 0 20px 20px 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.form-section h4 {
+    color: #e57373;
+    margin-bottom: 20px;
+}
+.form-control-custom {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+}
+.login-button {
+    width: 80%;
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 30px;
+    background-color: #e57373;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+.google-login-button {
+    background-color: #f7f3f3;
+    color: black;
+    border: 1px solid #ccc;
+}
+.login-link {
+    display: block;
+    margin: 10px 0;
+    color: #8a7a7a;
+    text-decoration: none;
+}
+.login-link:hover {
+    text-decoration: underline;
+}
+
+/* ==================================== */
+/* Página de Registro (Register)   */
+/* ==================================== */
+.form-group-custom {
+    margin-bottom: 15px;
+    text-align: left;
+}
+.form-label-custom {
+    color: #555;
+    display: block;
+    margin-bottom: 5px;
+}
+.btn-custom {
+    width: 80%;
+    padding: 15px;
+    margin: 10px auto;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+}
+.btn-register {
+    background-color: #e57373;
+    color: white;
+}
+.btn-google {
+    background-color: #f7f3f3;
+    color: black;
+    border: 1px solid #ccc;
+}
+.btn-link {
+    background-color: transparent;
+    color: #8a7a7a;
+    border: none;
+    text-align: center;
+}
+
+/* ==================================== */
+/* Layout y Página de Invitado      */
+/* ==================================== */
+.navbar {
+    background-color: #f7e6e3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 50px;
+}
+.navbar-logo {
+    width: 50px;
+}
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.navbar-links a {
+    color: #8a7a7a;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: background-color 0.3s;
+}
+.navbar-links a:hover {
+    background-color: #f0d5d5;
+}
+.icon-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.main-content {
+    padding: 20px;
+    background-color: #f7e6e3;
+}
+.hero-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+    border-radius: 20px;
+    text-align: center;
+    background-color: #f9f0f0;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+.hero-text {
+    font-size: 3rem;
+    color: #e57373;
+    font-weight: bold;
+    max-width: 600px;
+    line-height: 1.2;
+    text-align: left;
+    z-index: 2;
+    margin-right: 50px;
+}
+.hero-image {
+    width: 200px;
+    z-index: 2;
+}
+.hero-image img {
+    width: 100%;
+    height: auto;
+}
+.featured-news-section h2 {
+    text-align: center;
+    color: #e57373;
+    margin: 40px 0 20px 0;
+}
+.news-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.news-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    overflow: hidden;
+    text-align: center;
+}
+.news-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+.card-content {
+    padding: 15px;
+}
+.read-more-btn {
+    display: block;
+    width: 80%;
+    margin: 15px auto 0;
+    padding: 10px;
+    background-color: #8a7a7a;
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    transition: background-color 0.3s;
+}
+.read-more-btn:hover {
+    background-color: #6a5a5a;
+}

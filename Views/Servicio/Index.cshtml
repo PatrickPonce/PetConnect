@@ -1,0 +1,34 @@
+<!-- Views/Servicio/Index.cshtml (CORREGIDO) -->
+@model List<Servicio>
+@{
+    ViewData["Title"] = "Veterinarias";
+}
+
+<div class="main-content directorio-page">
+    <!-- Usamos H1 con la clase correcta para el título -->
+    <h1 class="directorio-title">Veterinarias</h1>
+
+    <!-- Añadimos una barra de búsqueda (funcionalidad pendiente) -->
+    <div class="search-bar-container">
+        <input type="text" placeholder="Buscar en veterinarias..." class="search-input"/>
+        <button class="search-button">
+            <span class="material-symbols-outlined">search</span>
+        </button>
+    </div>
+
+    <!-- El contenedor de las tarjetas ahora tiene una clase específica -->
+    <div class="service-cards-container">
+        @foreach (var servicio in Model)
+        {
+            <!-- Usamos 'service-card' para evitar conflictos con estilos de noticias -->
+            <div class="service-card">
+                <img src="@servicio.UrlImagen" alt="@servicio.Nombre" class="card-img-top" />
+                <div class="card-body">
+                    <h5 class="card-title">@servicio.Nombre</h5>
+                    <p class="card-text">@servicio.DescripcionCorta</p>
+                    <a asp-controller="Servicio" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn btn-primary">Ver Detalles</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

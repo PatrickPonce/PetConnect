@@ -1,14 +1,62 @@
 /* ==================================== */
-/* Estilos Generales           */
+/* Estilos Generales                    */
 /* ==================================== */
 body {
     background-color: #f7e6e3;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
+    /* Esto es clave para centrar el contenido principal */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* ==================================== */
-/* Página de Inicio (Index)       */
+/* Navbar y Layout                      */
+/* ==================================== */
+.navbar {
+    background-color: #f7e6e3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 50px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.navbar-logo {
+    width: 50px;
+}
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.navbar-links a {
+    color: #8a7a7a;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: background-color 0.3s;
+}
+.navbar-links a:hover {
+    background-color: #f0d5d5;
+}
+.icon-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Contenido Principal para páginas con Layout */
+.main-content {
+    flex: 1; /* Esto hace que el contenido ocupe el espacio restante */
+    padding: 20px;
+    background-color: #f7e6e3;
+}
+
+
+/* ==================================== */
+/* Página de Inicio (Index)             */
 /* ==================================== */
 .landing-page-container {
     display: flex;
@@ -17,7 +65,7 @@ body {
     width: 100%;
     height: 100vh;
     position: relative;
-    overflow: hidden; /* Para evitar barras de desplazamiento si las imágenes se salen */
+    overflow: hidden;
 }
 .main-card {
     background-color: #fff;
@@ -25,7 +73,7 @@ body {
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     text-align: center;
-    z-index: 10;
+    z-index: 1;
 }
 .main-card h1 {
     color: #e57373;
@@ -41,6 +89,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    align-items: center;
 }
 .btn {
     width: 250px;
@@ -54,6 +103,7 @@ body {
     transition: background-color 0.3s;
     color: #fff;
     display: block;
+    text-align: center;
 }
 .btn-primary {
     background-color: #8a7a7a;
@@ -78,19 +128,19 @@ body {
     position: absolute;
     bottom: 0;
     left: 10%;
-    width: 300px;
+    width: 500px;
     z-index: 5;
 }
 .cat-image {
     position: absolute;
     bottom: 0;
-    right: 10%;
-    width: 250px;
+    right: 5%;
+    width: 550px;
     z-index: 5;
 }
 
 /* ==================================== */
-/* Página de Login             */
+/* Páginas de Autenticación             */
 /* ==================================== */
 .login-container, .register-container {
     display: flex;
@@ -99,6 +149,7 @@ body {
     background-color: #fff;
     border-radius: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin: auto;
 }
 .welcome-section {
     flex: 1;
@@ -142,109 +193,37 @@ body {
     border: 1px solid #ddd;
     background-color: #f0f0f0;
 }
-.login-button {
-    width: 80%;
-    padding: 15px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 30px;
-    background-color: #e57373;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-.google-login-button {
-    background-color: #f7f3f3;
-    color: black;
-    border: 1px solid #ccc;
-}
-.login-link {
-    display: block;
-    margin: 10px 0;
-    color: #8a7a7a;
-    text-decoration: none;
-}
-.login-link:hover {
-    text-decoration: underline;
-}
-
-/* ==================================== */
-/* Página de Registro (Register)   */
-/* ==================================== */
-.form-group-custom {
-    margin-bottom: 15px;
-    text-align: left;
-}
-.form-label-custom {
-    color: #555;
-    display: block;
-    margin-bottom: 5px;
-}
-.btn-custom {
+.login-button, .btn-register {
     width: 80%;
     padding: 15px;
     margin: 10px auto;
     border: none;
     border-radius: 30px;
+    background-color: #e57373;
+    color: white;
     font-weight: bold;
     cursor: pointer;
     text-decoration: none;
     display: block;
 }
-.btn-register {
-    background-color: #e57373;
-    color: white;
-}
-.btn-google {
+.google-login-button, .btn-google {
     background-color: #f7f3f3;
     color: black;
     border: 1px solid #ccc;
 }
-.btn-link {
-    background-color: transparent;
+.login-link, .btn-link {
+    display: block;
+    margin: 10px 0;
     color: #8a7a7a;
-    border: none;
-    text-align: center;
+    text-decoration: none;
+}
+.login-link:hover, .btn-link:hover {
+    text-decoration: underline;
 }
 
 /* ==================================== */
-/* Layout y Página de Invitado      */
+/* Página de Invitado (Guest)           */
 /* ==================================== */
-.navbar {
-    background-color: #f7e6e3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 50px;
-}
-.navbar-logo {
-    width: 50px;
-}
-.navbar-links {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.navbar-links a {
-    color: #8a7a7a;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 8px 15px;
-    border-radius: 20px;
-    transition: background-color 0.3s;
-}
-.navbar-links a:hover {
-    background-color: #f0d5d5;
-}
-.icon-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-.main-content {
-    padding: 20px;
-    background-color: #f7e6e3;
-}
 .hero-section {
     display: flex;
     justify-content: center;

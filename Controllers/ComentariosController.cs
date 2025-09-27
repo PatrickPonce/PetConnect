@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using PetConnect.Data;
 using PetConnect.Models;
+using System; 
 using System.Threading.Tasks;
 
 [Authorize]
@@ -20,19 +21,14 @@ public class ComentariosController : Controller
     [HttpPost]
     public async Task<IActionResult> AgregarComentario(int NoticiaId, string Texto)
     {
+       
         var user = await _userManager.GetUserAsync(User);
-
-        if (user == null)
-        {
-           
-            return Unauthorized(); 
-        }
 
         var comentario = new Comentario
         {
             NoticiaId = NoticiaId,
             Texto = Texto,
-            Autor = user.UserName,
+            Autor = user.UserName, 
             FechaComentario = DateTime.Now
         };
 

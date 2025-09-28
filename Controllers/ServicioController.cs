@@ -1,10 +1,10 @@
-using X.PagedList;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
-using PetConnect.Models; 
+using PetConnect.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace PetConnect.Controllers
 {
@@ -22,11 +22,13 @@ namespace PetConnect.Controllers
             
             IQueryable<Servicio> query = _context.Servicios
                 .Where(s => s.Tipo == TipoServicio.Veterinaria)
+                .OrderBy(s => s.Nombre) 
                 .AsNoTracking();
 
             if (!string.IsNullOrEmpty(busqueda))
             {
-                query = query.Where(s => s.Nombre.Contains(busqueda));
+                string busquedaLower = busqueda.ToLower();
+                query = query.Where(s => s.Nombre.ToLower().Contains(busquedaLower));
             }
             
             int pageSize = 6;
@@ -35,15 +37,16 @@ namespace PetConnect.Controllers
             var veterinariasPaginadas = await query.ToPagedListAsync(pageNumber, pageSize);
 
             return View(veterinariasPaginadas);
-        }   
+        }
+
 
         public async Task<IActionResult> Detalle(int? id)
         {
             if (id == null) return NotFound();
 
             var veterinaria = await _context.Servicios
-                .Include(s => s.VeterinariaDetalle) 
-                    .ThenInclude(vd => vd.Resenas) 
+                .Include(s => s.VeterinariaDetalle)
+                    .ThenInclude(vd => vd.Resenas)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id && s.Tipo == TipoServicio.Veterinaria);
 

@@ -2,37 +2,49 @@
 @using X.PagedList;
 @model IPagedList<PetConnect.Models.Servicio>
 @{
-    ViewData["Title"] = "Directorio de Veterinarias";
+    ViewData["Title"] = "Veterinarias";
 }
 
-<div class="directorio-container">
-    <h1 class="directorio-title">Encuentra la mejor veterinaria para tu mascota</h1>
-    
-    <form asp-controller="Servicio" asp-action="Index" method="get">
-        @* Llamamos a la vista parcial del buscador *@
-        @await Html.PartialAsync("_SearchBarPartial", ViewData["BusquedaActual"] as string)
-    </form>
+<div class="directorio-page-v2">
+    <div class="hero-banner">
+        <img src="~/images/servicios/banner-veterinaria.jpg" alt="Perro en una toalla" />
+        <div class="hero-text"><h1>Veterinarias</h1></div>
+    </div>
 
+    <div class="content-wrapper">
+        <h2 class="page-subtitle">Encuentra la mejor veterinaria para tu mascota</h2>
 
-    <div class="servicios-listado">
-        @foreach (var servicio in Model)
-        {
-            <a asp-action="Detalle" asp-route-id="@servicio.Id" class="servicio-card-link">
-                <div class="servicio-card">
-                    <div class="card-image-container">
-                        <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Imagen de @servicio.Nombre">
+        <form asp-controller="Servicio" asp-action="Index" method="get">
+            @* Llamamos a la vista parcial del buscador *@
+            @await Html.PartialAsync("_SearchBarPartial", ViewData["BusquedaActual"] as string)
+        </form>
+
+        <div class="listing-grid-v2">
+            @foreach (var servicio in Model)
+            {
+                <a asp-action="Detalle" asp-route-id="@servicio.Id" class="listing-card-v2">
+                    <div class="card-image">
+                        <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Logo de @servicio.Nombre" />
                     </div>
-                    <div class="card-info">
-                        <span class="servicio-categoria">@servicio.FundacionNombre</span>
-                        <h5 class="servicio-nombre">@servicio.Nombre</h5>
-                        @* Mostramos la dirección desde la tabla de detalles (aunque no la cargamos en esta vista por eficiencia) *@
+                    <div class="card-content">
+                        <div class="card-header">
+                            <span class="card-category">@servicio.FundacionNombre</span>
+                            <button class="card-favorite-btn"><span class="material-symbols-outlined">star</span></button>
+                        </div>
+                        <h3 class="card-title">@servicio.Nombre</h3>
+                        <p class="card-location">
+                            <span class="material-symbols-outlined">location_on</span>
+                            Lince @* Esto debería venir de la BD, pero lo hardcodeamos por ahora *@
+                        </p>
                     </div>
-                    <div class="card-actions">
-                        <span class="btn-directorio">Ver Detalles</span>
+                    <div class="card-footer">
+                        <span class="btn-ver-mas">Ver más <span class="material-symbols-outlined">arrow_forward</span></span>
                     </div>
-                </div>
-            </a>
-        }
+                </a>
+            }
+        </div>
+
+        <!-- Controles de Paginación -->
         <div class="pagination-container">
             @Html.PagedListPager(Model, page => Url.Action("Index", new { page, busqueda = ViewData["BusquedaActual"] }),
                 new PagedListRenderOptions

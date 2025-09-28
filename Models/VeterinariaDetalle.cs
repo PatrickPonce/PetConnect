@@ -16,6 +16,9 @@ namespace PetConnect.Models
         public string Telefono { get; set; } = string.Empty;
         public string? Horario { get; set; }
 
+        public string? TelefonoSecundario { get; set; } 
+        public string? FacebookUrl { get; set; }
+
         public int ServicioId { get; set; }
         public Servicio Servicio { get; set; } = null!;
 

@@ -1,10 +1,10 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
-using PetConnect.Models; 
+using PetConnect.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace PetConnect.Controllers
 {
@@ -16,32 +16,37 @@ namespace PetConnect.Controllers
         {
             _context = context;
         }
-
-        // Muestra la lista de todas las veterinarias
-        public async Task<IActionResult> Index(string busqueda)
+        public async Task<IActionResult> Index(string busqueda, int? page)
         {
+            ViewData["BusquedaActual"] = busqueda;
+            
             IQueryable<Servicio> query = _context.Servicios
                 .Where(s => s.Tipo == TipoServicio.Veterinaria)
+                .OrderBy(s => s.Nombre) 
                 .AsNoTracking();
 
             if (!string.IsNullOrEmpty(busqueda))
             {
-                query = query.Where(s => s.Nombre.Contains(busqueda));
-                ViewData["BusquedaActual"] = busqueda;
+                string busquedaLower = busqueda.ToLower();
+                query = query.Where(s => s.Nombre.ToLower().Contains(busquedaLower));
             }
+            
+            int pageSize = 6;
+            int pageNumber = (page ?? 1);
 
-            var veterinarias = await query.ToListAsync();
-            return View(veterinarias);
+            var veterinariasPaginadas = await query.ToPagedListAsync(pageNumber, pageSize);
+
+            return View(veterinariasPaginadas);
         }
 
-        // Muestra el detalle de una veterinaria específica
+
         public async Task<IActionResult> Detalle(int? id)
         {
             if (id == null) return NotFound();
 
             var veterinaria = await _context.Servicios
-                .Include(s => s.VeterinariaDetalle) // Carga los detalles
-                    .ThenInclude(vd => vd.Resenas) // Y luego carga las reseñas de esos detalles
+                .Include(s => s.VeterinariaDetalle)
+                    .ThenInclude(vd => vd.Resenas)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id && s.Tipo == TipoServicio.Veterinaria);
 

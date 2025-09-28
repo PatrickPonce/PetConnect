@@ -1,4 +1,6 @@
-@model List<PetConnect.Models.Servicio>
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<PetConnect.Models.Servicio>
 @{
     ViewData["Title"] = "Directorio de Veterinarias";
 }
@@ -6,12 +8,10 @@
 <div class="directorio-container">
     <h1 class="directorio-title">Encuentra la mejor veterinaria para tu mascota</h1>
     
-    <div class="search-bar-container">
-        <input type="text" placeholder="¿Qué estás buscando?" class="search-input"/>
-        <button class="search-button">
-            <span class="material-symbols-outlined">search</span>
-        </button>
-    </div>
+    <form asp-controller="Servicio" asp-action="Index" method="get">
+        @* Llamamos a la vista parcial del buscador *@
+        @await Html.PartialAsync("_SearchBarPartial", ViewData["BusquedaActual"] as string)
+    </form>
 
 
     <div class="servicios-listado">
@@ -33,5 +33,17 @@
                 </div>
             </a>
         }
+        <div class="pagination-container">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, busqueda = ViewData["BusquedaActual"] }),
+                new PagedListRenderOptions
+                {
+                    LiElementClasses = new string[] { "page-item" },
+                    PageClasses = new string[] { "page-link" },
+                    DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                    DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                    DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                    DisplayLinkToPreviousPage = PagedListDisplayMode.Always
+                })
+        </div>
     </div>
 </div>

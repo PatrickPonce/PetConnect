@@ -1,4 +1,4 @@
-
+using X.PagedList;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
@@ -16,10 +16,10 @@ namespace PetConnect.Controllers
         {
             _context = context;
         }
-
-        // Muestra la lista de todas las veterinarias
-        public async Task<IActionResult> Index(string busqueda)
+        public async Task<IActionResult> Index(string busqueda, int? page)
         {
+            ViewData["BusquedaActual"] = busqueda;
+            
             IQueryable<Servicio> query = _context.Servicios
                 .Where(s => s.Tipo == TipoServicio.Veterinaria)
                 .AsNoTracking();
@@ -27,21 +27,23 @@ namespace PetConnect.Controllers
             if (!string.IsNullOrEmpty(busqueda))
             {
                 query = query.Where(s => s.Nombre.Contains(busqueda));
-                ViewData["BusquedaActual"] = busqueda;
             }
+            
+            int pageSize = 6;
+            int pageNumber = (page ?? 1);
 
-            var veterinarias = await query.ToListAsync();
-            return View(veterinarias);
-        }
+            var veterinariasPaginadas = await query.ToPagedListAsync(pageNumber, pageSize);
 
-        // Muestra el detalle de una veterinaria específica
+            return View(veterinariasPaginadas);
+        }   
+
         public async Task<IActionResult> Detalle(int? id)
         {
             if (id == null) return NotFound();
 
             var veterinaria = await _context.Servicios
-                .Include(s => s.VeterinariaDetalle) // Carga los detalles
-                    .ThenInclude(vd => vd.Resenas) // Y luego carga las reseñas de esos detalles
+                .Include(s => s.VeterinariaDetalle) 
+                    .ThenInclude(vd => vd.Resenas) 
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id && s.Tipo == TipoServicio.Veterinaria);
 

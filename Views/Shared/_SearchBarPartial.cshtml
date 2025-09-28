@@ -1,0 +1,11 @@
+@* Views/Shared/_SearchBarPartial.cshtml *@
+@model string /* El modelo es el término de búsqueda actual para rellenar el input */
+
+<div class="search-bar-container">
+    <span class="material-symbols-outlined search-icon-input">search</span>
+    <input name="busqueda" type="text" placeholder="¿Qué estás buscando?" class="search-input" value="@Model" />
+    <button type="submit" class="search-button">
+        <span class="material-symbols-outlined">tune</span>
+        <span class="material-symbols-outlined">search</span>
+    </button>
+</div>

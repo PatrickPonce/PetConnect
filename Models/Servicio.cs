@@ -16,6 +16,8 @@ namespace PetConnect.Models
         public string ImagenPrincipalUrl { get; set; } = string.Empty;
         public string? FundacionNombre { get; set; }
 
+        public string DescripcionCorta { get; set; } = string.Empty; 
+
         public AdopcionDetalle? AdopcionDetalle { get; set; }
 
         public VeterinariaDetalle? VeterinariaDetalle { get; set; }

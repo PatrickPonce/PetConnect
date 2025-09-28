@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PetConnect.Models
 {
@@ -9,14 +10,12 @@ namespace PetConnect.Models
     {
 
         public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string DescripcionCorta { get; set; }
-        public string DescripcionLarga { get; set; } // Usaremos HTML aquí
-        public string UrlImagen { get; set; }
-        public string Direccion { get; set; }
-        public string Telefono { get; set; }
-        public string Horario { get; set; }
-        public List<Resena> Resenas { get; set; } = new List<Resena>();
+        public string Nombre { get; set; } = string.Empty;
+        public TipoServicio Tipo { get; set; }
+        public string ImagenPrincipalUrl { get; set; } = string.Empty;
+        public string? FundacionNombre { get; set; } 
+
+        public AdopcionDetalle? AdopcionDetalle { get; set; }
     
 
 

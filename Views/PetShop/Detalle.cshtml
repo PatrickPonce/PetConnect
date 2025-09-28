@@ -1,60 +1,43 @@
-<!-- Archivo: Views/PetShop/Detalle.cshtml -->
-@model Servicio
+@model PetConnect.Models.Servicio
 @{
     ViewData["Title"] = Model.Nombre;
+    var detalles = Model.PetShopDetalle;
 }
 
-<div class="main-content">
-    <div class="detalle-container">
-        <div class="detalle-header">
-            <h1 class="detalle-title">@Model.Nombre</h1>
-            <button class="favorite-button">
-                <span class="material-symbols-outlined">favorite_border</span>
-            </button>
+<div class="detalle-page">
+    <div class="detalle-header">
+        <h1>@Model.Nombre</h1>
+        <p>@detalles?.Direccion</p>
+    </div>
+
+    <div class="detalle-body">
+        <div class="detalle-main-content">
+            @if (detalles != null)
+            {
+                <div class="descripcion-section">
+                    @Html.Raw(detalles.DescripcionLarga)
+                </div>
+
+                <div class="info-section">
+                    <h3>Características</h3>
+                    <ul>
+                        <li><strong>Marcas Principales:</strong> @detalles.MarcasDestacadas</li>
+                        <li><strong>Categorías:</strong> @detalles.CategoriasProductos</li>
+                        <li><strong>Compra Online:</strong> @(detalles.OfreceCompraOnline ? "Sí" : "No")</li>
+                    </ul>
+                </div>
+            }
         </div>
 
-        <img src="@Model.UrlImagen" alt="@Model.Nombre" class="detalle-image" />
-
-        <div class="info-section">
+        <aside class="detalle-sidebar-contacto">
             <h3>Información de Contacto</h3>
-            <p><span class="material-symbols-outlined">location_on</span> <strong>Dirección:</strong> @Model.Direccion</p>
-            <p><span class="material-symbols-outlined">call</span> <strong>Teléfono:</strong> @Model.Telefono</p>
-            <p><span class="material-symbols-outlined">schedule</span> <strong>Horario:</strong> @Model.Horario</p>
-        </div>
-
-        <div class="description-section">
-            @Html.Raw(Model.DescripcionLarga)
-        </div>
-
-        <hr />
-
-        <div class="reviews-section">
-            <h3>Reseñas</h3>
-            @if (Model.Resenas.Any())
-            {
-                foreach (var resena in Model.Resenas)
+            <ul>
+                @if(!string.IsNullOrEmpty(detalles?.Telefono))
                 {
-                    <div class="review-item">
-                        <div class="review-header">
-                            <span class="review-author">@resena.Autor</span>
-                            <span class="review-rating">
-                                @for(int i = 0; i < resena.Puntuacion; i++) {
-                                    <span class="material-symbols-outlined filled-star">star</span>
-                                }
-                                @for(int i = resena.Puntuacion; i < 5; i++) {
-                                    <span class="material-symbols-outlined">star_outline</span>
-                                }
-                            </span>
-                        </div>
-                        <p class="review-text">@resena.Texto</p>
-                        <small class="review-date">@resena.FechaResena.ToString("dd MMM yyyy")</small>
-                    </div>
+                    <li><span class="material-symbols-outlined">call</span> @detalles.Telefono</li>
                 }
-            }
-            else
-            {
-                <p>Todavía no hay reseñas para este servicio.</p>
-            }
-        </div>
+                <li><span class="material-symbols-outlined">location_on</span> @detalles?.Direccion</li>
+            </ul>
+        </aside>
     </div>
 </div>

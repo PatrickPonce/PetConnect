@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PetConnect.Models
-{
+{   
+    [Table("servicios")]
     public class Servicio
     {
 
@@ -13,10 +14,10 @@ namespace PetConnect.Models
         public string Nombre { get; set; } = string.Empty;
         public TipoServicio Tipo { get; set; }
         public string ImagenPrincipalUrl { get; set; } = string.Empty;
-        public string? FundacionNombre { get; set; } 
+        public string? FundacionNombre { get; set; }
 
         public AdopcionDetalle? AdopcionDetalle { get; set; }
-    
+
 
 
     }

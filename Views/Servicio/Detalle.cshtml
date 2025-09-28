@@ -1,49 +1,58 @@
-<!-- Views/Servicio/Detalle.cshtml -->
-@model Servicio
+@model PetConnect.Models.Servicio
 @{
     ViewData["Title"] = Model.Nombre;
+    var detalles = Model.VeterinariaDetalle; // Alias para facilitar el acceso
 }
 
-<div class="main-content" style="max-width: 900px; margin: auto;">
-    <div style="background-color: #fff; padding: 30px; border-radius: 15px;">
-        <!-- Título y Botón de Favorito -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1 style="color: #8a7a7a;">@Model.Nombre</h1>
-            <button style="background-color: #f0d5d5; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; color: #e57373;">♥</button>
-        </div>
-        
-        <!-- Imagen Principal -->
-        <img src="@Model.UrlImagen" alt="@Model.Nombre" style="width: 100%; border-radius: 10px; margin-bottom: 20px;" />
+<div class="detalle-page">
+    <div class="detalle-header">
+        <h1>@Model.Nombre</h1>
+        <p>@detalles?.Direccion</p>
+    </div>
 
-        <!-- Info de Contacto -->
-        <div style="margin-bottom: 20px;">
-            <p><strong>Dirección:</strong> @Model.Direccion</p>
-            <p><strong>Teléfono:</strong> @Model.Telefono</p>
-            <p><strong>Horario:</strong> @Model.Horario</p>
-        </div>
-
-        <!-- Contenido HTML de la descripción larga -->
-        <div>
-            @Html.Raw(Model.DescripcionLarga)
-        </div>
-
-        <!-- Sección de Reseñas -->
-        <hr style="margin: 30px 0;" />
-        <h3>Reseñas</h3>
-        @if (Model.Resenas.Any())
-        {
-            foreach (var resena in Model.Resenas)
+    <div class="detalle-body">
+        <div class="detalle-main-content">
+            @if (detalles != null)
             {
-                <div style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
-                    <strong>@resena.Autor</strong> (@resena.Puntuacion/5 ★)
-                    <p style="margin: 5px 0 0 0;">@resena.Texto</p>
-                    <small style="color: #999;">@resena.FechaResena.ToString("dd MMM yyyy")</small>
+                <div class="descripcion-section">
+                    @Html.Raw(detalles.DescripcionLarga)
+                </div>
+                
+                <div class="resenas-section">
+                    <h3>Opiniones de Clientes</h3>
+                    @if (detalles.Resenas != null && detalles.Resenas.Any())
+                    {
+                        @foreach (var resena in detalles.Resenas)
+                        {
+                            <div class="resena-card">
+                                <div class="resena-puntuacion">
+                                    @for(int i = 0; i < resena.Puntuacion; i++) {
+                                        <span class="material-symbols-outlined filled">star</span>
+                                    }
+                                    @for(int i = resena.Puntuacion; i < 5; i++) {
+                                        <span class="material-symbols-outlined">star</span>
+                                    }
+                                </div>
+                                <p class="resena-texto">"@resena.Texto"</p>
+                                <span class="resena-autor">- @resena.Autor</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Aún no hay reseñas para este establecimiento.</p>
+                    }
                 </div>
             }
-        }
-        else
-        {
-            <p>Todavía no hay reseñas para este servicio.</p>
-        }
+        </div>
+
+        <aside class="detalle-sidebar-contacto">
+            <h3>Información de Contacto</h3>
+            <ul>
+                <li><span class="material-symbols-outlined">call</span> @detalles?.Telefono</li>
+                <li><span class="material-symbols-outlined">schedule</span> @detalles?.Horario</li>
+                <li><span class="material-symbols-outlined">location_on</span> @detalles?.Direccion</li>
+            </ul>
+        </aside>
     </div>
 </div>

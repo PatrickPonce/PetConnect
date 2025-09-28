@@ -18,7 +18,7 @@ namespace PetConnect.Models
 
         public AdopcionDetalle? AdopcionDetalle { get; set; }
 
-
+        public VeterinariaDetalle? VeterinariaDetalle { get; set; }
 
     }
 }

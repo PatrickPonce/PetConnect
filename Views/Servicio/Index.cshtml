@@ -6,7 +6,13 @@
 <div class="directorio-container">
     <h1 class="directorio-title">Encuentra la mejor veterinaria para tu mascota</h1>
     
-    @* Puedes añadir una sección de búsqueda aquí si lo deseas *@
+    <div class="search-bar-container">
+        <input type="text" placeholder="¿Qué estás buscando?" class="search-input"/>
+        <button class="search-button">
+            <span class="material-symbols-outlined">search</span>
+        </button>
+    </div>
+
 
     <div class="servicios-listado">
         @foreach (var servicio in Model)

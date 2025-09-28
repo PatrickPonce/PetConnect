@@ -16,6 +16,8 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Servicio> Servicios { get; set; }
     public DbSet<AdopcionDetalle> AdopcionDetalles { get; set; }
 
+    public DbSet<VeterinariaDetalle> VeterinariaDetalles { get; set; }
+    public DbSet<Resena> Resenas { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -24,6 +26,16 @@ public class ApplicationDbContext : IdentityDbContext
             .HasOne(s => s.AdopcionDetalle)
             .WithOne(ad => ad.Servicio)
             .HasForeignKey<AdopcionDetalle>(ad => ad.ServicioId);
+
+        modelBuilder.Entity<Servicio>()
+            .HasOne(s => s.VeterinariaDetalle)
+            .WithOne(vd => vd.Servicio)
+            .HasForeignKey<VeterinariaDetalle>(vd => vd.ServicioId);
+        
+        modelBuilder.Entity<VeterinariaDetalle>()
+            .HasMany(vd => vd.Resenas)
+            .WithOne(r => r.VeterinariaDetalle)
+            .HasForeignKey(r => r.VeterinariaDetalleId);
 
     }
 }

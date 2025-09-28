@@ -9,42 +9,113 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    overflow-x: hidden;
+}
+:root {
+    --nav-bg-color: #97a992;      /* Verde olivo */
+    --nav-text-color: #f3d9d7;   /* Rosa pálido del texto */
+    --nav-icon-color: #5c5c5c;     /* Gris oscuro para los iconos */
+    --nav-highlight-color: #ffffff; /* Blanco para el hover/activo */
 }
 
-/* ==================================== */
-/* Navbar y Layout                      */
-/* ==================================== */
-.navbar {
-    background-color: #f7e6e3;
+/* --- Estructura Principal del Header (tu clase .app-header) --- */
+.app-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 50px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    background-color: var(--nav-bg-color);
+    padding: 15px 10px;
+    width: 100%;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    
 }
-.navbar-logo {
-    width: 50px;
-}
-.navbar-links {
+
+/* --- Sección del Logo y Nombre --- */
+.logo-container {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
 }
-.navbar-links a {
-    color: #8a7a7a;
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background-color: #fdfaf1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-icon img {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--nav-text-color);
+}
+
+/* --- Navegación Principal (tu clase .main-nav) --- */
+.main-nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none; /* Quita los puntos negros */
+    display: flex;    /* ¡LA CLAVE PARA EL DISEÑO HORIZONTAL! */
+    gap: 20px; 
+}
+
+.main-nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
     text-decoration: none;
-    font-weight: bold;
-    padding: 8px 15px;
-    border-radius: 20px;
-    transition: background-color 0.3s;
+    color: var(--nav-text-color);
+    font-size: 18px;
+    font-weight: 500;
+    position: relative; /* Necesario para la animación */
+    transition: color 0.3s ease;
 }
-.navbar-links a:hover {
-    background-color: #f0d5d5;
+
+.main-nav a .material-symbols-outlined {
+    color: var(--nav-icon-color);
+    transition: color 0.3s ease;
 }
-.icon-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+
+/* --- EL EFECTO DE SUBRAYADO QUE TE GUSTABA --- */
+.main-nav a::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--nav-highlight-color);
+    transform: scaleX(0); /* Oculto por defecto */
+    transform-origin: bottom right;
+    transition: transform 0.3s ease-out;
+}
+
+/* --- Efectos al pasar el ratón (hover) y en la opción activa --- */
+.main-nav a:hover,
+.main-nav a.active {
+    color: var(--nav-highlight-color);
+}
+
+.main-nav a:hover .material-symbols-outlined,
+.main-nav a.active .material-symbols-outlined {
+    color: var(--nav-highlight-color);
+}
+
+.main-nav a:hover::after,
+.main-nav a.active::after {
+    transform: scaleX(1); /* Muestra el subrayado */
+    transform-origin: bottom left;
 }
 
 /* Contenido Principal para páginas con Layout */

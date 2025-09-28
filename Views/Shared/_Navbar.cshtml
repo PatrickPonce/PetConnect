@@ -11,12 +11,19 @@
     <nav class="main-nav">
         <ul>
             <li>
-                <a asp-controller="Noticias" asp-action="Index" class="active">
+                <a asp-controller="#" asp-action="Index"> @* He quitado la clase 'active' de aquí para que se gestione dinámicamente *@
+                    <span class="material-symbols-outlined">newspaper</span>
+                    <span class="nav-text">Inicio</span>
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Noticias" asp-action="Index"> @* He quitado la clase 'active' de aquí para que se gestione dinámicamente *@
                     <span class="material-symbols-outlined">newspaper</span>
                     <span class="nav-text">Noticias</span>
                 </a>
             </li>
             <li>
+                @* Este enlace apunta a la página principal de categorías de servicios *@
                 <a asp-controller="Directorio" asp-action="Index">
                     <span class="material-symbols-outlined">volunteer_activism</span>
                     <span class="nav-text">Servicios</span>
@@ -28,7 +35,6 @@
                     <span class="nav-text">Favoritos</span>
                 </a>
             </li>
-            @* --- Línea corregida --- *@
             <li>
                 <a asp-area="Identity" asp-page="/Account/Login">
                     <span class="material-symbols-outlined">login</span>

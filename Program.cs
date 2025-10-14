@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using PetConnect.Data;
+using System; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,30 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// -------------------------------------------------------------
+// ⭐️ SEEDING (Inicialización de Datos)
+// -------------------------------------------------------------
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // 1. Obtener el contexto de la base de datos
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        
+        // 2. Ejecutar la inicialización de datos (inserta Noticias y Comentarios)
+        DbInitializer.Initialize(context); 
+    }
+    catch (Exception ex)
+    {
+        // 3. Si ocurre un error, loguearlo y continuar
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error al sembrar la base de datos.");
+    }
+}
+// -------------------------------------------------------------
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -44,6 +69,6 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapRazorPages()
-   .WithStaticAssets();
+    .WithStaticAssets();
 
 app.Run();

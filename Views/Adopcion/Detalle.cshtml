@@ -1,0 +1,69 @@
+@model PetConnect.Models.Servicio
+@{
+    ViewData["Title"] = Model.Nombre;
+    var detalles = Model.AdopcionDetalle;
+}
+
+<div class="detalle-page">
+    <div class="detalle-header">
+        <div class="detalle-logo">
+            <img src="@Model.ImagenPrincipalUrl" alt="Logo de @Model.Nombre" />
+        </div>
+        <div class="detalle-title-group">
+            <h1>@Model.Nombre</h1>
+            <div class="detalle-rating">
+                <span class="material-symbols-outlined filled">star</span>
+                <span class="material-symbols-outlined filled">star</span>
+                <span class="material-symbols-outlined filled">star</span>
+                <span class="material-symbols-outlined filled">star</span>
+                <span class="material-symbols-outlined">star</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="detalle-nav-tabs">
+        <button class="tab-btn active"><span class="material-symbols-outlined">description</span> Descripción</button>
+        <button class="tab-btn"><span class="material-symbols-outlined">gallery_thumbnail</span> Galería</button>
+        <button class="tab-btn"><span class="material-symbols-outlined">location_on</span> Ubicación</button>
+        <button class="tab-btn"><span class="material-symbols-outlined">comment</span> Comentarios</button>
+    </div>
+
+    <div class="detalle-body">
+        <div class="detalle-main-content">
+            <div class="descripcion-section">
+                @Html.Raw(detalles?.DescripcionLarga.Replace("\n", "<br />"))
+            </div>
+
+            @if (!string.IsNullOrEmpty(detalles?.VideoUrl))
+            {
+                <div class="video-section">
+                    <iframe width="560" height="315" src="@detalles.VideoUrl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            }
+        </div>
+
+        <aside class="detalle-sidebar-contacto">
+            <h3>Contacto</h3>
+            <ul>
+                @if (!string.IsNullOrEmpty(detalles?.Telefono))
+                {
+                    <li><span class="material-symbols-outlined">call</span> @detalles.Telefono</li>
+                }
+                @if (!string.IsNullOrEmpty(detalles?.FacebookUrl))
+                {
+                    <li><a href="@detalles.FacebookUrl" target="_blank"><span class="material-symbols-outlined">facebook</span> Facebook</a></li>
+                }
+                @if (!string.IsNullOrEmpty(detalles?.InstagramUrl))
+                {
+                    <li><a href="@detalles.InstagramUrl" target="_blank"><i>(Icono de Insta)</i> Instagram</a></li>
+                }
+                @if (!string.IsNullOrEmpty(detalles?.Direccion))
+                {
+                    <li><span class="material-symbols-outlined">location_on</span> @detalles.Direccion</li>
+                }
+            </ul>
+        </aside>
+    </div>
+</div>
+
+@* Agrega este CSS al final de tu site.css *@

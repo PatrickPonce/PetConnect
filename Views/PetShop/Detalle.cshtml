@@ -1,0 +1,43 @@
+@model PetConnect.Models.Servicio
+@{
+    ViewData["Title"] = Model.Nombre;
+    var detalles = Model.PetShopDetalle;
+}
+
+<div class="detalle-page">
+    <div class="detalle-header">
+        <h1>@Model.Nombre</h1>
+        <p>@detalles?.Direccion</p>
+    </div>
+
+    <div class="detalle-body">
+        <div class="detalle-main-content">
+            @if (detalles != null)
+            {
+                <div class="descripcion-section">
+                    @Html.Raw(detalles.DescripcionLarga)
+                </div>
+
+                <div class="info-section">
+                    <h3>Características</h3>
+                    <ul>
+                        <li><strong>Marcas Principales:</strong> @detalles.MarcasDestacadas</li>
+                        <li><strong>Categorías:</strong> @detalles.CategoriasProductos</li>
+                        <li><strong>Compra Online:</strong> @(detalles.OfreceCompraOnline ? "Sí" : "No")</li>
+                    </ul>
+                </div>
+            }
+        </div>
+
+        <aside class="detalle-sidebar-contacto">
+            <h3>Información de Contacto</h3>
+            <ul>
+                @if(!string.IsNullOrEmpty(detalles?.Telefono))
+                {
+                    <li><span class="material-symbols-outlined">call</span> @detalles.Telefono</li>
+                }
+                <li><span class="material-symbols-outlined">location_on</span> @detalles?.Direccion</li>
+            </ul>
+        </aside>
+    </div>
+</div>

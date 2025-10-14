@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -11,9 +12,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250927232052_sergio")]
+    partial class sergio
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,45 +225,6 @@ namespace PetConnect.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("PetConnect.Models.AdopcionDetalle", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DescripcionLarga")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Direccion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FacebookUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InstagramUrl")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ServicioId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Telefono")
-                        .HasColumnType("text");
-
-                    b.Property<string>("VideoUrl")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServicioId")
-                        .IsUnique();
-
-                    b.ToTable("adopcion_detalles");
-                });
-
             modelBuilder.Entity("PetConnect.Models.Comentario", b =>
                 {
                     b.Property<int>("Id")
@@ -318,148 +282,6 @@ namespace PetConnect.Migrations
                     b.ToTable("Noticias");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.PetShopDetalle", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CategoriasProductos")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DescripcionLarga")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Direccion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("MarcasDestacadas")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("OfreceCompraOnline")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("ServicioId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Telefono")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServicioId")
-                        .IsUnique();
-
-                    b.ToTable("petshop_detalles");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.Resena", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Autor")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaResena")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Puntuacion")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Texto")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("VeterinariaDetalleId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VeterinariaDetalleId");
-
-                    b.ToTable("resenas");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.Servicio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DescripcionCorta")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FundacionNombre")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImagenPrincipalUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Tipo")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("servicios");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.VeterinariaDetalle", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DescripcionLarga")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Direccion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FacebookUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Horario")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ServicioId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Telefono")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TelefonoSecundario")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServicioId")
-                        .IsUnique();
-
-                    b.ToTable("veterinaria_detalles");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -511,17 +333,6 @@ namespace PetConnect.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PetConnect.Models.AdopcionDetalle", b =>
-                {
-                    b.HasOne("PetConnect.Models.Servicio", "Servicio")
-                        .WithOne("AdopcionDetalle")
-                        .HasForeignKey("PetConnect.Models.AdopcionDetalle", "ServicioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Servicio");
-                });
-
             modelBuilder.Entity("PetConnect.Models.Comentario", b =>
                 {
                     b.HasOne("PetConnect.Models.Noticia", "Noticia")
@@ -533,56 +344,9 @@ namespace PetConnect.Migrations
                     b.Navigation("Noticia");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.PetShopDetalle", b =>
-                {
-                    b.HasOne("PetConnect.Models.Servicio", "Servicio")
-                        .WithOne("PetShopDetalle")
-                        .HasForeignKey("PetConnect.Models.PetShopDetalle", "ServicioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Servicio");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.Resena", b =>
-                {
-                    b.HasOne("PetConnect.Models.VeterinariaDetalle", "VeterinariaDetalle")
-                        .WithMany("Resenas")
-                        .HasForeignKey("VeterinariaDetalleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("VeterinariaDetalle");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.VeterinariaDetalle", b =>
-                {
-                    b.HasOne("PetConnect.Models.Servicio", "Servicio")
-                        .WithOne("VeterinariaDetalle")
-                        .HasForeignKey("PetConnect.Models.VeterinariaDetalle", "ServicioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Servicio");
-                });
-
             modelBuilder.Entity("PetConnect.Models.Noticia", b =>
                 {
                     b.Navigation("Comentarios");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.Servicio", b =>
-                {
-                    b.Navigation("AdopcionDetalle");
-
-                    b.Navigation("PetShopDetalle");
-
-                    b.Navigation("VeterinariaDetalle");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.VeterinariaDetalle", b =>
-                {
-                    b.Navigation("Resenas");
                 });
 #pragma warning restore 612, 618
         }

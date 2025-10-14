@@ -7,18 +7,24 @@
         </div>
         <span class="logo-text">Purr & Paws</span>
     </div>
-    
+
     <nav class="main-nav">
         <ul>
             <li>
-                @* El "asp-action" y "asp-controller" son la forma correcta en .NET de crear enlaces *@
-                <a asp-controller="Noticias" asp-action="Index" class="active">
+                <a asp-controller="Home" asp-action="Guest"> @* He quitado la clase 'active' de aquí para que se gestione dinámicamente *@
+                    <span class="material-symbols-outlined">home</span>
+                    <span class="nav-text">Inicio</span>
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Noticias" asp-action="Index"> @* He quitado la clase 'active' de aquí para que se gestione dinámicamente *@
                     <span class="material-symbols-outlined">newspaper</span>
                     <span class="nav-text">Noticias</span>
                 </a>
             </li>
             <li>
-                <a asp-controller="Services" asp-action="Index">
+                @* Este enlace apunta a la página principal de categorías de servicios *@
+                <a asp-controller="Directorio" asp-action="Index">
                     <span class="material-symbols-outlined">volunteer_activism</span>
                     <span class="nav-text">Servicios</span>
                 </a>
@@ -30,11 +36,11 @@
                 </a>
             </li>
             <li>
-                <a asp-controller="Account" asp-action="Login">
+                <a asp-area="Identity" asp-page="/Account/Login">
                     <span class="material-symbols-outlined">login</span>
                     <span class="nav-text">Iniciar Sesión</span>
                 </a>
-            </li>
-        </ul>
-    </nav>
+             </li>
+         </ul>
+     </nav>
 </header>

@@ -1,0 +1,58 @@
+@model PetConnect.Models.Servicio
+@{
+    ViewData["Title"] = Model.Nombre;
+    var detalles = Model.VeterinariaDetalle; // Alias para facilitar el acceso
+}
+
+<div class="detalle-page">
+    <div class="detalle-header">
+        <h1>@Model.Nombre</h1>
+        <p>@detalles?.Direccion</p>
+    </div>
+
+    <div class="detalle-body">
+        <div class="detalle-main-content">
+            @if (detalles != null)
+            {
+                <div class="descripcion-section">
+                    @Html.Raw(detalles.DescripcionLarga)
+                </div>
+                
+                <div class="resenas-section">
+                    <h3>Opiniones de Clientes</h3>
+                    @if (detalles.Resenas != null && detalles.Resenas.Any())
+                    {
+                        @foreach (var resena in detalles.Resenas)
+                        {
+                            <div class="resena-card">
+                                <div class="resena-puntuacion">
+                                    @for(int i = 0; i < resena.Puntuacion; i++) {
+                                        <span class="material-symbols-outlined filled">star</span>
+                                    }
+                                    @for(int i = resena.Puntuacion; i < 5; i++) {
+                                        <span class="material-symbols-outlined">star</span>
+                                    }
+                                </div>
+                                <p class="resena-texto">"@resena.Texto"</p>
+                                <span class="resena-autor">- @resena.Autor</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Aún no hay reseñas para este establecimiento.</p>
+                    }
+                </div>
+            }
+        </div>
+
+        <aside class="detalle-sidebar-contacto">
+            <h3>Información de Contacto</h3>
+            <ul>
+                <li><span class="material-symbols-outlined">call</span> @detalles?.Telefono</li>
+                <li><span class="material-symbols-outlined">schedule</span> @detalles?.Horario</li>
+                <li><span class="material-symbols-outlined">location_on</span> @detalles?.Direccion</li>
+            </ul>
+        </aside>
+    </div>
+</div>

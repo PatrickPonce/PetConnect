@@ -1,0 +1,31 @@
+@model List<PetConnect.Models.Servicio>
+@{
+    ViewData["Title"] = "Pet Shops";
+}
+
+<div class="main-content directorio-page">
+    <h1 class="directorio-title">Pet Shops</h1>
+
+    <div class="search-bar-container">
+        <form asp-controller="PetShop" asp-action="Index" method="get">
+            <input name="busqueda" type="text" placeholder="Buscar en pet shops..." class="search-input" value="@ViewData["BusquedaActual"]" />
+            <button type="submit" class="search-button">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+        </form>
+    </div>
+
+    <div class="service-cards-container">
+        @foreach (var servicio in Model)
+        {
+            <div class="service-card">
+                <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="@servicio.Nombre" class="card-img-top" />
+                <div class="card-body">
+                    <h5 class="card-title">@servicio.Nombre</h5>
+                    <p class="card-text">@servicio.DescripcionCorta</p>
+                    <a asp-controller="PetShop" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn btn-primary">Ver Detalles</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

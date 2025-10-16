@@ -1,7 +1,73 @@
-// Views/Configuracion/Index.cshtml
+@using System.Collections.Generic
 @{
     ViewData["Title"] = "Configuración del Sitio";
+    var configuraciones = ViewBag.Configuraciones as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var nombreSitio = configuraciones.GetValueOrDefault("NombreSitio", "Purr & Paws");
+    var urlLogo = configuraciones.GetValueOrDefault("UrlLogo", "/images/logoP.png");
+    var urlBanner = configuraciones.GetValueOrDefault("UrlBanner", "/images/veterinaria_banner.jpg");
 }
 
-<h1>Configuración General de la Página</h1>
-<p>Aquí construiremos nuestro panel.</p>
+<style>
+    .config-panel { max-width: 900px; margin: 40px auto; }
+    .config-title { text-align: center; color: #E88989; font-weight: bold; margin-bottom: 40px; }
+    .config-section { background-color: #FFF; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .config-section h4 { font-weight: 600; color: #333; margin-bottom: 20px; }
+    .image-preview-container { display: flex; align-items: center; gap: 30px; }
+    .image-preview { border: 2px dashed #ddd; border-radius: 10px; padding: 10px; text-align: center; }
+    .image-preview img { max-width: 150px; max-height: 150px; object-fit: contain; }
+    .image-preview.banner img { max-width: 100%; }
+    .form-group label { font-weight: 500; }
+    .btn-save { background-color: #97a992; color: white; font-weight: bold; padding: 10px 25px; border-radius: 8px; }
+</style>
+
+<div class="config-panel">
+    <h1 class="config-title">Configuración General de la Página</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <form asp-action="Guardar" method="post" enctype="multipart/form-data">
+
+        <div class="config-section">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4>Logo y Banner</h4>
+                    <div class="form-group mb-3">
+                        <label for="logo" class="form-label">Cambiar Logo</label>
+                        <input type="file" name="logo" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="banner" class="form-label">Cambiar Banner (Página principal)</label>
+                        <input type="file" name="banner" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="image-preview-container">
+                        <div class="image-preview">
+                            <label>Logo Actual</label>
+                            <img src="@urlLogo" alt="Logo actual" />
+                        </div>
+                        <div class="image-preview banner flex-grow-1">
+                             <label>Banner Actual</label>
+                            <img src="@urlBanner" alt="Banner actual" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h4>Datos Generales</h4>
+            <div class="form-group">
+                <label for="nombreSitio" class="form-label">Nombre del Sitio</label>
+                <input type="text" name="nombreSitio" class="form-control" value="@nombreSitio" />
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-save">Guardar Cambios</button>
+        </div>
+    </form>
+</div>

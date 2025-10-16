@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class ConfiguracionController : Controller
 {
     private readonly ApplicationDbContext _context;

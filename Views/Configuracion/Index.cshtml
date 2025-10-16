@@ -1,5 +1,6 @@
 @using System.Collections.Generic
 @{
+    Layout = "_AdminLayout";
     ViewData["Title"] = "Configuración del Sitio";
     var configuraciones = ViewBag.Configuraciones as Dictionary<string, string> ?? new Dictionary<string, string>();
     var nombreSitio = configuraciones.GetValueOrDefault("NombreSitio", "Purr & Paws");

@@ -24,7 +24,8 @@ namespace PetConnect.Data
                 {
                     Titulo = "Gato persa: El rey de la elegancia felina",
                     UrlImagen = "https://gatos.plus/wp-content/uploads/2020/05/gato-persa.jpg",
-                    FechaPublicacion = new DateTime(2025, 8, 21),
+                    // ⬅️ CORRECCIÓN: Fechas estáticas convertidas a UTC
+                    FechaPublicacion = new DateTime(2025, 8, 21, 0, 0, 0, DateTimeKind.Utc), 
                     Contenido = @"
                         <p>El gato persa es, sin duda, uno de los gatos más emblemáticos y queridos del mundo. 
                         Su presencia imponente, su carácter sereno y su lujoso pelaje lo convierten en un compañero ideal para quienes buscan ternura, sofisticación y elegancia.</p>
@@ -59,7 +60,8 @@ namespace PetConnect.Data
                 {
                     Titulo = "¿Por qué los gatos duermen mucho?",
                     UrlImagen = "https://www.muyinteresante.com/wp-content/uploads/sites/5/2022/10/12/634616ee6f89a.jpeg",
-                    FechaPublicacion = new DateTime(2025, 8, 26),
+                    // ⬅️ CORRECCIÓN: Fechas estáticas convertidas a UTC
+                    FechaPublicacion = new DateTime(2025, 8, 26, 0, 0, 0, DateTimeKind.Utc), 
                     Contenido = @"
                         <h2>El ciclo felino del sueño</h2>
                         <p>Los gatos suelen dormir entre 12 y 16 horas al día, y algunos incluso llegan hasta las 20 horas. Sí, ¡prácticamente dos tercios de su vida la pasan durmiendo! Esta tendencia tiene raíces evolutivas: en la naturaleza, los felinos son depredadores que necesitan conservar energía para cazar.</p>
@@ -72,14 +74,7 @@ namespace PetConnect.Data
                             <li><strong>Rutina del hogar:</strong> Ajustan sus horarios a los tuyos.</li>
                         </ul>
                         <h2>¿Dormilón o enfermo?</h2>
-                        <p>Aunque los gatos duerman mucho, el exceso de sueño puede ser una señal de alerta si va acompañado de:</p> 
-                        <ul> 
-                            <li>Menos interés en jugar.</li> 
-                            <li>Cambios en el apetito.</li> 
-                            <li>Dificultad para moverse.</li> 
-                            <li>Escondites prolongados.</li> 
-                        </ul> 
-                        <p>En estos casos, la recomendación es clara: consulta al veterinario lo antes posible.</p> 
+                        <p>Aunque los gatos duerman mucho, el exceso de sueño puede ser una señal de alerta si va acompañado de otros cambios. En estos casos, la recomendación es clara: consulta al veterinario lo antes posible.</p> 
                         <h2>Tu gato y el arte de dormir sobre ti</h2>
                         <p>Lo hacen porque buscan calor, seguridad y vínculo emocional. Si tu gato duerme sobre ti, considéralo un halago: eres su lugar favorito en el mundo.</p>
                         <p>La próxima vez que veas a tu gato dormir por quinta vez en el día, no te preocupes demasiado. Está recargando baterías para la gran misión que lo espera: ser adorable y conquistar tu corazón.</p>
@@ -90,11 +85,12 @@ namespace PetConnect.Data
                 {
                     Titulo = "¡Perros surfeando olas! El evento más adorable",
                     UrlImagen = "https://elbocon.pe/resizer/T-z98vZkTNeF7bkusKA3dSpFg6I=/980x0/smart/filters:format(jpeg):quality(75)/arc-anglerfish-arc2-prod-elcomercio.s3.amazonaws.com/public/FG3WVTPYP5BYJFYCG7QCBVAJYA.jpg",
-                    FechaPublicacion = new DateTime(2025, 8, 28),
+                    // ⬅️ CORRECCIÓN: Fechas estáticas convertidas a UTC
+                    FechaPublicacion = new DateTime(2025, 8, 28, 0, 0, 0, DateTimeKind.Utc), 
                     Contenido = @"
                         <p>Las olas comienzan a formarse en el horizonte, y de repente, una tabla corta el agua con destreza. ¿El protagonista? No es un surfista profesional, sino un atleta de cuatro patas. Así se vive cada verano en California y otros rincones del planeta, donde los perros surfistas se han convertido en la sensación de un deporte único que mezcla diversión, ternura y solidaridad.</p>
                         <h2>Una ola que conquista el mundo</h2>
-                        <p>Los campeonatos de surf canino no solo se celebran en California. En el Reino Unido, el <strong>Dog Surfing Championship</strong> organizado por Shaka Surf tuvo la mayor cantidad de perros surfeando en una misma ola y la carrera más rápida de paddleboard humano-perro en 50 metros. Aunque nació en San Diego hace más de una década, el surf para perros ya ha llegado a Florida, Australia y el Reino Unido, convirtiéndose en una tendencia internacional.</p>
+                        <p>Los campeonatos de surf canino no solo se celebran en California. En el Reino Unido, el <strong>Dog Surfing Championship</strong> tuvo la mayor cantidad de perros surfeando en una misma ola y la carrera más rápida de paddleboard humano-perro en 50 metros. Aunque nació en San Diego hace más de una década, el surf para perros ya ha llegado a Florida, Australia y el Reino Unido, convirtiéndose en una tendencia internacional.</p>
                         <p>En estas competencias participan perros de todas las razas y tamaños: desde pequeños chihuahuas hasta imponentes golden retrievers. Lo más valioso es el vínculo entre los dueños y sus mascotas, que entrenan juntos y disfrutan cada momento dentro y fuera del agua.</p>
                         <h2>Surf canino: una experiencia que debes vivir</h2>
                         <p>Más allá del espectáculo, el campeonato mundial de surf canino tiene un objetivo solidario. <strong>Parte de los ingresos recaudados se destinan a asociaciones de bienestar animal</strong>, apoyando a refugios y programas comunitarios. Este espíritu benéfico hace que cada ola surfeada tenga un doble valor: diversión para el público y ayuda concreta para cientos de animales necesitados.</p>
@@ -104,7 +100,7 @@ namespace PetConnect.Data
             };
 
             context.Noticias.AddRange(noticiasIniciales);
-            context.SaveChanges(); // 3. Guardamos las noticias para generar sus IDs en la BD.
+            context.SaveChanges(); 
 
             // 4. Agregar los comentarios a la primera noticia usando el ID generado.
             var noticiaGatoPersa = context.Noticias.FirstOrDefault(n => n.Titulo.Contains("Gato persa"));
@@ -113,8 +109,9 @@ namespace PetConnect.Data
             {
                 var comentariosIniciales = new List<Comentario>
                 {
-                    new Comentario { Autor = "David Gor", Texto = "Holaa", FechaComentario = DateTime.Now.AddMinutes(-5), NoticiaId = noticiaGatoPersa.Id },
-                    new Comentario { Autor = "David Gor", Texto = "Los gatos persa son muy bonitos >.<", FechaComentario = DateTime.Now.AddMinutes(-2), NoticiaId = noticiaGatoPersa.Id }
+                    // ⬅️ CORRECCIÓN: Fechas dinámicas convertidas a UTC
+                    new Comentario { Autor = "David Gor", Texto = "Holaa", FechaComentario = DateTime.UtcNow.AddMinutes(-5), NoticiaId = noticiaGatoPersa.Id },
+                    new Comentario { Autor = "David Gor", Texto = "Los gatos persa son muy bonitos >.<", FechaComentario = DateTime.UtcNow.AddMinutes(-2), NoticiaId = noticiaGatoPersa.Id }
                 };
                 context.Comentarios.AddRange(comentariosIniciales);
                 context.SaveChanges();

@@ -6,13 +6,15 @@
 
 @{
     var logoUrl = await configService.ObtenerValorAsync("UrlLogo", "/images/logoP.png");
+    var logoVersion = await configService.ObtenerValorAsync("UrlLogoVersion", "1");
+    var logoUrlConVersion = $"{logoUrl}?v={logoVersion}";
     var nombreSitio = await configService.ObtenerValorAsync("NombreSitio", "Purr & Paws");
 }
 
 <header class="app-header">
     <div class="logo-container">
         <div class="logo-icon">
-            <img src="@logoUrl" alt="@nombreSitio Logo">
+            <img src="@logoUrlConVersion" alt="@nombreSitio Logo">
         </div>
         <span class="logo-text">@nombreSitio</span>
     </div>

@@ -35,12 +35,14 @@ public class ConfiguracionController : Controller
         {
             string urlLogo = await GuardarImagen(logo, "logo");
             await GuardarConfiguracion("UrlLogo", urlLogo);
+            await GuardarConfiguracion("UrlLogoVersion", DateTime.Now.Ticks.ToString());
         }
 
         if (banner != null && banner.Length > 0)
         {
             string urlBanner = await GuardarImagen(banner, "banner");
             await GuardarConfiguracion("UrlBanner", urlBanner);
+            await GuardarConfiguracion("UrlBannerVersion", DateTime.Now.Ticks.ToString());
         }
 
         await _context.SaveChangesAsync();

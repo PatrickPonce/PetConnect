@@ -7,6 +7,8 @@
 
 @{
     var logoUrl = await configService.ObtenerValorAsync("UrlLogo", "/images/logoP.png");
+    var logoVersion = await configService.ObtenerValorAsync("UrlLogoVersion", "1");
+    var logoUrlConVersion = $"{logoUrl}?v={logoVersion}";
     var nombreSitio = await configService.ObtenerValorAsync("NombreSitio", "Purr & Paws");
 }
 
@@ -35,7 +37,7 @@
 <body>
     <header class="admin-header">
         <div class="admin-logo-container">
-            <div class="admin-logo-icon"><img src="@logoUrl" alt="Logo"></div>
+            <div class="admin-logo-icon"><img src="@logoUrlConVersion" alt="Logo"></div>
             <span>@nombreSitio</span>
         </div>
         <nav class="admin-nav">

@@ -20,6 +20,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.Sign
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddScoped<PetConnect.Services.ConfiguracionSitioService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

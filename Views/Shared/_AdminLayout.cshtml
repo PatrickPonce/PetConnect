@@ -1,26 +1,42 @@
+@using Microsoft.AspNetCore.Identity
+@using PetConnect.Services
+
+@inject ConfiguracionSitioService configService
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    var logoUrl = await configService.ObtenerValorAsync("UrlLogo", "/images/logoP.png");
+    var nombreSitio = await configService.ObtenerValorAsync("NombreSitio", "Purr & Paws");
+}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-t" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Panel Admin</title>
+    <link rel="icon" href="@logoUrl" type="image/png" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <style>
         body { background-color: #fdfaf1; }
-        .admin-header { display: flex; align-items: center; gap: 30px; padding: 15px 25px; background-color: #97a992; color: #f3d9d7; font-family: 'Poppins', sans-serif; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background-color: #97a992; color: #f3d9d7; font-family: 'Poppins', sans-serif; }
         .admin-logo-container { display: flex; align-items: center; gap: 10px; }
         .admin-logo-icon { width: 35px; height: 35px; background-color: white; border-radius: 50%; padding: 5px; }
-        .admin-logo-icon img { width: 100%; }
+        .admin-logo-icon img { width: 100%; height: auto; }
+        .admin-nav { display: flex; align-items: center; gap: 20px; }
         .admin-nav a { color: #f3d9d7; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+        .admin-user-section { display: flex; align-items: center; gap: 15px; }
+        .admin-user-section form button { background: none; border: none; color: #f3d9d7; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; padding: 0; font-family: 'Poppins', sans-serif; }
     </style>
 </head>
 <body>
     <header class="admin-header">
         <div class="admin-logo-container">
-            <div class="admin-logo-icon"><img src="/images/logoP.png" alt="Logo"></div>
-            <span>Purr & Paws</span>
+            <div class="admin-logo-icon"><img src="@logoUrl" alt="Logo"></div>
+            <span>@nombreSitio</span>
         </div>
         <nav class="admin-nav">
             <a asp-controller="NoticiasAdmin" asp-action="Index">Noticias</a>
@@ -28,12 +44,20 @@
             <a asp-controller="DirectorioAdmin" asp-action="Index">Directorio</a>
             <a asp-controller="Configuracion" asp-action="Index">Configuración</a>
         </nav>
+        <div class="admin-user-section">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <span>Hola, @User.Identity?.Name!</span>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+                    <button type="submit"><span class="material-symbols-outlined">logout</span>Cerrar Sesión</button>
+                </form>
+            }
+        </div>
     </header>
 
     <main role="main" class="container mt-4">
         @RenderBody()
     </main>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

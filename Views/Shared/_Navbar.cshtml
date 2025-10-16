@@ -39,6 +39,7 @@
                     <span class="nav-text">Servicios</span>
                 </a>
             </li>
+
             @if (SignInManager.IsSignedIn(User))
             {
                 <li>
@@ -48,11 +49,11 @@
                     </a>
                 </li>
                 <li>
-                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
-                         <a href="#" onclick="$(this).closest('form').submit(); return false;">
-                             <span class="material-symbols-outlined">logout</span>
-                             <span class="nav-text">Cerrar Sesión</span>
-                         </a>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+                        <button type="submit" class="nav-link-button">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span class="nav-text">Cerrar Sesión</span>
+                        </button>
                     </form>
                 </li>
             }

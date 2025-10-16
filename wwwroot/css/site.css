@@ -88,7 +88,16 @@ body {
 }
 
 /* --- EL EFECTO DE SUBRAYADO QUE TE GUSTABA --- */
-.main-nav a::after {
+/* Aplicamos la base y la transición a los enlaces Y al botón */
+.main-nav a,
+.nav-link-button {
+    position: relative; /* Necesario para la animación */
+    transition: color 0.3s ease;
+}
+
+/* Creamos la línea de subrayado oculta para ambos */
+.main-nav a::after,
+.nav-link-button::after {
     content: '';
     position: absolute;
     width: 100%;
@@ -102,9 +111,19 @@ body {
 }
 
 /* --- Efectos al pasar el ratón (hover) y en la opción activa --- */
+/* Cambiamos el color del texto para ambos al pasar el cursor */
 .main-nav a:hover,
-.main-nav a.active {
+.main-nav a.active,
+.nav-link-button:hover {
     color: var(--nav-highlight-color);
+}
+
+/* Mostramos la línea para ambos al pasar el cursor */
+.main-nav a:hover::after,
+.main-nav a.active::after,
+.nav-link-button:hover::after {
+    transform: scaleX(1); /* Muestra el subrayado */
+    transform-origin: bottom left;
 }
 
 .main-nav a:hover .material-symbols-outlined,

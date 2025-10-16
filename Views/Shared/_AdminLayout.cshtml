@@ -18,7 +18,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Panel Admin</title>
-    <link rel="icon" href="@logoUrl" type="image/png" />
+    <link rel="icon" href="@logoUrlConVersion" type="image/png" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -28,10 +28,62 @@
         .admin-logo-container { display: flex; align-items: center; gap: 10px; }
         .admin-logo-icon { width: 35px; height: 35px; background-color: white; border-radius: 50%; padding: 5px; }
         .admin-logo-icon img { width: 100%; height: auto; }
-        .admin-nav { display: flex; align-items: center; gap: 20px; }
-        .admin-nav a { color: #f3d9d7; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+        .admin-nav { display: flex; align-items: center; gap: 30px; }
         .admin-user-section { display: flex; align-items: center; gap: 15px; }
-        .admin-user-section form button { background: none; border: none; color: #f3d9d7; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; padding: 0; font-family: 'Poppins', sans-serif; }
+
+        /* ===== INICIO: ESTILOS CORREGIDOS PARA EL EFECTO HOVER ===== */
+
+        /* Base para el botón, para que parezca un enlace */
+        .admin-user-section form button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Estilos base compartidos por enlaces y el botón */
+        .admin-nav a,
+        .admin-user-section button {
+            color: #f3d9d7;
+            text-decoration: none;
+            font-size: 1.1rem;
+            position: relative;
+            padding-bottom: 5px;
+            transition: color 0.3s ease;
+            display: flex; /* Añadido para alinear ícono y texto en el botón */
+            align-items: center; /* Añadido para alinear ícono y texto en el botón */
+            gap: 8px; /* Añadido para alinear ícono y texto en el botón */
+        }
+        
+        /* La línea de subrayado oculta (para ambos) */
+        .admin-nav a::after,
+        .admin-user-section button::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #ffffff;
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+
+        /* El efecto al pasar el cursor (para ambos) */
+        .admin-nav a:hover,
+        .admin-user-section button:hover {
+            color: #ffffff;
+        }
+
+        .admin-nav a:hover::after,
+        .admin-user-section button:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+        /* ===== FIN: ESTILOS CORREGIDOS ===== */
+
     </style>
 </head>
 <body>
@@ -51,7 +103,10 @@
             {
                 <span>Hola, @User.Identity?.Name!</span>
                 <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
-                    <button type="submit"><span class="material-symbols-outlined">logout</span>Cerrar Sesión</button>
+                    <button type="submit">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Cerrar Sesión</span>
+                    </button>
                 </form>
             }
         </div>

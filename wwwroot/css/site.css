@@ -655,3 +655,14 @@ a.listing-card-v2 { text-decoration: none; color: inherit; }
 .nav-link-button:hover {
     color: var(--nav-highlight-color);
 }
+
+/* Estilo para el saludo al usuario en el navbar */
+.nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    color: var(--nav-highlight-color); /* Usamos el color de texto resaltado */
+    font-size: 1rem;
+    font-weight: 500;
+}

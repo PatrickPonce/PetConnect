@@ -48,6 +48,11 @@
                         <span class="nav-text">Favoritos</span>
                     </a>
                 </li>
+
+                <li class="nav-user-info">
+                    <span class="material-symbols-outlined">account_circle</span>
+                    <span class="nav-text">Hola, @User.Identity?.Name!</span>
+                </li>
                 <li>
                     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
                         <button type="submit" class="nav-link-button">

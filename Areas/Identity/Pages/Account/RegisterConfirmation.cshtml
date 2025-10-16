@@ -1,0 +1,77 @@
+﻿@page
+@model RegisterConfirmationModel
+@using PetConnect.Services
+@inject ConfiguracionSitioService configService
+
+@{
+    ViewData["Title"] = "Confirmar Cuenta";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var logoUrl = await configService.ObtenerValorAsync("UrlLogo", "/images/logoP.png");
+    var logoVersion = await configService.ObtenerValorAsync("UrlLogoVersion", "1");
+    var logoUrlConVersion = $"{logoUrl}?v={logoVersion}";
+}
+
+<style>
+    .confirmation-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 40px;
+        background-color: #fff;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    .confirmation-icon img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-bottom: 20px;
+    }
+    .confirmation-title {
+        color: #E88989;
+        font-weight: bold;
+        font-size: 2.2rem;
+        margin-bottom: 15px;
+    }
+    .confirmation-text {
+        color: #555;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+    .btn-confirm {
+        background-color: #97a992;
+        color: white !important;
+        font-weight: bold;
+        padding: 15px 40px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-size: 1.2rem;
+        transition: background-color 0.3s;
+        display: inline-block;
+    }
+    .btn-confirm:hover {
+        background-color: #82947c;
+    }
+</style>
+
+<div class="confirmation-container">
+    <div class="confirmation-icon">
+        <img src="@logoUrlConVersion" alt="Logo" />
+    </div>
+    <h1 class="confirmation-title">¡Ya casi estás listo!</h1>
+
+    @if (Model.DisplayConfirmAccountLink)
+    {
+        <p class="confirmation-text">
+            Para completar tu registro y empezar a disfrutar de Purr & Paws, solo necesitas confirmar tu cuenta.
+        </p>
+        <a id="confirm-link" href="@Model.EmailConfirmationUrl" class="btn-confirm">Confirmar mi cuenta</a>
+    }
+    else
+    {
+        <p class="confirmation-text">
+            Por favor, revisa tu correo electrónico para confirmar tu cuenta.
+        </p>
+    }
+</div>

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Models;
-
 namespace PetConnect.Data;
 
 public class ApplicationDbContext : IdentityDbContext
@@ -20,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Resena> Resenas { get; set; }
     
     public DbSet<PetShopDetalle> PetShopDetalles { get; set; }
+    public DbSet<Favorito> Favoritos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -43,5 +43,21 @@ public class ApplicationDbContext : IdentityDbContext
             .HasOne(s => s.PetShopDetalle)
             .WithOne(psd => psd.Servicio)
             .HasForeignKey<PetShopDetalle>(psd => psd.ServicioId);
+
+        modelBuilder.Entity<Favorito>()
+            .HasKey(f => new { f.UsuarioId, f.NoticiaId });
+
+
+        modelBuilder.Entity<Favorito>()
+            .HasOne(f => f.Usuario)
+            .WithMany() 
+            .HasForeignKey(f => f.UsuarioId)
+            .OnDelete(DeleteBehavior.Restrict); 
+
+        modelBuilder.Entity<Favorito>()
+            .HasOne(f => f.Noticia)
+            .WithMany() 
+            .HasForeignKey(f => f.NoticiaId);
+
     }   
 }

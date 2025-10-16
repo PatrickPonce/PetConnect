@@ -28,7 +28,7 @@ public class ComentariosController : Controller
         {
             NoticiaId = NoticiaId,
             Texto = Texto,
-            Autor = user.UserName, 
+            Autor = user!.UserName!, 
             FechaComentario = DateTime.Now
         };
 

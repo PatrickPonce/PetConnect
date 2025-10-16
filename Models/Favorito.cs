@@ -8,9 +8,8 @@ namespace PetConnect.Models
     public class Favorito
     {
         [Required]
-        public string UsuarioId { get; set; }
-        
-        // 2. Clave Foránea a la Noticia
+        public required string  UsuarioId { get; set; }
+
         [Required]
         public int NoticiaId { get; set; }
 

@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Resena> Resenas { get; set; }
     
     public DbSet<PetShopDetalle> PetShopDetalles { get; set; }
+    public DbSet<ConfiguracionSitio> ConfiguracionesSitio { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

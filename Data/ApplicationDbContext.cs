@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace PetConnect.Data;
 
@@ -23,6 +22,15 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser, IdentityRole
     
     public DbSet<PetShopDetalle> PetShopDetalles { get; set; }
     public DbSet<ConfiguracionSitio> ConfiguracionesSitio { get; set; }
+ 
+
+
+    public DbSet<LugarPetFriendly> LugaresPetFriendly { get; set; }
+    public DbSet<ComentarioLugar> ComentariosLugar { get; set; }
+    public DbSet<FavoritoLugar> FavoritosLugar { get; set; }
+ 
+ 
+ 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -47,4 +55,5 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser, IdentityRole
             .WithOne(psd => psd.Servicio)
             .HasForeignKey<PetShopDetalle>(psd => psd.ServicioId);
     }   
+
 }

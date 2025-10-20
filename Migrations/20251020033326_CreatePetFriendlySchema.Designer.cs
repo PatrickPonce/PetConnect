@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -11,9 +12,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251020033326_CreatePetFriendlySchema")]
+    partial class CreatePetFriendlySchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -370,9 +373,6 @@ namespace PetConnect.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Calificacion")
-                        .HasColumnType("double precision");
-
                     b.Property<string>("Categoria")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -382,35 +382,18 @@ namespace PetConnect.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("DireccionCompleta")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Telefono")
-                        .HasColumnType("text");
 
                     b.Property<string>("Ubicacion")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("UrlFacebook")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UrlImagenPrincipal")
+                    b.Property<string>("UrlImagen")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UrlInstagram")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UrlLogo")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

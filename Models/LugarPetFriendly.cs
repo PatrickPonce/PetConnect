@@ -13,29 +13,29 @@ namespace PetConnect.Models
 
         [Required]
         [StringLength(100)]
-        public string Nombre { get; set; }
+        public string? Nombre { get; set; }
 
         [Required]
         [StringLength(50)]
-        public string Categoria { get; set; } // "Cafés", "Restaurantes"
+        public string? Categoria { get; set; } // "Cafés", "Restaurantes"
 
         [Required]
         [StringLength(100)]
-        public string Ubicacion { get; set; } // El distrito, ej: "Jesús María"
+        public string? Ubicacion { get; set; } // El distrito, ej: "Jesús María"
 
 
         [Required]
-        public string UrlImagenPrincipal { get; set; } // La imagen grande o de portada
+        public string? UrlImagenPrincipal { get; set; } // La imagen grande o de portada
 
         [Url]
         public string? UrlLogo { get; set; } // URL para el logo circular
 
         [Required]
         [StringLength(200)]
-        public string DireccionCompleta { get; set; } // Ej: "Av. Húsares de Junín 561"
+        public string? DireccionCompleta { get; set; } // Ej: "Av. Húsares de Junín 561"
         
         [Range(0, 5)]
-        public double Calificacion { get; set; } // De 0 a 5 estrellas
+        public double? Calificacion { get; set; } // De 0 a 5 estrellas
 
         [Phone]
         public string? Telefono { get; set; }
@@ -47,7 +47,7 @@ namespace PetConnect.Models
         public string? UrlInstagram { get; set; }
         
         [Required]
-        public string Descripcion { get; set; }
+        public string? Descripcion { get; set; }
 
 
         public ICollection<ComentarioLugar> Comentarios { get; set; } = new List<ComentarioLugar>();

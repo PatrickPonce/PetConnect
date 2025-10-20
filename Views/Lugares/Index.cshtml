@@ -1,0 +1,69 @@
+@model IEnumerable<PetConnect.Models.LugarPetFriendly>
+
+@{
+    ViewData["Title"] = "Lugares Pet Friendly";
+}
+
+<style>
+    /* Aquí puedes poner los estilos de tu vista de tarjetas de noticias */
+    .lugares-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+    }
+    .lugar-card {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: 320px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+     .lugar-card:hover {
+        transform: translateY(-5px);
+    }
+    .lugar-imagen {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+    }
+    .lugar-contenido {
+        padding: 1.5rem;
+    }
+    .lugar-nombre {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+     .btn-ver-mas {
+        display: block;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background-color: #d67a7a;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+    }
+</style>
+
+<h1>Directorio Pet Friendly</h1>
+
+<div class="lugares-grid">
+    @foreach (var lugar in Model)
+    {
+        <div class="lugar-card">
+            <img src="@lugar.UrlImagenPrincipal" alt="Imagen de @lugar.Nombre" class="lugar-imagen" />
+            <div class="lugar-contenido">
+                <h3 class="lugar-nombre">@lugar.Nombre</h3>
+                <p>@lugar.Ubicacion</p>
+                <!-- Este enlace llevará al detalle del lugar específico -->
+                <a asp-controller="Lugares" asp-action="Detalle" asp-route-id="@lugar.Id" class="btn-ver-mas">
+                    Ver más detalles
+                </a>
+            </div>
+        </div>
+    }
+</div>

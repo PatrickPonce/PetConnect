@@ -1,0 +1,329 @@
+@model PetConnect.Models.LugarPetFriendly
+
+@{
+    ViewData["Title"] = Model.Nombre;
+}
+
+<!-- Dependencia para los iconos de Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+<style>
+    body {
+        background-color: #FFFDEC;
+    }
+    .lugar-detalle-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 1rem;
+        display: flex;
+        flex-wrap: wrap; /* Para responsividad */
+        gap: 2rem;
+    }
+
+    .main-content {
+        flex: 3;
+        min-width: 300px; /* Ancho mínimo para contenido */
+    }
+
+    .contact-sidebar {
+        flex: 1;
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        height: fit-content; /* Se ajusta al contenido */
+        border: 1px solid #eee;
+    }
+
+    .lugar-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .lugar-logo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .lugar-title-info h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        color: #333;
+    }
+
+    .lugar-title-info p {
+        margin: 0.2rem 0;
+        color: #555;
+        font-size: 1rem;
+    }
+
+    .rating-stars .fa-star {
+        color: #ffc107;
+    }
+    .rating-stars .fa-star.empty {
+        color: #e0e0e0;
+    }
+
+    .banner-container { margin: 1.5rem 0; }
+    .banner-image { width: 100%; border-radius: 8px; }
+
+    .tabs-wrapper { margin-top: 2rem; }
+    .tabs-container { border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; }
+    .tab-button {
+        padding: 1rem 1.5rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-right: 1rem;
+        border-bottom: 3px solid transparent;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .tab-button.active {
+        border-bottom-color: #d67a7a;
+        font-weight: bold;
+        color: #333;
+    }
+    .tab-content { display: none; padding: 1rem 0; }
+    .tab-content.active { display: block; }
+
+    .contact-sidebar h3 {
+        border-bottom: 2px solid #d67a7a;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .contact-sidebar ul { list-style: none; padding: 0; }
+    .contact-sidebar li {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    .contact-sidebar li i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+        color: #d67a7a;
+    }
+    .contact-sidebar a { text-decoration: none; color: #333; }
+    .contact-sidebar a:hover { text-decoration: underline; }
+
+    .btn-contactar {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        background-color: #d67a7a;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-top: 1.5rem;
+        font-weight: bold;
+        transition: background-color 0.3s;
+    }
+    .btn-contactar:hover { background-color: #c96868; }
+
+    /* --- ESTILOS DE COMENTARIOS (COPIA LOS TUYOS AQUÍ PARA CONSISTENCIA) --- */
+    .comentarios-container { margin-top: 1rem; }
+    .comentario { background-color: #fefefe; border-left: 4px solid #72626e; border-radius: 8px; padding: 1.2rem; margin-bottom: 1.5rem; }
+    .comentario-autor { font-weight: bold; color: #555; }
+    .comentario-texto { color: #333; }
+    .comentario-fecha { font-size: 0.8rem; color: #aaa; text-align: right; margin-top: 0.5rem; }
+    .form-comentario label { font-weight: bold; color: #72626e; display: block; margin-bottom: 0.5rem; }
+    .form-comentario textarea { width: 100%; height: 120px; padding: 0.75rem; border-radius: 8px; border: 1px solid #ccc; }
+    .form-comentario button { margin-top: 1rem; padding: 0.75rem 1.5rem; background-color: #72626e; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .form-comentario button:hover { background-color: #5a4b56; }
+</style>
+
+<div class="lugar-detalle-container">
+
+    <!-- Columna Principal -->
+    <main class="main-content">
+        <header class="lugar-header">
+            @if (!string.IsNullOrEmpty(Model.UrlLogo))
+            {
+                <img src="@Model.UrlLogo" alt="Logo de @Model.Nombre" class="lugar-logo" />
+            }
+            <div class="lugar-title-info">
+                <h1>@Model.Nombre</h1>
+                <p><i class="fas fa-map-marker-alt"></i> @Model.DireccionCompleta</p>
+                <div class="rating-stars">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Model.Calificacion) {
+                            <i class="fas fa-star"></i>
+                        } else if (i - 0.5 <= Model.Calificacion) {
+                            <i class="fas fa-star-half-alt"></i>
+                        } else {
+                            <i class="fas fa-star empty"></i>
+                        }
+                    }
+                </div>
+            </div>
+        </header>
+
+        <div class="banner-container">
+            <img src="/img/banner_manada_365.png" alt="Banner Manada 365" class="banner-image" />
+        </div>
+
+        <div class="tabs-wrapper">
+            <div class="tabs-container">
+                <button class="tab-button active" data-tab="descripcion"><i class="fas fa-paw"></i> Descripción</button>
+                <button class="tab-button" data-tab="comentarios"><i class="fas fa-comments"></i> Comentarios</button>
+                <button class="tab-button" data-tab="galeria"><i class="fas fa-images"></i> Galería</button>
+                <button class="tab-button" data-tab="ubicacion"><i class="fas fa-map-marked-alt"></i> Ubicación</button>
+            </div>
+
+            <div id="descripcion" class="tab-content active">
+                <h3>@Model.Nombre - @Model.Categoria</h3>
+                <p>@Html.Raw(Model.Descripcion)</p>
+            </div>
+
+            <div id="comentarios" class="tab-content">
+                 <section class="comentarios-container">
+                    <h3>Opiniones de la comunidad</h3>
+                    @if (Model.Comentarios != null && Model.Comentarios.Any())
+                    {
+                        foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
+                        {
+                            <div class="comentario">
+                                <p class="comentario-autor">@(comentario.Usuario?.UserName ?? "Anónimo")</p>
+                                <p class="comentario-texto">@comentario.Texto</p>
+                                <p class="comentario-fecha">@comentario.FechaComentario.ToString("g")</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Aún no hay comentarios. ¡Sé el primero en compartir tu experiencia!</p>
+                    }
+                    <div class="form-comentario">
+                        <label for="textoComentario">Deja tu comentario</label>
+                        <textarea id="textoComentario" name="textoComentario" required></textarea>
+                        <button id="comentar-btn" type="button">Comentar</button>
+                    </div>
+                 </section>
+            </div>
+
+            <div id="galeria" class="tab-content">
+                <p>Galería de imágenes próximamente...</p>
+            </div>
+            <div id="ubicacion" class="tab-content">
+                <p>Mapa de ubicación próximamente...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sidebar de Contacto -->
+    <aside class="contact-sidebar">
+        <h3>Contacto</h3>
+        <ul>
+            @if (!string.IsNullOrEmpty(Model.Telefono))
+            {
+                <li><i class="fab fa-whatsapp"></i> <a href="https://wa.me/@Model.Telefono.Replace(" ", "")" target="_blank">@Model.Telefono</a></li>
+            }
+            @if (!string.IsNullOrEmpty(Model.UrlFacebook))
+            {
+                <li><i class="fab fa-facebook"></i> <a href="@Model.UrlFacebook" target="_blank">Facebook</a></li>
+            }
+             @if (!string.IsNullOrEmpty(Model.UrlInstagram))
+            {
+                <li><i class="fab fa-instagram"></i> <a href="@Model.UrlInstagram" target="_blank">Instagram</a></li>
+            }
+            <li><i class="fas fa-map-marker-alt"></i> @Model.DireccionCompleta</li>
+            <li><i class="fas fa-location-arrow"></i> @Model.Ubicacion</li>
+        </ul>
+        @if (!string.IsNullOrEmpty(Model.Telefono))
+        {
+           <a href="https://wa.me/@Model.Telefono.Replace(" ", "")" target="_blank" class="btn-contactar">Contáctanos <i class="fab fa-whatsapp"></i></a>
+        }
+    </aside>
+</div>
+
+<!-- Modal de Acceso Requerido (puedes reutilizar el de noticias) -->
+<div id="login-modal" class="modal-overlay" style="display:none;">
+    <!-- ... (Pega aquí el HTML de tu modal de login) ... -->
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Lógica para las Pestañas (Tabs) ---
+    const tabs = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // --- Lógica para Comentarios y Favoritos ---
+    const usuarioHaIniciadoSesion = @User.Identity.IsAuthenticated.ToString().ToLower();
+    const comentarBtn = document.getElementById('comentar-btn');
+    const loginModal = document.getElementById('login-modal'); // Asegúrate que tu modal tenga este ID
+    
+    if (comentarBtn) {
+        comentarBtn.addEventListener('click', async function() {
+            if (!usuarioHaIniciadoSesion) {
+                if(loginModal) loginModal.style.display = 'flex';
+                return;
+            }
+
+            const textoInput = document.getElementById('textoComentario');
+            const texto = textoInput.value;
+            const lugarId = @Model.Id;
+
+            if (!texto.trim()) {
+                alert('Por favor, escribe un comentario.');
+                return;
+            }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            try {
+                const response = await fetch('/Lugares/AgregarComentario', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token
+                    },
+                    body: `lugarId=${lugarId}&textoComentario=${encodeURIComponent(texto)}`
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('¡Gracias por tu comentario!');
+                    location.reload(); // Recarga la página para mostrar el nuevo comentario
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error al enviar el comentario:', error);
+                alert('Ocurrió un error inesperado.');
+            }
+        });
+    }
+
+    // Cierra el modal si existe
+    if(loginModal) {
+        const closeButton = loginModal.querySelector('.close-button'); // Tu modal debe tener un botón con esta clase
+        if (closeButton) {
+            closeButton.addEventListener('click', () => { loginModal.style.display = 'none'; });
+        }
+        window.addEventListener('click', (event) => {
+            if (event.target === loginModal) { loginModal.style.display = 'none'; }
+        });
+    }
+});
+</script>

@@ -1,0 +1,92 @@
+@model IEnumerable<PetConnect.Models.Noticia>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    ViewData["Title"] = "Mis Favoritos";
+}
+
+<style>
+    .guest-prompt-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60vh;
+        text-align: center;
+    }
+    .guest-prompt-box {
+        background-color: #4A4A4A; /* Color oscuro del popup */
+        color: #FFFFFF;
+        padding: 2rem 3rem;
+        border-radius: 15px;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .guest-prompt-box h4 {
+        font-weight: 600;
+        font-size: 1.5rem;
+    }
+    /* Mancha rosa (decorativa) */
+    .guest-prompt-box::before {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: -15px;
+        width: 50px;
+        height: 50px;
+        background-color: #EFA6C0; /* Color rosa */
+        border-radius: 50%;
+        opacity: 0.7;
+        filter: blur(5px);
+        z-index: -1;
+    }
+</style>
+
+@if (SignInManager.IsSignedIn(User))
+{
+
+
+    <div class="news-list-container" style="padding: 2rem;">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+            <h2 style="color: #444; font-weight: 700; font-size: 2rem;">
+                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 2.2rem; margin-right: 10px; color: #72626e;">
+                    favorite
+                </span>
+                Historial de Favoritos
+            </h2>
+            </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-favorites-container">
+                <span class="material-symbols-outlined empty-icon">
+                    search
+                </span>
+                <h3 class="empty-title">Tu lista de favoritos está vacía</h3>
+                <p class="empty-text">Parece que aún no has guardado ninguna noticia.</p>
+                
+                <a asp-controller="Noticias" asp-action="Index" class="btn-explore">
+                    ¡Empieza a explorar!
+                </a>
+            </div>
+        }
+        else
+        {
+            <h3 style="font-size: 1.5rem; color: #555; margin-bottom: 1.5rem;">Lista de Noticias</h3>
+            <div class="news-cards-wrapper">
+                @await Html.PartialAsync("_NoticiaCardPartial", Model)
+            </div>
+            
+            }
+    </div>
+}
+else
+{
+
+    <div class="guest-prompt-container">
+        <div class="guest-prompt-box">
+            <h4>Inicia sesión para ver tus favoritos</h4>
+        </div>
+    </div>
+}

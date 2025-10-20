@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -11,9 +12,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016230847_ConfigurarTablaFavoritos")]
+    partial class ConfigurarTablaFavoritos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -301,9 +304,14 @@ namespace PetConnect.Migrations
                     b.Property<DateTime>("FechaAgregado")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("NoticiaId1")
+                        .HasColumnType("integer");
+
                     b.HasKey("UsuarioId", "NoticiaId");
 
                     b.HasIndex("NoticiaId");
+
+                    b.HasIndex("NoticiaId1");
 
                     b.ToTable("Favoritos");
                 });
@@ -554,10 +562,14 @@ namespace PetConnect.Migrations
             modelBuilder.Entity("PetConnect.Models.Favorito", b =>
                 {
                     b.HasOne("PetConnect.Models.Noticia", "Noticia")
-                        .WithMany("Favoritos")
+                        .WithMany()
                         .HasForeignKey("NoticiaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("PetConnect.Models.Noticia", null)
+                        .WithMany("Favoritos")
+                        .HasForeignKey("NoticiaId1");
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
                         .WithMany()

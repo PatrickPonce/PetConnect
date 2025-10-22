@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
-/* Estilo del cuerpo de la página */
+
     body {
         background-color: #FFFDEC;
         font-family: 'Arial', sans-serif;
@@ -28,38 +28,37 @@
         max-width: 500px;
         display: flex;
         flex-direction: column;
-        justify-content: center; /* <-- CORRECCIÓN: Centra verticalmente */
+        justify-content: center; 
         position: relative;
-        padding-right: 70px; /* <-- CORRECCIÓN: Evita que el texto choque con el botón de favorito */
+        padding-right: 70px; 
     }
 
-    /* NUEVO: Estilos para el breadcrumb */
+    
     .breadcrumbs {
-        margin-bottom: 1.5rem; /* <-- CORRECCIÓN: Añade espacio inferior */
+        margin-bottom: 1.5rem; 
         font-size: 0.9rem;
     }
 
-    /* Estilos para el título y la fecha (CORREGIDO) */
+   
     .noticia-titulo {
         font-size: 3rem;
         font-weight: 700;
         color: #FFFDEC; 
         line-height: 1.2;
-        margin-bottom: 1rem; /* <-- CORRECCIÓN: Añade espacio debajo del título */
+        margin-bottom: 1rem; 
     }
 
     .noticia-fecha {
         font-size: 1rem;
         color: #FFFDEC; 
-        margin-top: 0; /* <-- CORRECCIÓN: Resetea el margen superior */
+        margin-top: 0; 
     }
 
-    /* Botón de favoritos*/
     .favorito-btn {
         position: absolute; 
         top: 0;
         right: 0;
-        background-color: #d67a7a;
+        background-color: #fce4e4;
         border: none;
         border-radius: 50%;
         width: 50px;
@@ -73,25 +72,25 @@
     }
 
     .favorito-btn:hover {
-        background-color: #c96868;
+        background-color: #fce4e4;
         transform: scale(1.1);
     }
 
-    .favorito-btn .material-symbols-outlined {
-        font-size: 28px;
-        color: white;
-        font-weight: 700;
-        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    .noticia-info .favorito-btn.activo > .material-symbols-outlined {
+    color: #e58f8f !important; 
+    transform: scale(1.1);
     }
-    .favorito-btn.activo .material-symbols-outlined {
-        font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
-        color: #d67a7a;
+
+    .noticia-info .favorito-btn > .material-symbols-outlined {
+    font-size: 28px;
+    color: white; 
+    font-variation-settings: 'FILL' 0;
+    transition: all 0.2s ease;
     }
 
     .favorito-btn.activo {
-        background-color: #fce4e4;
+    background-color: #ebadad; 
     }
-
     .noticia-imagen-container {
         flex: 1.5;
         max-width: 600px;
@@ -193,7 +192,6 @@
         margin-bottom: 0.5rem;
     }
 
-    /* Estilos del MODAL UNIFICADO (Mejora visual) */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -209,9 +207,9 @@
 
     .modal-content {
         background-color: #fff6f6;
-        padding: 2.5rem; /* Más espacio */
+        padding: 2.5rem; 
         border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); 
         text-align: center;
         position: relative;
         max-width: 450px;
@@ -222,7 +220,7 @@
         position: absolute;
         top: 15px;
         right: 20px;
-        font-size: 1.8rem; /* Icono de cierre más grande */
+        font-size: 1.8rem; 
         font-weight: normal;
         cursor: pointer;
         color: #aaa;
@@ -234,7 +232,7 @@
     }
 
     .modal-body h3 {
-        color: #d67a7a; /* Un color de acento para el título */
+        color: #d67a7a; 
         font-size: 1.5rem;
         margin-bottom: 1.5rem;
     }
@@ -245,9 +243,7 @@
         color: #5a4b56;
     }
 
-    /* Contenedor de los botones */
-
-        .login-button-group {
+    .login-button-group {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -257,14 +253,13 @@
         margin: 0 auto;
         }
 
-    /* Ambos botones iguales */
     .login-button, 
     .register-link {
-        flex: 1;                     /* Ambos ocupan el mismo espacio horizontal */
+        flex: 1;                     
         display: flex;               
         justify-content: center;
         align-items: center;
-        height: 50px;                 /* Altura uniforme */
+        height: 50px;                 
         border-radius: 8px;
         font-weight: bold;
         text-decoration: none;
@@ -299,6 +294,9 @@
         color: white;
         transform: translateY(-2px);
     }
+    .breadcrumbs a {
+    text-decoration: none; 
+    }
     
 </style>
 
@@ -313,7 +311,9 @@
         </div>
         
         <button id="favorito-btn" class="favorito-btn @(ViewBag.EsFavorito ? "activo" : "")" title="Guardar en favoritos" data-id="@Model.Id">
-            <span class="material-symbols-outlined">favorite</span>
+            <span class="material-symbols-outlined">
+                @(ViewBag.EsFavorito ? "favorite" : "favorite_border")
+            </span>
         </button>
 
         <h1 class="noticia-titulo">@Model.Titulo</h1>
@@ -372,70 +372,93 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // --- Lógica del Modal (para usuarios no logueados) ---
-    const comentarBtn = document.getElementById('comentar-btn');
-    const loginModal = document.getElementById('login-modal');
-    const closeButton = document.querySelector('.close-button');
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const comentarBtn = document.getElementById('comentar-btn');
+        const loginModal = document.getElementById('login-modal');
+        const closeButton = loginModal ? loginModal.querySelector('.close-button') : null;
+        function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; }
+        function ocultarModal() { if (loginModal) loginModal.style.display = 'none'; }
+        if (closeButton) closeButton.addEventListener('click', ocultarModal);
+        window.addEventListener('click', (event) => { if (event.target === loginModal) ocultarModal(); });
 
-    function mostrarModal() {
-        if (loginModal) loginModal.style.display = 'flex';
-    }
+    
+        const favoritoBtn = document.getElementById('favorito-btn');
+        
+        const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true'; 
+        console.log('DEBUG Vista Detalle - Autenticado (Renderizado):', estaAutenticadoServer); 
 
-    if (closeButton) {
-        closeButton.addEventListener('click', () => loginModal.style.display = 'none');
-    }
-    window.addEventListener('click', (event) => {
-        if (event.target === loginModal) loginModal.style.display = 'none';
-    });
+        function manejarClicFavoritoDetalle() {
+            console.log('DEBUG Vista Detalle - Click - Autenticado:', estaAutenticadoServer); 
 
-    // --- Lógica de Favoritos (para usuarios logueados) ---
-    const favoritoBtn = document.getElementById('favorito-btn');
+            if (estaAutenticadoServer) { 
+                const noticiaId = favoritoBtn.dataset.id;
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (!tokenInput) {
+                    console.error('No se encontró AntiForgeryToken.');
+                    alert('Error seguridad. Recarga.');
+                    return;
+                }
+                const token = tokenInput.value;
 
-    // Comprobamos si el usuario está autenticado usando Razor
-    const usuarioAutenticado = @User.Identity.IsAuthenticated.ToString().ToLower();
-
-    if (favoritoBtn) {
-        favoritoBtn.addEventListener('click', function() {
-            if (usuarioAutenticado) {
-                // Si está autenticado, llama al controlador
-                const noticiaId = this.dataset.id;
-
-                fetch('/Noticias/ToggleFavorito', {
-                    method: 'POST',
-                    headers: {
+                fetch('/Noticias/ToggleFavorito', { 
+                    method: 'POST', 
+                    headers: {      
                         'Content-Type': 'application/json',
-                        // Importante para la seguridad de ASP.NET Core
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'RequestVerificationToken': token
                     },
-                    body: JSON.stringify(parseInt(noticiaId)) // Enviamos el ID como un simple número
+                    body: JSON.stringify(parseInt(noticiaId))
                 })
-                .then(response => response.json())
+            
+                .then(response => { 
+                
+                    if (!response.ok) { 
+                        
+                        throw new Error(`HTTP error! status: ${response.status}`); 
+                    }
+                
+                    return response.json(); 
+                })
                 .then(data => {
+                    console.log('Respuesta del servidor (ToggleFavorito):', data);
                     if (data.success) {
-                        // Si la operación fue exitosa, actualizamos el botón
-                        this.classList.toggle('activo', data.esFavorito);
-                    } else {
-                        // Opcional: manejar errores
-                        console.error('Error al cambiar el estado de favorito:', data.message);
+                        favoritoBtn.classList.toggle('activo', data.esFavorito);
+                        const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
+                        if (iconSpan) {
+                            iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border';
+                        }
+                    } else { 
+                        console.error('Error del servidor al cambiar favorito:', data.message);
+                        alert('Error del servidor: ' + (data.message || 'Desconocido')); 
                     }
                 })
-                .catch(error => console.error('Error en la llamada fetch:', error));
-
+                .catch(error => { 
+                    console.error('Error en fetch o al procesar respuesta:', error);
+                    alert('Error de conexión o del servidor al intentar cambiar favorito.'); 
+                });
             } else {
-                // Si NO está autenticado, muestra el modal
                 mostrarModal();
             }
-        });
-    }
+        }
 
-    if (comentarBtn) {
-        comentarBtn.addEventListener('click', function() {
-            if (!usuarioAutenticado) {
-                mostrarModal();
+        if (favoritoBtn) {
+            favoritoBtn.addEventListener('click', manejarClicFavoritoDetalle);
+        }
+
+        if (comentarBtn) {
+            comentarBtn.addEventListener('click', function() {
+                if (!estaAutenticadoServer) {
+                    mostrarModal();
+                }
+            });
+        }
+
+        if (favoritoBtn) { 
+            const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
+            const esFavoritoInicial = favoritoBtn.classList.contains('activo'); 
+            if (iconSpan) {
+                iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border';
             }
-            // Aquí iría la lógica para enviar el comentario si el usuario está logueado
-        });
-    }
-});
+        }
+    });
 </script>

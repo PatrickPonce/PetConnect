@@ -1,345 +1,141 @@
 @model PetConnect.Models.Noticia
 @using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
+@using PetConnect.Models 
+@inject SignInManager<IdentityUser> SignInManager 
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
+    /* --- Estilos Generales --- */
+    body { background-color: #FFFDEC; font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
+    .noticia-wrapper { display: flex; justify-content: center; align-items: flex-start; padding: 2rem; gap: 3rem; background-color: #748675; border-bottom: 2px solid #ddd; }
+    .noticia-info { flex: 1; max-width: 500px; display: flex; flex-direction: column; justify-content: center; position: relative; padding-right: 70px; }
+    .breadcrumbs { margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .breadcrumbs a { text-decoration: none; }
+    .noticia-titulo { font-size: 3rem; font-weight: 700; color: #FFFDEC; line-height: 1.2; margin-bottom: 1rem; }
+    .noticia-fecha { font-size: 1rem; color: #FFFDEC; margin-top: 0; }
+    .noticia-imagen-container { flex: 1.5; max-width: 600px; }
+    .noticia-imagen { width: 100%; height: auto; object-fit: cover; border-radius: 12px; }
+    .contenido-principal { max-width: 900px; margin: 2rem auto; padding: 2rem; background-color: #FFFDEC; border-radius: 12px; }
+    .noticia-parrafo p { font-size: 1.1rem; line-height: 1.8; color: #444; }
 
-    body {
-        background-color: #FFFDEC;
-        font-family: 'Arial', sans-serif;
-        margin: 0;
-        padding: 0;
-    }
-
-    /* Contenedor principal para la noticia */
-    .noticia-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 2rem;
-        gap: 3rem;
-        background-color: #748675;
-        border-bottom: 2px solid #ddd;
-    }
-
-    /* Contenedor para la información de la noticia (CORREGIDO) */
-    .noticia-info {
-        flex: 1; 
-        max-width: 500px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center; 
-        position: relative;
-        padding-right: 70px; 
-    }
-
+    /* --- Estilos Botón Favorito (Corregido) --- */
+    .favorito-btn { position: absolute; top: 0; right: 0; background-color: #fce4e4; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.2s, background-color 0.2s; }
+    .favorito-btn:hover { background-color: #fce4e4; transform: scale(1.1); }
+    .favorito-btn.activo { background-color: #ebadad; }
     
-    .breadcrumbs {
-        margin-bottom: 1.5rem; 
-        font-size: 0.9rem;
+    .noticia-info .favorito-btn > .material-symbols-outlined {
+        font-size: 28px;
+        color: white; /* Borde blanco por defecto */
+        transition: all 0.2s ease;
+        /* Se quitó font-variation-settings: 'FILL' 0; */
     }
-
-   
-    .noticia-titulo {
-        font-size: 3rem;
-        font-weight: 700;
-        color: #FFFDEC; 
-        line-height: 1.2;
-        margin-bottom: 1rem; 
-    }
-
-    .noticia-fecha {
-        font-size: 1rem;
-        color: #FFFDEC; 
-        margin-top: 0; 
-    }
-
-    .favorito-btn {
-        position: absolute; 
-        top: 0;
-        right: 0;
-        background-color: #fce4e4;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        transition: transform 0.2s, background-color 0.2s;
-    }
-
-    .favorito-btn:hover {
-        background-color: #fce4e4;
+    .noticia-info .favorito-btn.activo > .material-symbols-outlined {
+        color: #e58f8f !important; /* Color relleno activo */
         transform: scale(1.1);
     }
 
-    .noticia-info .favorito-btn.activo > .material-symbols-outlined {
-    color: #e58f8f !important; 
-    transform: scale(1.1);
-    }
-
-    .noticia-info .favorito-btn > .material-symbols-outlined {
-    font-size: 28px;
-    color: white; 
-    font-variation-settings: 'FILL' 0;
-    transition: all 0.2s ease;
-    }
-
-    .favorito-btn.activo {
-    background-color: #ebadad; 
-    }
-    .noticia-imagen-container {
-        flex: 1.5;
-        max-width: 600px;
-    }
-
-    .noticia-imagen {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-        border-radius: 12px;
-    }
-
-    .contenido-principal {
-        max-width: 900px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background-color: #FFFDEC;
-        border-radius: 12px;
-    }
-
-    .noticia-parrafo p {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: #444;
-    }
-
-    .comentarios-container {
-        margin-top: 3rem;
-        padding: 2rem;
-        background-color: #fff6f6;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-
-    .comentario {
-        background-color: #fefefe;
-        border-left: 4px solid #72626e;
-        border-radius: 8px;
-        padding: 1.2rem;
-        margin-bottom: 1.5rem;
-    }
-    .comentario-autor {
-        font-weight: bold;
-        color: #555;
-        margin-bottom: 0.3rem;
-    }
-    .comentario-texto {
-        color: #333;
-        line-height: 1.6;
-    }
-    .comentario-fecha {
-        font-size: 0.8rem;
-        color: #aaa;
-        text-align: right;
-        margin-top: 0.5rem;
-    }
-    .form-comentario {
-        margin-top: 2rem;
-    }
-    .form-comentario label {
-        font-weight: bold;
-        color: #72626e;
-        display: block;
-        margin-bottom: 0.5rem;
-    }
-    .form-comentario textarea {
-        width: 100%;
-        height: 120px;
-        padding: 0.75rem;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        resize: vertical;
-        font-size: 1rem;
-    }
-    .form-comentario button {
-        margin-top: 1rem;
-        padding: 0.75rem 1.5rem;
-        background-color: #72626e;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-    .form-comentario button:hover {
-        background-color: #5a4b56;
-        transform: translateY(-2px);
-    }
-    ul {
-        list-style-type: disc;
-        margin: 1.5rem 0;
-        padding-left: 2.5rem;
-    }
-
-    ul li {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: #444;
-        margin-bottom: 0.5rem;
-    }
-
-    .modal-overlay {
+    /* --- Estilos Comentarios --- */
+    .comentarios-container { margin-top: 3rem; padding: 2rem; background-color: #fff6f6; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+    .comentario { background-color: #fefefe; border-left: 4px solid #72626e; border-radius: 8px; padding: 1.2rem; margin-bottom: 1.5rem; }
+    .comentario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .comentario-autor { font-weight: bold; color: #555; margin-bottom: 0; }
+    .comentario-texto { color: #333; line-height: 1.6; }
+    .comentario-fecha { font-size: 0.8rem; color: #aaa; text-align: right; margin-top: 0.5rem; }
+    
+    /* Estilos Botones Editar/Eliminar */
+    .comentario-acciones { display: flex; gap: 0.5rem; }
+    .btn-accion-comentario { background: none; border: none; cursor: pointer; padding: 0; color: #aaa; transition: color 0.2s ease; }
+    .btn-accion-comentario .material-symbols-outlined { font-size: 1.1rem; vertical-align: middle; }
+    .btn-accion-comentario:hover { color: #72626e; }
+    .btn-eliminar-comentario:hover { color: #d67a7a; } /* Rojo hover */
+    
+    /* Estilos Formulario Comentario */
+    .form-comentario { margin-top: 2rem; }
+    .form-comentario label { font-weight: bold; color: #72626e; display: block; margin-bottom: 0.5rem; }
+    .form-comentario textarea { width: 100%; height: 120px; padding: 0.75rem; border-radius: 8px; border: 1px solid #ccc; resize: vertical; font-size: 1rem; }
+    .form-comentario button { margin-top: 1rem; padding: 0.75rem 1.5rem; background-color: #72626e; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; }
+    .form-comentario button:hover { background-color: #5a4b56; transform: translateY(-2px); }
+    
+    /* --- Estilos Modales (Login y Confirmación) --- */
+    .modal-overlay { /* SOLO .modal-overlay, no .modal-confirmacion-eliminar */
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        display: none; 
+        background-color: rgb(0, 0, 0); /* O tu color preferido para el modal de login */
+        display: none;
         justify-content: center;
         align-items: center;
         z-index: 1000;
     }
-
-    .modal-content {
-        background-color: #fff6f6;
-        padding: 2.5rem; 
+    .modal-confirmacion-eliminar {
+        position: fixed; /* Para que flote sobre el contenido */
+        top: 50%; /* Centra verticalmente */
+        left: 50%; /* Centra horizontalmente */
+        transform: translate(-50%, -50%); /* Ajusta para el centrado real */
+        z-index: 1000; /* Asegura que esté por encima de otros elementos */
+        display: none; /* Por defecto estará oculto */
+        /* Aquí no lleva background-color para el "overlay", solo para el contenido */
+    }
+    .modal-contenido {
+        background-color: #fefefe; /* El cuadro blanco */
+        padding: 2.5rem;
         border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); 
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
         text-align: center;
         position: relative;
         max-width: 450px;
         width: 90%;
+        animation: fadeIn 0.3s ease-out;
+        pointer-events: auto; /* <-- AÑADE ESTO para que el cuadro blanco se pueda cliquear */
     }
+    .close-button, .modal-cerrar-eliminar-comentario { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; font-weight: bold; cursor: pointer; color: #aaa; transition: color 0.2s; }
+    .close-button:hover, .modal-cerrar-eliminar-comentario:hover { color: #5a4b56; }
+    .modal-body h3, .modal-titulo-eliminar { color: #d67a7a; font-size: 1.5rem; margin-bottom: 1.5rem; }
+    .modal-body p, .modal-mensaje-eliminar { font-size: 1.1rem; margin-bottom: 2rem; color: #5a4b56; }
+    .login-button-group, .modal-botones-eliminar { display: flex; justify-content: center; align-items: center; gap: 15px; width: 100%; max-width: 350px; margin: 0 auto; }
+    .login-button, .register-link, .btn-modal-accion { flex: 1; display: flex; justify-content: center; align-items: center; height: 50px; border-radius: 8px; font-weight: bold; text-decoration: none; border: 2px solid #72626e; box-sizing: border-box; transition: all 0.3s ease; font-size: 1rem; cursor: pointer; }
+    .login-button { background-color: #72626e; color: white; }
+    .register-link { background-color: transparent; color: #72626e; }
+    .login-button:hover { background-color: #5a4b56; border-color: #5a4b56; transform: translateY(-2px); }
+    .register-link:hover { background-color: #72626e; color: white; transform: translateY(-2px); }
+    .btn-modal-accion { padding: 12px 25px; height: auto; }
+    .btn-modal-confirmar { background-color: #d67a7a; color: white; }
+    .btn-modal-confirmar:hover { background-color: #c06969; transform: translateY(-2px); }
+    .btn-modal-cancelar { background-color: #f0f0f0; color: #555; border-color: #ddd; }
+    .btn-modal-cancelar:hover { background-color: #e0e0e0; transform: translateY(-2px); }
 
-    .close-button {
-        position: absolute;
-        top: 15px;
-        right: 20px;
-        font-size: 1.8rem; 
-        font-weight: normal;
-        cursor: pointer;
-        color: #aaa;
-        transition: color 0.2s;
+    /* --- Estilos Íconos (Solución !important) --- */
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined' !important; /* <-- FUERZA LA FUENTE */
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px; /* Tamaño por defecto */
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
     }
-
-    .close-button:hover {
-        color: #5a4b56;
-    }
-
-    .modal-body h3 {
-        color: #d67a7a; 
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .modal-body p {
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-        color: #5a4b56;
-    }
-
-    .login-button-group {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        width: 100%;
-        max-width: 350px;
-        margin: 0 auto;
-        }
-
-    .login-button, 
-    .register-link {
-        flex: 1;                     
-        display: flex;               
-        justify-content: center;
-        align-items: center;
-        height: 50px;                 
-        border-radius: 8px;
-        font-weight: bold;
-        text-decoration: none;
-        border: 2px solid #72626e;
-        box-sizing: border-box;
-        transition: all 0.3s ease;
-        font-size: 1rem;
-        cursor: pointer;
-    }
-
-    /* Botón Iniciar Sesión */
-    .login-button {
-        background-color: #72626e;
-        color: white;
-    }
-
-    /* Botón Registrarse */
-    .register-link {
-        background-color: transparent;
-        color: #72626e;
-    }
-
-    /* Hover */
-    .login-button:hover {
-        background-color: #5a4b56;
-        border-color: #5a4b56;
-        transform: translateY(-2px);
-    }
-
-    .register-link:hover {
-        background-color: #72626e;
-        color: white;
-        transform: translateY(-2px);
-    }
-    .breadcrumbs a {
-    text-decoration: none; 
-    }
-    /* --- ESTILOS PARA ACCIONES DE COMENTARIO --- */
-    .comentario-header {
-        display: flex;
-        justify-content: space-between; /* Pone autor a la izq, botones a la der */
-        align-items: center;
-        margin-bottom: 0.5rem; /* Ajusta según necesites */
-    }
-
-    .comentario-autor {
-        /* Quita el margen inferior por defecto si lo tiene */
-        margin-bottom: 0; 
-    }
-
-    .comentario-acciones {
-        display: flex;
-        gap: 0.5rem; /* Espacio entre botones */
-    }
-
-    .btn-accion-comentario {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        color: #aaa; /* Color gris tenue */
-        transition: color 0.2s ease;
-    }
-
+    /* Tamaño específico para botones de acción */
     .btn-accion-comentario .material-symbols-outlined {
-        font-size: 1.1rem; /* Tamaño de los íconos */
-        vertical-align: middle; /* Alinea el ícono */
+        font-size: 1.2rem;
     }
-
-    .btn-accion-comentario:hover {
-        color: #72626e; /* Color oscuro al pasar el ratón */
-    }
-
-    /* Opcional: Color específico para eliminar al pasar el ratón */
-    .btn-eliminar-comentario:hover {
-        color: #d67a7a; /* Rojo */
+    /* Tamaño específico para botón favorito */
+    .noticia-info .favorito-btn > .material-symbols-outlined {
+        font-size: 28px;
     }
     
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <div class="noticia-wrapper">
@@ -353,14 +149,12 @@
         </div>
         
         @{
+            // Usa ViewData (enviado desde el controlador) para el estado inicial
             bool esFavoritoInicial = ViewData["EsFavorito"] as bool? ?? false; 
         }
-
         <button id="favorito-btn" class="favorito-btn @(esFavoritoInicial ? "activo" : "")" title="Guardar en favoritos" data-id="@Model.Id"> 
-        @* ^--- CORREGIDO: Usa esFavoritoInicial *@
             <span class="material-symbols-outlined">
                 @(esFavoritoInicial ? "favorite" : "favorite_border") 
-        @* ^--- CORREGIDO: Usa esFavoritoInicial *@
             </span>
         </button>
 
@@ -386,58 +180,30 @@
         {
             @foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
             {
-                // --- LÓGICA CORREGIDA PARA 'puedeEditar' ---
+                // --- Lógica para botón Editar ---
                 bool puedeEditar = false;
-                bool authorMatch = false; // Variable para debug
-                bool canEditTime = false; // Variable para debug
-                TimeSpan difference = TimeSpan.Zero; // Variable para debug
-                string currentUsername = "No Logueado"; // Variable para debug
-
+                bool authorMatch = false;
+                bool canEditTime = false;  // <-- Declaración faltante
+                TimeSpan difference = TimeSpan.Zero;
+                string currentUsername = "No Logueado";
                 if (SignInManager.IsSignedIn(User))
                 {
-                    // Obtén el UserName (email) y córtalo antes del @
                     currentUsername = User.Identity?.Name ?? string.Empty;
                     if (currentUsername.Contains("@"))
                     {
                         currentUsername = currentUsername.Split('@')[0];
                     }
-
-                    // Ahora compara el nombre de usuario cortado con el autor del comentario
                     authorMatch = currentUsername == comentario.Autor;
-
-                    if (authorMatch) // Solo calcula tiempo si es el autor
+                    if (authorMatch)
                     {
-                        // Asegúrate de que ambas fechas sean UTC o Local consistentes
-                        // Es más seguro comparar usando UtcNow si guardaste con UtcNow.
-                        difference = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime(); // Convertir a UTC por si acaso
-                        canEditTime = difference.TotalMinutes < 15 && difference.TotalMinutes >= 0; // Asegura que no sea negativo
-                        puedeEditar = canEditTime; // Puede editar si es autor Y tiempo < 15min
+                        difference = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime();
+                        canEditTime = difference.TotalMinutes < 15 && difference.TotalMinutes >= 0;
+                        puedeEditar = canEditTime;
                     }
                 }
-                // --- FIN LÓGICA CORREGIDA ---
-
-                @* --- BLOQUE DE DEBUG (Actualizado) --- *@
-                var timeNow = DateTime.UtcNow;
-                var commentTime = comentario.FechaComentario;
-                var isSignedIn = SignInManager.IsSignedIn(User);
-                <div style="border: 1px dashed red; padding: 5px; margin-bottom: 5px; font-size: 0.8em; color: black; background: white; text-align: left;">
-                    <strong>DEBUG Comentario ID: @comentario.Id</strong><br/>
-                    Usuario Actual (Name): @User.Identity?.Name<br/>
-                    Usuario Actual (Cortado): @currentUsername<br/> @* <-- Añadido para ver el nombre cortado *@
-                    Autor Comentario: @comentario.Autor<br/>
-                    ¿Coinciden Autores?: @authorMatch<br/>
-                    ¿Usuario Logueado?: @isSignedIn<br/>
-                    Hora Actual (UTC): @timeNow.ToString("o")<br/>
-                    Hora Comentario: @commentTime.ToString("o") (Tipo: @commentTime.Kind)<br/>
-                    Diferencia (UTC): @difference.TotalMinutes.ToString("F2") minutos<br/> @* <-- Aclarado que es UTC *@
-                    ¿Menos de 15 min?: @canEditTime<br/>
-                    <strong>¿Puede Editar (Final)?: @puedeEditar</strong>
-                </div>
-                @* --- FIN BLOQUE DE DEBUG --- *@
-
+                // --- Fin Lógica Editar ---
 
                 <div class="comentario" data-comentario-id="@comentario.Id">
-                    @* ... (Resto del HTML del comentario sin cambios) ... *@
                     <div class="comentario-header">
                         <p class="comentario-autor">@comentario.Autor</p>
                         <div class="comentario-acciones">
@@ -447,7 +213,7 @@
                                     <span class="material-symbols-outlined">edit</span>
                                 </button>
                             }
-                            @if (SignInManager.IsSignedIn(User) && currentUsername == comentario.Autor) @* Usa currentUsername aquí también *@
+                            @if (SignInManager.IsSignedIn(User) && currentUsername == comentario.Autor)
                             {
                                 <button class="btn-accion-comentario btn-eliminar-comentario" title="Eliminar comentario">
                                     <span class="material-symbols-outlined">delete</span>
@@ -461,11 +227,10 @@
                     </p>
                 </div>
             }
-         }
+           }
         else
         {
-            <p id="sin-comentarios-msg">No hay comentarios todavía. ¡Sé el primero!</p> 
-            @* ^-- NUEVO ID AQUÍ *@
+            <p id="sin-comentarios-msg">No hay comentarios todavía. ¡Sé el primero!</p>
         }
     </div>
 
@@ -484,216 +249,254 @@
         }
     </form>
     </section>
+
+    <div id="modal-confirmacion-eliminar-comentario" class="modal-confirmacion-eliminar">
+        <div class="modal-contenido">
+            <span class="modal-cerrar-eliminar-comentario">&times;</span>
+            <h3 class="modal-titulo-eliminar">Confirmar Eliminación</h3>
+            <p class="modal-mensaje-eliminar">¿Estás seguro de que deseas eliminar este comentario?</p>
+            <div class="modal-botones-eliminar">
+                <button id="btn-confirmar-eliminar-comentario" class="btn-modal-accion btn-modal-confirmar">Eliminar</button>
+                <button id="btn-cancelar-eliminar-comentario" class="btn-modal-accion btn-modal-cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div id="login-modal" class="modal-overlay">
     <div class="modal-content">
         <span class="close-button">&times;</span>
         <div class="modal-body">
-            <h3>Acceso Requerido</h3>
-            <p>¡Hola! Debes iniciar sesión o registrarte para comentar y guardar esta noticia en favoritos.</p>
-            <div class="login-button-group">
-                <a href="/Identity/Account/Login" class="login-button">Iniciar Sesión</a>
-                <a href="/Identity/Account/Register" class="register-link">Registrarse</a>
-            </div>
+             <h3>Acceso Requerido</h3>
+             <p>¡Hola! Debes iniciar sesión o registrarte para comentar y guardar esta noticia en favoritos.</p>
+             <div class="login-button-group">
+                 <a href="/Identity/Account/Login" class="login-button">Iniciar Sesión</a>
+                 <a href="/Identity/Account/Register" class="register-link">Registrarse</a>
+             </div>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() { // OK - Listener principal para carga del DOM.
+    // --- FUNCIÓN PARA FORMATEAR FECHAS ---
+    function formatDateElement(spanElement) {
+        const utcDateString = spanElement.dataset.utcdate;
+        if (!utcDateString) return;
+        try {
+            const date = new Date(utcDateString);
+            const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+            spanElement.textContent = date.toLocaleString(undefined, options);
+        } catch (e) {
+            console.error("Error formateando fecha:", utcDateString, e);
+            spanElement.textContent = "Fecha inválida";
+        }
+    }
+    // --- FIN FUNCIÓN ---
 
-    // --- Lógica del Modal Login ---
-    const loginModal = document.getElementById('login-modal'); // OK
-    const closeButton = loginModal ? loginModal.querySelector('.close-button') : null; // OK
-    function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; } // OK
-    function ocultarModal() { if (loginModal) loginModal.style.display = 'none'; } // OK
-    if (closeButton) closeButton.addEventListener('click', ocultarModal); // OK
-    window.addEventListener('click', (event) => { if (event.target === loginModal) ocultarModal(); }); // OK
+document.addEventListener('DOMContentLoaded', function() { // Listener principal único
 
-    // --- Lógica de Favoritos ---
-    const favoritoBtn = document.getElementById('favorito-btn'); // OK
-    // OK - Obtiene estado de autenticación inicial.
-    const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true'; 
+    // --- Seleccionar Elementos Comunes ---
+    const loginModal = document.getElementById('login-modal');
+    const closeButton = loginModal ? loginModal.querySelector('.close-button') : null;
+    const favoritoBtn = document.getElementById('favorito-btn');
+    const formComentario = document.getElementById('form-agregar-comentario');
+    const textoComentarioInput = document.getElementById('textoComentario');
+    const listaComentariosDiv = document.getElementById('lista-comentarios');
+    const sinComentariosMsg = document.getElementById('sin-comentarios-msg');
+    const comentarBtnSubmit = formComentario ? formComentario.querySelector('button[type="submit"]') : null;
+    const modalConfirmacionComentario = document.getElementById('modal-confirmacion-eliminar-comentario');
+    const cerrarModalConfirmacionComentarioBtn = modalConfirmacionComentario ? modalConfirmacionComentario.querySelector('.modal-cerrar-eliminar-comentario') : null;
+    const btnConfirmarEliminarComentario = document.getElementById('btn-confirmar-eliminar-comentario');
+    const btnCancelarEliminarComentario = document.getElementById('btn-cancelar-eliminar-comentario');
+    let comentarioIdParaEliminar = null;
+    const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true';
 
-    function manejarClicFavoritoDetalle() { // OK - Handler para clic en favorito.
-        console.log('DEBUG Vista Detalle - Click - Autenticado:', estaAutenticadoServer); // OK - Log.
-        if (estaAutenticadoServer) { // OK - Comprobación.
-            const noticiaId = favoritoBtn.dataset.id; // OK
-            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]'); // OK
-            if (!tokenInput) { console.error('No se encontró AntiForgeryToken.'); alert('Error seguridad. Recarga.'); return; } // OK
-            const token = tokenInput.value; // OK
-            // OK - Fetch para ToggleFavorito.
+    // --- Funciones Modales ---
+    function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; }
+    function ocultarModal() { if (loginModal) loginModal.style.display = 'none'; }
+    function mostrarModalConfirmacionComentario(id) {
+        comentarioIdParaEliminar = id;
+        if (modalConfirmacionComentario) modalConfirmacionComentario.style.display = 'block';
+        if (btnConfirmarEliminarComentario) btnConfirmarEliminarComentario.disabled = false;
+    }
+    function ocultarModalConfirmacionComentario() {
+        if (modalConfirmacionComentario) modalConfirmacionComentario.style.display = 'none';
+        comentarioIdParaEliminar = null;
+        if (btnConfirmarEliminarComentario) btnConfirmarEliminarComentario.disabled = false;
+    }
+
+    // --- Listeners Modales ---
+    if (closeButton) closeButton.addEventListener('click', ocultarModal);
+    window.addEventListener('click', (event) => { if (event.target === loginModal) ocultarModal(); });
+    if (cerrarModalConfirmacionComentarioBtn) cerrarModalConfirmacionComentarioBtn.addEventListener('click', ocultarModalConfirmacionComentario);
+    if (btnCancelarEliminarComentario) btnCancelarEliminarComentario.addEventListener('click', ocultarModalConfirmacionComentario);
+    window.addEventListener('click', function(event) { if (event.target == modalConfirmacionComentario) ocultarModalConfirmacionComentario(); });
+
+    // --- Lógica Favoritos ---
+    function manejarClicFavoritoDetalle() {
+        if (estaAutenticadoServer) {
+            const noticiaId = favoritoBtn.dataset.id;
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (!tokenInput) { console.error('No se encontró AntiForgeryToken.'); alert('Error seguridad. Recarga.'); return; }
+            const token = tokenInput.value;
             fetch('/Noticias/ToggleFavorito', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
                 body: JSON.stringify(parseInt(noticiaId)) 
             })
-            .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); }) // OK
-            .then(data => { // OK - Procesa respuesta.
-                console.log('Respuesta del servidor (ToggleFavorito):', data); // OK - Log.
-                 if (data.success) { // OK
-                    favoritoBtn.classList.toggle('activo', data.esFavorito); // OK - Cambia clase.
-                    const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined'); // OK
-                    if (iconSpan) { iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border'; } // OK - Cambia ícono.
-                } else { console.error('Error del servidor al cambiar favorito:', data.message); alert('Error del servidor: ' + (data.message || 'Desconocido')); } // OK
+            .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); })
+            .then(data => {
+                 if (data.success) {
+                    favoritoBtn.classList.toggle('activo', data.esFavorito);
+                    const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
+                    if (iconSpan) { iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border'; }
+                } else { alert('Error del servidor: ' + (data.message || 'Desconocido')); }
             })
-            .catch(error => { console.error('Error en fetch o al procesar respuesta:', error); alert('Error de conexión o del servidor al intentar cambiar favorito.'); }); // OK
-        } else { // OK
-            mostrarModal(); // OK
+            .catch(error => { alert('Error de conexión al intentar cambiar favorito.'); });
+        } else {
+            mostrarModal();
         }
     }
-    // OK - Añade listener a botón favorito.
-    if (favoritoBtn) { favoritoBtn.addEventListener('click', manejarClicFavoritoDetalle); } 
-    
-    // OK - Inicialización del ícono favorito al cargar.
-    if (favoritoBtn) { 
+    if (favoritoBtn) {
+        favoritoBtn.addEventListener('click', manejarClicFavoritoDetalle);
         const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
-        const esFavoritoInicial = favoritoBtn.classList.contains('activo'); 
+        const esFavoritoInicial = favoritoBtn.classList.contains('activo');
         if (iconSpan) { iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border'; }
      }
 
-    // --- LÓGICA PARA AGREGAR COMENTARIOS ---
-    const formComentario = document.getElementById('form-agregar-comentario'); // OK
-    console.log('DEBUG: Formulario encontrado:', formComentario); // OK - Log.
-    const textoComentarioInput = document.getElementById('textoComentario'); // OK
-    const listaComentariosDiv = document.getElementById('lista-comentarios'); // OK
-    const sinComentariosMsg = document.getElementById('sin-comentarios-msg'); // OK
-    console.log('DEBUG Comentarios - Formulario encontrado:', formComentario); // OK - Log repetido.
-    console.log('DEBUG Comentarios - Autenticado:', estaAutenticadoServer); // OK - Log.
+    // --- Lógica Agregar Comentarios ---
+    if (formComentario && estaAutenticadoServer) {
+        formComentario.addEventListener('submit', async function(event) {
+             event.preventDefault();
+             const noticiaId = this.querySelector('input[name="NoticiaId"]').value;
+             const texto = textoComentarioInput.value.trim();
+             const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
+             if (!texto || texto.length < 3 || texto.length > 500) { alert('El comentario debe tener entre 3 y 500 caracteres.'); return; }
+             const submitButton = this.querySelector('button[type="submit"]');
+             if(submitButton) submitButton.disabled = true;
+             try {
+                 const response = await fetch('/Noticias/AgregarComentario', {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                     body: `noticiaId=${encodeURIComponent(noticiaId)}&textoComentario=${encodeURIComponent(texto)}`
+                 });
+                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                 const contentType = response.headers.get("content-type");
+                 if (contentType && contentType.includes("application/json")) {
+                     const data = await response.json();
+                     if (data.success) {
+                         textoComentarioInput.value = '';
+                         const nuevoComentarioDiv = document.createElement('div');
+                         nuevoComentarioDiv.className = 'comentario';
+                         nuevoComentarioDiv.style.opacity = 0; nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
+                         // Asegúrate de que el controlador devuelva el ID del nuevo comentario
+                         // nuevoComentarioDiv.dataset.comentarioId = data.id; 
 
-    // OK - Añade listener submit si form existe y está autenticado.
-    if (formComentario && estaAutenticadoServer) { 
-        formComentario.addEventListener('submit', async function(event) { // OK
-            event.preventDefault(); // OK
+                         const comentarioHeaderDiv = document.createElement('div'); comentarioHeaderDiv.className = 'comentario-header';
+                         const autorP = document.createElement('p'); autorP.className = 'comentario-autor'; autorP.textContent = data.autor; comentarioHeaderDiv.appendChild(autorP);
+                         const accionesDiv = document.createElement('div'); accionesDiv.className = 'comentario-acciones';
+                         const editButton = document.createElement('button'); editButton.className = 'btn-accion-comentario btn-editar-comentario'; editButton.title = 'Editar comentario'; editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>'; accionesDiv.appendChild(editButton);
+                         const deleteButton = document.createElement('button'); deleteButton.className = 'btn-accion-comentario btn-eliminar-comentario'; deleteButton.title = 'Eliminar comentario'; deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>'; accionesDiv.appendChild(deleteButton);
+                         comentarioHeaderDiv.appendChild(accionesDiv); nuevoComentarioDiv.appendChild(comentarioHeaderDiv);
 
-            const noticiaId = this.querySelector('input[name="NoticiaId"]').value; // OK
-            const texto = textoComentarioInput.value.trim(); // OK
-            const token = this.querySelector('input[name="__RequestVerificationToken"]').value; // OK
+                         const textoP = document.createElement('p'); textoP.className = 'comentario-texto'; textoP.textContent = data.texto; nuevoComentarioDiv.appendChild(textoP);
+                         const fechaP = document.createElement('p'); fechaP.className = 'comentario-fecha';
+                         const fechaSpan = document.createElement('span');
+                         // *** ASEGÚRATE de que tu C# envíe 'fechaISO' ***
+                         fechaSpan.dataset.utcdate = data.fechaISO; 
+                         fechaSpan.textContent = "formateando..."; fechaP.appendChild(fechaSpan); nuevoComentarioDiv.appendChild(fechaP);
 
-            // OK - Validación cliente.
-            if (!texto || texto.length < 3 || texto.length > 500) { 
-                alert('El comentario debe tener entre 3 y 500 caracteres.');
-                return;
-            }
-
-            const submitButton = this.querySelector('button[type="submit"]'); // OK
-            if(submitButton) submitButton.disabled = true; // OK
-
-            try { // OK
-                // OK - Fetch a AgregarComentario.
-                const response = await fetch('/Noticias/AgregarComentario', { 
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded', 
-                        'RequestVerificationToken': token 
-                    },
-                    body: `noticiaId=${encodeURIComponent(noticiaId)}&textoComentario=${encodeURIComponent(texto)}` 
-                });
-
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); // OK
-                
-                // OK - Verifica Content-Type.
-                const contentType = response.headers.get("content-type"); 
-                if (contentType && contentType.includes("application/json")) { // OK
-                    const data = await response.json(); // OK
-                    // --- INICIO Bloque if (data.success) ---
-                    if (data.success) { // OK
-                        textoComentarioInput.value = ''; // OK
-
-                        // --- Bloque CORREGIDO para crear elementos HTML ---
-                        const nuevoComentarioDiv = document.createElement('div'); // OK
-                        nuevoComentarioDiv.className = 'comentario'; // OK
-                        nuevoComentarioDiv.style.opacity = 0; // OK
-                        nuevoComentarioDiv.style.transition = 'opacity 0.5s ease'; // OK
-
-                        // Define autorP y textoP ANTES de usarlos
-                        const autorP = document.createElement('p'); 
-                        autorP.className = 'comentario-autor';      
-                        autorP.textContent = data.autor;             
-                        nuevoComentarioDiv.appendChild(autorP);      
-
-                        const textoP = document.createElement('p');  
-                        textoP.className = 'comentario-texto';       
-                        textoP.textContent = data.texto;             
-                        nuevoComentarioDiv.appendChild(textoP);      
-                        // --- FIN Bloque CORREGIDO ---
-
-
-                        // --- Bloque correcto para fecha ---
-                        const fechaP = document.createElement('p'); // OK
-                        fechaP.className = 'comentario-fecha'; // OK
-                        const fechaSpan = document.createElement('span'); // OK
-                        // *** ASEGÚRATE de que tu C# envíe 'fechaISO' ***
-                        fechaSpan.dataset.utcdate = data.fechaISO; 
-                        fechaSpan.textContent = "formateando..."; // OK
-                        fechaP.appendChild(fechaSpan); // OK
-                        nuevoComentarioDiv.appendChild(fechaP); // OK
-                        // --- FIN Bloque correcto para fecha ---
-
-                        listaComentariosDiv.prepend(nuevoComentarioDiv); // OK
-                        
-                        // OK - Formatea la fecha nueva.
-                        formatDateElement(fechaSpan); 
-
-                        // OK - Anima aparición.
-                        requestAnimationFrame(() => {  
-                           const nuevoElemento = listaComentariosDiv.firstChild;
-                           if (nuevoElemento) nuevoElemento.style.opacity = 1;
-                        }); 
-                        // OK - Oculta mensaje "sin comentarios".
-                        if (sinComentariosMsg) sinComentariosMsg.style.display = 'none'; 
-                    // --- FIN Bloque if (data.success) ---
-                    } else { // OK
-                        alert('Error al comentar: ' + (data.message || 'Error desconocido'));
-                    }
-                } else { // OK
-                     const errorText = await response.text();
-                     console.error('Respuesta no JSON recibida (AgregarComentario):', errorText);
-                     alert('Error del servidor al comentar. Revisa la consola.');
-                }
-            } catch (error) { // OK
-                console.error('Error al enviar comentario:', error);
-                alert('Error de conexión al comentar.');
-            } finally { // OK
-                 if(submitButton) submitButton.disabled = false; 
-            }
-        });
-    } // Fin if (formComentario && estaAutenticadoServer)
-
-     // Listener para botón Comentar (si NO está logueado) - OK
-     const comentarBtnSubmit = document.querySelector('#form-agregar-comentario button[type="submit"]'); 
-     if (comentarBtnSubmit && !estaAutenticadoServer) {
-         comentarBtnSubmit.addEventListener('click', function(e){
-             e.preventDefault(); 
-             mostrarModal(); 
+                         listaComentariosDiv.prepend(nuevoComentarioDiv);
+                         formatDateElement(fechaSpan); // Formatea la nueva fecha
+                         requestAnimationFrame(() => { const el = listaComentariosDiv.firstChild; if(el) el.style.opacity = 1; });
+                         if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
+                     } else { alert('Error al comentar: ' + (data.message || 'Error desconocido')); }
+                 } else { const errorText = await response.text(); console.error('Respuesta no JSON (AgregarComentario):', errorText); alert('Error servidor al comentar.'); }
+             } catch (error) { console.error('Error al enviar comentario:', error); alert('Error conexión al comentar.'); }
+             finally { if(submitButton) submitButton.disabled = false; }
          });
-     } else if (!comentarBtnSubmit && !estaAutenticadoServer) {
-         // OK
+    }
+
+    // --- LÓGICA PARA CLICK EN BOTONES EDITAR/ELIMINAR ---
+    if (listaComentariosDiv) {
+        listaComentariosDiv.addEventListener('click', async function(event) {
+            
+            // Lógica Eliminar
+            const deleteButton = event.target.closest('.btn-eliminar-comentario');
+            if (deleteButton) {
+                event.preventDefault();
+                const comentarioDiv = deleteButton.closest('.comentario');
+                const comentarioId = comentarioDiv ? comentarioDiv.dataset.comentarioId : null;
+                if (!comentarioId) { console.error('No se pudo encontrar ID del comentario (eliminar).'); return; }
+                mostrarModalConfirmacionComentario(comentarioId); // Muestra el modal correcto
+            }
+
+            // Lógica Editar (Placeholder)
+            const editButton = event.target.closest('.btn-editar-comentario');
+             if (editButton) {
+                 event.preventDefault();
+                 const comentarioDiv = editButton.closest('.comentario');
+                 const comentarioId = comentarioDiv ? comentarioDiv.dataset.comentarioId : null;
+                 if (!comentarioId) { console.error('No se pudo encontrar ID del comentario (editar).'); return; }
+                 alert(`Funcionalidad de editar para ID ${comentarioId} aún no implementada.`);
+             }
+        });
+    }
+
+    // --- Listener para confirmar eliminación DESDE EL MODAL ---
+    if (btnConfirmarEliminarComentario) {
+        if (!btnConfirmarEliminarComentario.dataset.listenerAdded) {
+             btnConfirmarEliminarComentario.addEventListener('click', async function() {
+                 if (!comentarioIdParaEliminar) return;
+                 btnConfirmarEliminarComentario.disabled = true;
+                 const comentarioId = comentarioIdParaEliminar;
+                 const comentarioDiv = listaComentariosDiv.querySelector(`.comentario[data-comentario-id="${comentarioId}"]`);
+                 const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                 if (!tokenInput) { alert('Error seguridad. Recarga.'); btnConfirmarEliminarComentario.disabled = false; return; }
+                 const token = tokenInput.value;
+                 try {
+                     const response = await fetch('/Noticias/EliminarComentario', {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                         body: `comentarioId=${encodeURIComponent(comentarioId)}`
+                     });
+                     ocultarModalConfirmacionComentario();
+                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                     const contentType = response.headers.get("content-type");
+                     if (contentType && contentType.includes("application/json")) {
+                         const data = await response.json();
+                         if (data.success) {
+                             if (comentarioDiv) {
+                                 comentarioDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                 comentarioDiv.style.opacity = '0';
+                                 comentarioDiv.style.transform = 'translateX(-50px)';
+                                 setTimeout(() => {
+                                     comentarioDiv.remove();
+                                     if (!listaComentariosDiv.querySelector('.comentario')) {
+                                          if(sinComentariosMsg) sinComentariosMsg.style.display = 'block';
+                                     }
+                                 }, 500);
+                             }
+                         } else { alert('Error al eliminar: ' + (data.message || 'Error desconocido')); }
+                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EliminarComentario):', errorText); alert('Error servidor al eliminar.'); }
+                 } catch (error) {
+                    ocultarModalConfirmacionComentario();
+                    console.error('Error al eliminar comentario:', error);
+                    alert('Error conexión al intentar eliminar.');
+                 }
+             });
+             btnConfirmarEliminarComentario.dataset.listenerAdded = 'true';
+        }
+    }
+
+     // Listener para botón Comentar (si NO está logueado)
+     if (comentarBtnSubmit && !estaAutenticadoServer) {
+         comentarBtnSubmit.addEventListener('click', function(e){ e.preventDefault(); mostrarModal(); });
      }
 
-     // --- Función formatDateElement ---
-     function formatDateElement(spanElement) { // OK - Definición de la función.
-         const utcDateString = spanElement.dataset.utcdate; // OK - Obtiene data-attribute.
-         if (!utcDateString) return; // OK - Sale si no hay fecha.
-
-         try { // OK
-             const date = new Date(utcDateString); // OK - Parsea ISO a fecha local.
-             const options = { // OK - Opciones de formato.
-                 year: 'numeric', month: 'numeric', day: 'numeric',
-                 hour: 'numeric', minute: 'numeric', hour12: true 
-             };
-             spanElement.textContent = date.toLocaleString(undefined, options); // OK - Formatea.
-         } catch (e) { // OK - Manejo de error de parseo.
-             console.error("Error formateando fecha:", utcDateString, e);
-             spanElement.textContent = "Fecha inválida";
-         }
-     }
-     // --- FIN Función formatDateElement ---
-
-     // --- CORRECCIÓN: Llamada inicial DENTRO del DOMContentLoaded principal ---
-     document.querySelectorAll('#lista-comentarios .comentario-fecha span[data-utcdate]').forEach(formatDateElement);
-
+    // --- Llamada inicial para formatear fechas existentes ---
+    document.querySelectorAll('#lista-comentarios .comentario-fecha span[data-utcdate]').forEach(formatDateElement);
 
 }); // Fin DOMContentLoaded principal
 </script>

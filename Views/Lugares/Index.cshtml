@@ -7,69 +7,33 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
-    /* --- ESTILOS GENERALES Y DE TARJETA --- */
-    .lugares-container {
-        padding: 2rem 1rem;
-        text-align: center;
-    }
-
-    /* --- ESTILO AÑADIDO PARA EL TÍTULO ROSA --- */
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #fd8ba9; /* Color rosa pastel, como en tus noticias */
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    .lugares-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 2rem;
-        margin-top: 2rem;
-    }
-    .lugar-card {
-        position: relative;
-        background-color: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        width: 320px;
-        overflow: hidden;
-        transition: transform 0.3s ease;
-    }
-    .lugar-card:hover {
-        transform: translateY(-5px);
-    }
-    .lugar-imagen {
-        width: 100%;
-        height: 220px;
-        object-fit: cover;
-    }
+    .lugares-container { padding: 2rem 1rem; text-align: center; }
+    .page-title { font-size: 2.5rem; font-weight: bold; color: #fd8ba9; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
+    .search-bar-container { display: flex; justify-content: center; margin: 2rem 0; }
+    .search-form { display: flex; width: 100%; max-width: 500px; }
+    .search-input { flex-grow: 1; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px 0 0 8px; }
+    .search-button { padding: 0.8rem 1.2rem; border: none; background-color: #d67a7a; color: white; border-radius: 0 8px 8px 0; cursor: pointer; }
+    .lugares-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin-top: 2rem; }
+    .lugar-card { position: relative; background-color: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 320px; overflow: hidden; }
+    .lugar-imagen { width: 100%; height: 220px; object-fit: cover; }
     .lugar-contenido { padding: 1.5rem; text-align: left; }
     .lugar-nombre { font-size: 1.5rem; font-weight: 600; color: #333; }
     .btn-ver-mas { display: block; margin-top: 1rem; padding: 0.75rem; background-color: #d67a7a; color: white; text-align: center; text-decoration: none; border-radius: 8px; }
-
-    /* --- ESTILOS DEL BOTÓN DE FAVORITOS --- */
-    .favorito-btn { position: absolute; top: 15px; right: 15px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-    .favorito-btn:hover { transform: scale(1.1); }
-    .favorito-btn .material-symbols-outlined { color: #a8798e; font-size: 1.4rem; font-variation-settings: 'FILL' 0; transition: font-variation-settings 0.2s, color 0.2s; }
+    .favorito-btn { position: absolute; top: 15px; right: 15px; background-color: #ffffff; border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; }
+    .favorito-btn .material-symbols-outlined { color: #a8798e; font-variation-settings: 'FILL' 0; transition: all 0.2s; }
     .favorito-btn.activo .material-symbols-outlined { color: #e25e83; font-variation-settings: 'FILL' 1; }
-
-    /* --- ESTILOS PARA EL MODAL DE ALERTA --- */
-    .modal-alerta { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; }
-    .modal-alerta-contenido { background-color: #fff; padding: 2.5rem; border-radius: 12px; text-align: center; position: relative; max-width: 450px; width: 90%; }
-    .modal-alerta-cerrar { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 1.8rem; cursor: pointer; }
-    .modal-alerta-contenido h3 { color: #d67a7a; font-size: 1.5rem; margin-bottom: 1.5rem; }
-    .login-button-group { display: flex; justify-content: center; gap: 15px; }
-    .login-button, .register-link { display: inline-block; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; text-decoration: none; border: 2px solid #72626e; }
-    .login-button { background-color: #72626e; color: white; }
-    .register-link { background-color: transparent; color: #72626e; }
 </style>
 
 <div class="lugares-container">
-    <!-- TÍTULO CORREGIDO -->
     <h1 class="page-title">Encuentra los mejores lugares pet friendly para tu mascota</h1>
     
+    <div class="search-bar-container">
+        <form asp-action="Index" method="get" class="search-form">
+            <input type="text" name="searchString" placeholder="Buscar por nombre o ubicación..." class="search-input" value="@ViewData["CurrentFilter"]" />
+            <button type="submit" class="search-button">Buscar</button>
+        </form>
+    </div>
+
     <div class="lugares-grid">
         @foreach (var item in Model)
         {

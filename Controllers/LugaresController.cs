@@ -22,15 +22,21 @@ public class LugaresController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string searchString)
     {
-        var lugares = await _context.LugaresPetFriendly.ToListAsync();
+        var lugaresQuery = _context.LugaresPetFriendly.AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            lugaresQuery = lugaresQuery.Where(l => l.Nombre.Contains(searchString) || l.Ubicacion.Contains(searchString));
+        }
+
+        var lugares = await lugaresQuery.ToListAsync();
         var lugarViewModels = new List<LugarViewModel>();
-        
+
         if (User.Identity.IsAuthenticated)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
             var favoritosUsuarioIds = await _context.FavoritosLugar
                 .Where(f => f.UsuarioId == userId)
                 .Select(f => f.LugarPetFriendlyId)
@@ -51,6 +57,7 @@ public class LugaresController : Controller
             }).ToList();
         }
 
+        ViewData["CurrentFilter"] = searchString;
         return View(lugarViewModels);
     }
     

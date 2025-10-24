@@ -49,17 +49,40 @@
                     </a>
                 </li>
 
-                <li class="nav-user-info">
-                    <span class="material-symbols-outlined">account_circle</span>
-                    <span class="nav-text">Hola, @User.Identity?.Name!</span>
-                </li>
-                <li>
-                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
-                        <button type="submit" class="nav-link-button">
-                            <span class="material-symbols-outlined">logout</span>
-                            <span class="nav-text">Cerrar Sesión</span>
-                        </button>
-                    </form>
+                <li class="nav-user-dropdown"> 
+                    <button type="button" class="nav-link-button" id="user-menu-button">
+                        
+                        @{
+                            // Leemos el Claim de la foto de perfil
+                            var profilePicUrl = User.FindFirst(PetConnectClaimTypes.ProfilePictureUrl)?.Value;
+                        }
+
+                        @if (string.IsNullOrEmpty(profilePicUrl))
+                        {
+                            <span class="material-symbols-outlined">account_circle</span>
+                        }
+                        else
+                        {
+                            <img src="@profilePicUrl" alt="Perfil" class="navbar-profile-pic" />
+                        }
+
+                        <span class="nav-text">Hola, @User.Identity?.Name!</span>
+                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">arrow_drop_down</span>
+                    </button>
+                    
+                    <div class="dropdown-menu-custom" id="user-menu-dropdown">
+                        <a asp-area="Identity" asp-page="/Account/Manage/Index">
+                            <span class="material-symbols-outlined">person</span>
+                            Ver perfil
+                        </a>
+                        
+                        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+                            <button type="submit">
+                                <span class="material-symbols-outlined">logout</span>
+                                Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
                 </li>
             }
             else

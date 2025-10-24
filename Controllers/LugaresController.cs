@@ -22,36 +22,60 @@ public class LugaresController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string searchString, int? pageNumber)
     {
-        var lugares = await _context.LugaresPetFriendly.ToListAsync();
+        var lugaresQuery = _context.LugaresPetFriendly.AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            lugaresQuery = lugaresQuery.Where(l => l.Nombre.Contains(searchString) || l.Ubicacion.Contains(searchString));
+        }
+
+        int pageSize = 9;
+        int currentPage = pageNumber ?? 1;
+
+        var paginatedLugares = await PaginatedList<LugarPetFriendly>.CreateAsync(lugaresQuery.AsNoTracking(), currentPage, pageSize);
+
         var lugarViewModels = new List<LugarViewModel>();
-        
+
         if (User.Identity.IsAuthenticated)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
             var favoritosUsuarioIds = await _context.FavoritosLugar
                 .Where(f => f.UsuarioId == userId)
                 .Select(f => f.LugarPetFriendlyId)
                 .ToHashSetAsync();
 
-            lugarViewModels = lugares.Select(lugar => new LugarViewModel
+            foreach (var lugar in paginatedLugares)
             {
-                Lugar = lugar,
-                EsFavorito = favoritosUsuarioIds.Contains(lugar.Id)
-            }).ToList();
+                lugarViewModels.Add(new LugarViewModel
+                {
+                    Lugar = lugar,
+                    EsFavorito = favoritosUsuarioIds.Contains(lugar.Id)
+                });
+            }
         }
         else
         {
-            lugarViewModels = lugares.Select(lugar => new LugarViewModel
+            foreach (var lugar in paginatedLugares)
             {
-                Lugar = lugar,
-                EsFavorito = false
-            }).ToList();
+                lugarViewModels.Add(new LugarViewModel
+                {
+                    Lugar = lugar,
+                    EsFavorito = false
+                });
+            }
         }
+        
+        var paginatedViewModel = new PaginatedList<LugarViewModel>(
+            lugarViewModels, 
+            await lugaresQuery.CountAsync(), 
+            currentPage, 
+            pageSize
+        );
 
-        return View(lugarViewModels);
+        ViewData["CurrentFilter"] = searchString;
+        return View(paginatedViewModel);
     }
     
     public async Task<IActionResult> Detalle(int? id)
@@ -105,6 +129,30 @@ public class LugaresController : Controller
             texto = comentario.Texto,
             fecha = comentario.FechaComentario.ToString("g")
         });
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EliminarComentario(int comentarioId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var comentario = await _context.ComentariosLugar.FindAsync(comentarioId);
+
+        if (comentario == null)
+        {
+            return NotFound();
+        }
+
+        if (comentario.UsuarioId != userId)
+        {
+            return Forbid();
+        }
+
+        _context.ComentariosLugar.Remove(comentario);
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true });
     }
 
     [HttpPost]

@@ -1,145 +1,50 @@
+@using System.Security.Claims
 @model PetConnect.Models.LugarPetFriendly
 
 @{
     ViewData["Title"] = Model.Nombre;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
-<!-- Dependencia para los iconos de Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
 <style>
-    body {
-        background-color: #FFFDEC; /* Fondo crema general */
-    }
-
-    /* --- ESTILOS CLAVE PARA EL LAYOUT DE DOS COLUMNAS --- */
-    .lugar-detalle-container {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 1rem;
-        
-        /* ESTO ES LO MÁS IMPORTANTE: Activa Flexbox */
-        display: flex;
-        
-        /* Permite que la barra lateral caiga debajo en pantallas pequeñas */
-        flex-wrap: wrap; 
-        
-        /* Espacio entre el contenido principal y la barra lateral */
-        gap: 2.5rem; 
-    }
-
-    .main-content {
-        /* La columna principal tomará 3 partes del espacio disponible */
-        flex: 3;
-        min-width: 300px;
-        background-color: #FAF6F0; /* Fondo ligeramente rosado/crema para el contenido */
-        padding: 2rem;
-        border-radius: 8px;
-    }
-
-    .contact-sidebar {
-        /* La barra lateral tomará 1 parte del espacio */
-        flex: 1;
-        background-color: #ffffff; /* Fondo blanco como en la imagen */
-        padding: 1.5rem;
-        border-radius: 12px;
-        height: fit-content; /* Se ajusta a la altura de su contenido */
-        border: 1px solid #eee;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Sombra sutil */
-    }
-    /* --- FIN DE ESTILOS DE LAYOUT --- */
-
-
-    .lugar-header {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .lugar-logo {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 4px solid #fff;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .lugar-title-info h1 {
-        margin: 0;
-        font-size: 2.5rem;
-        color: #333;
-    }
-
-    .lugar-title-info p {
-        margin: 0.2rem 0;
-        color: #555;
-        font-size: 1rem;
-    }
-
+    body { background-color: #FFFDEC; }
+    .lugar-detalle-container { max-width: 1200px; margin: 2rem auto; padding: 1rem; display: flex; flex-wrap: wrap; gap: 2.5rem; }
+    .main-content { flex: 3; min-width: 300px; background-color: #FAF6F0; padding: 2rem; border-radius: 8px; }
+    .contact-sidebar { flex: 1; background-color: #ffffff; padding: 1.5rem; border-radius: 12px; height: fit-content; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .lugar-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .lugar-logo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .lugar-title-info h1 { margin: 0; font-size: 2.5rem; color: #333; }
+    .lugar-title-info p { margin: 0.2rem 0; color: #555; font-size: 1rem; }
     .rating-stars .fa-star { color: #ffc107; }
     .rating-stars .fa-star.empty { color: #e0e0e0; }
-
     .banner-container { margin: 1.5rem 0; }
     .banner-image { width: 100%; border-radius: 8px; }
-
     .tabs-wrapper { margin-top: 2rem; }
     .tabs-container { border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; }
-    .tab-button {
-        padding: 0.8rem 1rem;
-        border: none;
-        background: none;
-        cursor: pointer;
-        font-size: 0.9rem;
-        margin-right: 1rem;
-        border-bottom: 3px solid transparent;
-        color: #555;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .tab-button.active {
-        border-bottom-color: #d67a7a;
-        font-weight: bold;
-        color: #333;
-    }
+    .tab-button { padding: 0.8rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.9rem; margin-right: 1rem; border-bottom: 3px solid transparent; color: #555; display: flex; align-items: center; gap: 8px; }
+    .tab-button.active { border-bottom-color: #d67a7a; font-weight: bold; color: #333; }
     .tab-content { display: none; padding: 1rem 0; }
     .tab-content.active { display: block; }
     .tab-content h3 { font-size: 1.5rem; margin-top: 0; }
-
-    .contact-sidebar h3 {
-        border-bottom: 2px solid #d67a7a;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
-    }
+    .contact-sidebar h3 { border-bottom: 2px solid #d67a7a; padding-bottom: 0.5rem; margin-bottom: 1rem; }
     .contact-sidebar ul { list-style: none; padding: 0; }
     .contact-sidebar li { margin-bottom: 1rem; display: flex; align-items: center; }
     .contact-sidebar li i { margin-right: 10px; width: 20px; text-align: center; color: #d67a7a; }
     .contact-sidebar a { text-decoration: none; color: #333; }
     .contact-sidebar a:hover { text-decoration: underline; }
-
-    .btn-contactar {
-        display: block;
-        width: 100%;
-        padding: 1rem;
-        background-color: #d17a7a;
-        color: white;
-        text-align: center;
-        text-decoration: none;
-        border-radius: 8px;
-        margin-top: 1.5rem;
-        font-weight: bold;
-        transition: background-color 0.3s;
-    }
+    .btn-contactar { display: block; width: 100%; padding: 1rem; background-color: #d17a7a; color: white; text-align: center; text-decoration: none; border-radius: 8px; margin-top: 1.5rem; font-weight: bold; transition: background-color 0.3s; box-sizing: border-box; }
     .btn-contactar:hover { background-color: #c96868; }
-
-    /* Estilos de Comentarios */
     .comentarios-container { margin-top: 1rem; }
+    .comentario { position: relative; background-color: #fefefe; border-left: 4px solid #72626e; border-radius: 8px; padding: 1.2rem; margin-bottom: 1.5rem; }
+    .comentario-autor { font-weight: bold; color: #555; }
+    .comentario-texto { color: #333; }
+    .comentario-fecha { font-size: 0.8rem; color: #aaa; text-align: right; margin-top: 0.5rem; }
+    .btn-eliminar-comentario { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #e57373; cursor: pointer; font-size: 1rem; opacity: 0.5; transition: opacity 0.2s; }
+    .comentario:hover .btn-eliminar-comentario { opacity: 1; }
     .form-comentario textarea { width: 100%; height: 80px; padding: 0.75rem; border-radius: 8px; border: 1px solid #ccc; }
     .form-comentario button { margin-top: 1rem; padding: 0.5rem 1rem; background-color: #72626e; color: white; border: none; border-radius: 8px; cursor: pointer; }
-
-    /* Estilos del Modal */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
     .modal-content { background-color: #FFFDEC; padding: 2.5rem; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); text-align: center; position: relative; max-width: 400px; width: 90%; }
     .close-button { position: absolute; top: 10px; right: 15px; font-size: 1.8rem; font-weight: 300; cursor: pointer; color: #888; }
@@ -151,7 +56,6 @@
 
 <div class="lugar-detalle-container">
 
-    <!-- Columna Principal (Izquierda) -->
     <main class="main-content">
         <header class="lugar-header">
             @if (!string.IsNullOrEmpty(Model.UrlLogo))
@@ -171,7 +75,7 @@
         </header>
 
         <div class="banner-container">
-            <img src="@Url.Content("~/img/banner_manada_365.png")" alt="Banner Manada 365" class="banner-image" />
+            <img src="~/images/nyacat.png" alt="Banner" class="banner-image" />
         </div>
 
         <div class="tabs-wrapper">
@@ -190,19 +94,29 @@
             <div id="comentarios" class="tab-content">
                  <section class="comentarios-container">
                      <h3>Opiniones de la comunidad</h3>
-                     @if (Model.Comentarios != null && Model.Comentarios.Any())
-                     {
-                         foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
-                         {
-                             <div class="comentario">
-                                 <p class="comentario-autor">@(comentario.Usuario?.UserName ?? "Anónimo")</p>
-                                 <p class="comentario-texto">@comentario.Texto</p>
-                                 <p class="comentario-fecha">@comentario.FechaComentario.ToString("g")</p>
-                             </div>
-                         }
-                     }
-                     else { <p>Aún no hay comentarios. ¡Sé el primero en compartir tu experiencia!</p> }
-                     
+                     <div id="lista-comentarios">
+                        @if (Model.Comentarios != null && Model.Comentarios.Any())
+                        {
+                            foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
+                            {
+                                <div class="comentario" id="comentario-@comentario.Id">
+                                    @if (comentario.UsuarioId == currentUserId)
+                                    {
+                                        <button class="btn-eliminar-comentario" data-id="@comentario.Id" title="Eliminar mi comentario">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    }
+                                    <p class="comentario-autor">@(comentario.Usuario?.UserName ?? "Anónimo")</p>
+                                    <p class="comentario-texto">@comentario.Texto</p>
+                                    <p class="comentario-fecha">@comentario.FechaComentario.ToString("g")</p>
+                                </div>
+                            }
+                        }
+                        else 
+                        { 
+                            <p id="sin-comentarios-msg">Aún no hay comentarios. ¡Sé el primero en compartir tu experiencia!</p> 
+                        }
+                     </div>
                      <div class="form-comentario">
                          <label for="textoComentario">Deja tu comentario</label>
                          <textarea id="textoComentario" name="textoComentario" required placeholder="Escribe tu opinión aquí..."></textarea>
@@ -216,12 +130,11 @@
             </div>
 
             <div id="ubicacion" class="tab-content">
-                <p>Mapa de ubicación próximamente...</p>
+                <div id="map" style="height: 450px; width: 100%; border-radius: 8px;"></div>
             </div>
         </div>
     </main>
-
-    <!-- Sidebar de Contacto (Derecha) -->
+    
     <aside class="contact-sidebar">
         <h3>Contacto</h3>
         <ul>
@@ -239,7 +152,6 @@
     </aside>
 </div>
 
-<!-- Modal de Acceso Requerido -->
 <div id="login-modal" class="modal-overlay">
     <div class="modal-content">
         <span class="close-button">&times;</span>
@@ -254,83 +166,120 @@
 
 @Html.AntiForgeryToken()
 
+
+<!-- CAMBIAR CLAVE API AQUI-->
+
+<script src="https://maps.googleapis.com/maps/api/js?key=CAMBIAR__CLAVE__API__AQUI&callback=initMap" async defer></script>
+
 <script>
-// El script se mantiene igual, ya estaba correcto.
-document.addEventListener('DOMContentLoaded', function () {
-
-    const usuarioHaIniciadoSesion = @User.Identity.IsAuthenticated.ToString().ToLower() === 'true';
-    const loginModal = document.getElementById('login-modal');
-
-    // Lógica para cambiar de pestaña (Tabs)
-    const tabs = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            tab.classList.add('active');
-            const activeContent = document.getElementById(tab.dataset.tab);
-            if (activeContent) {
-                activeContent.classList.add('active');
-            }
+    function initMap() {
+        if (@Model.Latitud == 0 && @Model.Longitud == 0) {
+            document.getElementById("map").innerHTML = "Ubicación no disponible.";
+            return;
+        }
+        const lugarPosicion = { lat: @Model.Latitud.ToString().Replace(",", "."), lng: @Model.Longitud.ToString().Replace(",", ".") };
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 16,
+            center: lugarPosicion,
         });
-    });
-
-    // Lógica para el botón de comentar
-    const comentarBtn = document.getElementById('comentar-btn');
-    if (comentarBtn) {
-        comentarBtn.addEventListener('click', async function() {
-            if (!usuarioHaIniciadoSesion) {
-                if (loginModal) {
-                    loginModal.style.display = 'flex';
-                }
-                return; 
-            }
-
-            const textoInput = document.getElementById('textoComentario');
-            const texto = textoInput.value;
-            const lugarId = @Model.Id;
-
-            if (!texto.trim()) {
-                alert('Por favor, escribe un comentario.');
-                return;
-            }
-
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-            try {
-                const response = await fetch('/Lugares/AgregarComentario', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                    body: `lugarId=${lugarId}&textoComentario=${encodeURIComponent(texto)}`
-                });
-                const result = await response.json();
-                if (result.success) {
-                    alert('¡Gracias por tu comentario!');
-                    location.reload();
-                } else {
-                    alert('Error: ' + result.message);
-                }
-            } catch (error) {
-                console.error('Error al enviar el comentario:', error);
-                alert('Ocurrió un error inesperado al intentar comentar.');
-            }
+        const marker = new google.maps.Marker({
+            position: lugarPosicion,
+            map: map,
+            title: "@Model.Nombre"
         });
     }
 
-    // Lógica para cerrar el modal
-    if (loginModal) {
-        const closeButton = loginModal.querySelector('.close-button');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                loginModal.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const usuarioHaIniciadoSesion = @(User.Identity.IsAuthenticated ? "true" : "false");
+        const loginModal = document.getElementById('login-modal');
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const activeContent = document.getElementById(tab.dataset.tab);
+                if (activeContent) {
+                    activeContent.classList.add('active');
+                }
+            });
+        });
+
+        const comentarBtn = document.getElementById('comentar-btn');
+        if (comentarBtn) {
+            comentarBtn.addEventListener('click', async function() {
+                if (!usuarioHaIniciadoSesion) {
+                    if (loginModal) loginModal.style.display = 'flex';
+                    return; 
+                }
+
+                const textoInput = document.getElementById('textoComentario');
+                const texto = textoInput.value;
+
+                if (!texto.trim()) {
+                    alert('Por favor, escribe un comentario.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Lugares/AgregarComentario', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                        body: `lugarId=@Model.Id&textoComentario=${encodeURIComponent(texto)}`
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error al enviar el comentario:', error);
+                    alert('Ocurrió un error inesperado al intentar comentar.');
+                }
             });
         }
-        window.addEventListener('click', (event) => {
-            if (event.target === loginModal) {
-                loginModal.style.display = 'none';
+
+        const attachDeleteListeners = () => {
+            document.querySelectorAll('.btn-eliminar-comentario').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const comentarioId = this.dataset.id;
+                    if (confirm('¿Estás seguro de que quieres eliminar este comentario?')) {
+                        try {
+                            const response = await fetch('/Lugares/EliminarComentario', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                                body: `comentarioId=${comentarioId}`
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                const comentarioDiv = document.getElementById(`comentario-${comentarioId}`);
+                                if (comentarioDiv) comentarioDiv.remove();
+                            } else {
+                                alert('No se pudo eliminar el comentario.');
+                            }
+                        } catch (error) {
+                            console.error('Error al eliminar comentario:', error);
+                        }
+                    }
+                });
+            });
+        };
+        
+        attachDeleteListeners();
+
+        if (loginModal) {
+            const closeButton = loginModal.querySelector('.close-button');
+            if (closeButton) {
+                closeButton.addEventListener('click', () => { loginModal.style.display = 'none'; });
             }
-        });
-    }
-});
+            window.addEventListener('click', (event) => {
+                if (event.target === loginModal) { loginModal.style.display = 'none'; }
+            });
+        }
+    });
 </script>

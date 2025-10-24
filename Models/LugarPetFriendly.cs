@@ -49,6 +49,9 @@ namespace PetConnect.Models
         [Required]
         public string? Descripcion { get; set; }
 
+        public double Latitud { get; set; }
+        public double Longitud { get; set; }
+
 
         public ICollection<ComentarioLugar> Comentarios { get; set; } = new List<ComentarioLugar>();
         public ICollection<FavoritoLugar> Favoritos { get; set; } = new List<FavoritoLugar>();

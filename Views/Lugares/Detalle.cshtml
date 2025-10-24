@@ -1,5 +1,6 @@
 @using System.Security.Claims
 @model PetConnect.Models.LugarPetFriendly
+@inject GoogleMapsConfig GoogleMapsConfig
 
 @{
     ViewData["Title"] = Model.Nombre;
@@ -169,7 +170,7 @@
 
 <!-- CAMBIAR CLAVE API AQUI-->
 
-<script src="https://maps.googleapis.com/maps/api/js?key=CAMBIAR__CLAVE__API__AQUI&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=@GoogleMapsConfig.ApiKey&callback=initMap" async defer></script>
 
 <script>
     function initMap() {

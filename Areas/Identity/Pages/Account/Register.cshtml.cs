@@ -70,6 +70,10 @@ namespace PetConnect.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
+            [Required(ErrorMessage = "El nombre es obligatorio.")]
+            [Display(Name = "Nombre Completo")]
+            public string NombreCompleto { get; set; }
+
             [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
             [EmailAddress(ErrorMessage = "Ingrese un correo electrónico válido.")]
             [Display(Name = "Correo electrónico")]
@@ -103,7 +107,7 @@ namespace PetConnect.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                await _userStore.SetUserNameAsync(user, Input.NombreCompleto, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 

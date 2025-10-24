@@ -22,7 +22,7 @@ public class LugaresController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index(string searchString)
+    public async Task<IActionResult> Index(string searchString, int? pageNumber)
     {
         var lugaresQuery = _context.LugaresPetFriendly.AsQueryable();
 
@@ -31,7 +31,11 @@ public class LugaresController : Controller
             lugaresQuery = lugaresQuery.Where(l => l.Nombre.Contains(searchString) || l.Ubicacion.Contains(searchString));
         }
 
-        var lugares = await lugaresQuery.ToListAsync();
+        int pageSize = 9;
+        int currentPage = pageNumber ?? 1;
+
+        var paginatedLugares = await PaginatedList<LugarPetFriendly>.CreateAsync(lugaresQuery.AsNoTracking(), currentPage, pageSize);
+
         var lugarViewModels = new List<LugarViewModel>();
 
         if (User.Identity.IsAuthenticated)
@@ -42,23 +46,36 @@ public class LugaresController : Controller
                 .Select(f => f.LugarPetFriendlyId)
                 .ToHashSetAsync();
 
-            lugarViewModels = lugares.Select(lugar => new LugarViewModel
+            foreach (var lugar in paginatedLugares)
             {
-                Lugar = lugar,
-                EsFavorito = favoritosUsuarioIds.Contains(lugar.Id)
-            }).ToList();
+                lugarViewModels.Add(new LugarViewModel
+                {
+                    Lugar = lugar,
+                    EsFavorito = favoritosUsuarioIds.Contains(lugar.Id)
+                });
+            }
         }
         else
         {
-            lugarViewModels = lugares.Select(lugar => new LugarViewModel
+            foreach (var lugar in paginatedLugares)
             {
-                Lugar = lugar,
-                EsFavorito = false
-            }).ToList();
+                lugarViewModels.Add(new LugarViewModel
+                {
+                    Lugar = lugar,
+                    EsFavorito = false
+                });
+            }
         }
+        
+        var paginatedViewModel = new PaginatedList<LugarViewModel>(
+            lugarViewModels, 
+            await lugaresQuery.CountAsync(), 
+            currentPage, 
+            pageSize
+        );
 
         ViewData["CurrentFilter"] = searchString;
-        return View(lugarViewModels);
+        return View(paginatedViewModel);
     }
     
     public async Task<IActionResult> Detalle(int? id)
@@ -113,7 +130,7 @@ public class LugaresController : Controller
             fecha = comentario.FechaComentario.ToString("g")
         });
     }
-    
+
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]

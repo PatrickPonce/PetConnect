@@ -1,50 +1,40 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+// Controllers/AdopcionController.cs
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PetConnect.Data;
+using PetConnect.Services; // Importa tu servicio
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace PetConnect.Controllers
 {
     public class AdopcionController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AnimalApiService _animalApiService;
 
-        public AdopcionController(ApplicationDbContext context)
+        public AdopcionController(AnimalApiService animalApiService)
         {
-            _context = context;
+            _animalApiService = animalApiService;
         }
 
         public async Task<IActionResult> Index(string busqueda)
         {
-            var query = _context.Servicios
-                .Where(s => s.Tipo == Models.TipoServicio.Adopcion)
-                .AsQueryable();
+            // Obtenemos todos los animales de la API
+            var todosLosAnimales = await _animalApiService.ObtenerAnimalesAdopcionAsync();
 
+            var animalesFiltrados = todosLosAnimales;
+            
+            // Si hay un término de búsqueda, filtramos la lista en memoria
             if (!string.IsNullOrEmpty(busqueda))
             {
-                query = query.Where(s => s.Nombre.Contains(busqueda) || (s.FundacionNombre != null && s.FundacionNombre.Contains(busqueda)));
+                string busquedaLower = busqueda.ToLower();
+                animalesFiltrados = todosLosAnimales
+                    .Where(a => a.Nombre.ToLower().Contains(busquedaLower) || 
+                                a.Temperamento.ToLower().Contains(busquedaLower) ||
+                                a.Tipo.ToLower().Contains(busquedaLower))
+                    .ToList();
             }
 
-            var model = await query.ToListAsync();
-            return View(model);
-        }
-
-        public async Task<IActionResult> Detalle(int id)
-        {
-            var model = await _context.Servicios
-                .Include(s => s.AdopcionDetalle) 
-                .FirstOrDefaultAsync(s => s.Id == id && s.Tipo == Models.TipoServicio.Adopcion);
-
-            if (model == null)
-            {
-                return NotFound();
-            }
-
-            return View(model);
+            ViewData["BusquedaActual"] = busqueda;
+            return View(animalesFiltrados);
         }
     }
 }

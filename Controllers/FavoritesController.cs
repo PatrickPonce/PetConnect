@@ -20,18 +20,30 @@ public class FavoritesController : Controller
     public async Task<IActionResult> Index(string searchString)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var viewModel = new FavoritosViewModel();
 
+        // 1. Obtener los Lugares Favoritos (esto ya lo tenías y funciona)
         var lugaresQuery = _context.FavoritosLugar
             .Where(f => f.UsuarioId == userId)
             .Select(f => f.LugarPetFriendly);
 
+        // 2. AÑADIR: Obtener las Guarderías Favoritas (esta es la parte que falta)
+        var guarderiasQuery = _context.FavoritosGuarderia
+            .Where(f => f.UsuarioId == userId)
+            .Select(f => f.Guarderia);
+
+        // 3. Aplicar el filtro de búsqueda a AMBAS listas
         if (!string.IsNullOrEmpty(searchString))
         {
             lugaresQuery = lugaresQuery.Where(l => l.Nombre.Contains(searchString) || l.Ubicacion.Contains(searchString));
+            guarderiasQuery = guarderiasQuery.Where(g => g.Nombre.Contains(searchString) || g.Ubicacion.Contains(searchString));
         }
 
-        viewModel.LugaresFavoritos = await lugaresQuery.ToListAsync();
+        // 4. Crear el ViewModel y poblar AMBAS listas
+        var viewModel = new FavoritosViewModel
+        {
+            LugaresFavoritos = await lugaresQuery.AsNoTracking().ToListAsync(),
+            GuarderiasFavoritas = await guarderiasQuery.AsNoTracking().ToListAsync()
+        };
 
         return View(viewModel);
     }

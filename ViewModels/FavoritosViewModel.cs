@@ -6,12 +6,12 @@ namespace PetConnect.ViewModels
     public class FavoritosViewModel
     {
         public List<LugarPetFriendly> LugaresFavoritos { get; set; }
-
+        public List<Guarderia> GuarderiasFavoritas { get; set; }
 
         public FavoritosViewModel()
         {
             LugaresFavoritos = new List<LugarPetFriendly>();
-
+            GuarderiasFavoritas = new List<Guarderia>();
         }
     }
 }

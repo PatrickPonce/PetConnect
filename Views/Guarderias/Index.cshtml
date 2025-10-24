@@ -1,0 +1,151 @@
+@model PaginatedList<PetConnect.ViewModels.GuarderiaViewModel>
+
+@{
+    ViewData["Title"] = "Guarderías";
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<style>
+    .page-container { padding: 2rem 1rem; text-align: center; }
+    .page-title { font-size: 2.5rem; font-weight: bold; color: #fd8ba9; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
+    .search-bar-container { display: flex; justify-content: center; margin: 2rem 0; }
+    .search-form { display: flex; width: 100%; max-width: 500px; }
+    .search-input { flex-grow: 1; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px 0 0 8px; }
+    .search-button { padding: 0.8rem 1.2rem; border: none; background-color: #d67a7a; color: white; border-radius: 0 8px 8px 0; cursor: pointer; }
+    .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; max-width: 1100px; margin-left: auto; margin-right: auto; }
+    .item-card { position: relative; background-color: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; overflow: hidden; }
+    .item-imagen { width: 100%; height: 220px; object-fit: cover; }
+    .item-contenido { padding: 1.5rem; text-align: left; }
+    .item-nombre { font-size: 1.5rem; font-weight: 600; color: #333; }
+    .btn-ver-mas { display: block; margin-top: 1rem; padding: 0.75rem; background-color: #d67a7a; color: white; text-align: center; text-decoration: none; border-radius: 8px; }
+    .favorito-btn { position: absolute; top: 15px; right: 15px; background-color: #ffffff; border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; }
+    .favorito-btn .material-symbols-outlined { color: #a8798e; font-variation-settings: 'FILL' 0; transition: all 0.2s; }
+    .favorito-btn.activo .material-symbols-outlined { color: #e25e83; font-variation-settings: 'FILL' 1; }
+    .pagination-container { margin-top: 3rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
+    .page-link { padding: 0.6rem 1rem; border: 1px solid #ddd; text-decoration: none; color: #d67a7a; background-color: #fff; border-radius: 5px; }
+    .page-link.active { background-color: #d67a7a; color: white; border-color: #d67a7a; }
+    .page-link.disabled { color: #ccc; border-color: #eee; pointer-events: none; }
+    .modal-alerta { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; }
+    .modal-alerta-contenido { background-color: #fff; padding: 2.5rem; border-radius: 12px; text-align: center; position: relative; max-width: 450px; width: 90%; }
+    .modal-alerta-cerrar { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 1.8rem; cursor: pointer; }
+    .modal-alerta-contenido h3 { color: #d67a7a; font-size: 1.5rem; margin-bottom: 1.5rem; }
+    .login-button-group { display: flex; justify-content: center; gap: 15px; }
+    .login-button, .register-link { display: inline-block; padding: 1rem 2rem; border-radius: 8px; font-weight: bold; text-decoration: none; border: 2px solid #72626e; }
+    .login-button { background-color: #72626e; color: white; }
+    .register-link { background-color: transparent; color: #72626e; }
+    @@media (max-width: 992px) { .grid-container { grid-template-columns: repeat(2, 1fr); } }
+    @@media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } }
+</style>
+
+<div class="page-container">
+    <h1 class="page-title">Encuentra la mejor guardería para tu mascota</h1>
+    
+    <div class="search-bar-container">
+        <form asp-action="Index" method="get" class="search-form">
+            <input type="text" name="searchString" placeholder="Buscar por nombre o ubicación..." class="search-input" value="@ViewData["CurrentFilter"]" />
+            <button type="submit" class="search-button">Buscar</button>
+        </form>
+    </div>
+
+    <div class="grid-container">
+        @foreach (var item in Model)
+        {
+            <div class="item-card">
+                <img src="@item.Guarderia.UrlImagenPrincipal" alt="Imagen de @item.Guarderia.Nombre" class="item-imagen" />
+                <div class="favorito-btn @(item.EsFavorito ? "activo" : "")" data-id="@item.Guarderia.Id" title="Añadir a favoritos">
+                    <span class="material-symbols-outlined">favorite</span>
+                </div>
+                <div class="item-contenido">
+                    <h3 class="item-nombre">@item.Guarderia.Nombre</h3>
+                    <p>@item.Guarderia.Ubicacion</p>
+                    <a asp-controller="Guarderias" asp-action="Detalle" asp-route-id="@item.Guarderia.Id" class="btn-ver-mas">
+                        Ver más detalles
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    @{
+        var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+        var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+    }
+
+    <div class="pagination-container">
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" asp-route-searchString="@ViewData["CurrentFilter"]" class="page-link @prevDisabled">Anterior</a>
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a asp-action="Index" asp-route-pageNumber="@i" asp-route-searchString="@ViewData["CurrentFilter"]" class="page-link @(i == Model.PageIndex ? "active" : "")">@i</a>
+        }
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" asp-route-searchString="@ViewData["CurrentFilter"]" class="page-link @nextDisabled">Siguiente</a>
+    </div>
+</div>
+
+<div id="modal-alerta" class="modal-alerta">
+    <div class="modal-alerta-contenido">
+        <span class="modal-alerta-cerrar">&times;</span>
+        <h3>Acceso Requerido</h3>
+        <p>¡Hola! Debes iniciar sesión o registrarte para guardar guarderías en tus favoritos.</p>
+        <div class="login-button-group">
+            <a href="/Identity/Account/Login" class="login-button">Iniciar Sesión</a>
+            <a href="/Identity/Account/Register" class="register-link">Registrarse</a>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const botonesFavoritos = document.querySelectorAll('.favorito-btn');
+    const modal = document.getElementById('modal-alerta');
+    const cerrarBtn = modal.querySelector('.modal-alerta-cerrar');
+    const usuarioHaIniciadoSesion = @(User.Identity.IsAuthenticated ? "true" : "false");
+
+    botonesFavoritos.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (!usuarioHaIniciadoSesion) {
+                modal.style.display = 'flex';
+            } else {
+                const guarderiaId = this.dataset.id;
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                try {
+                    const response = await fetch('/Guarderias/ToggleFavorito', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': token
+                        },
+                        body: `guarderiaId=${guarderiaId}`
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        this.classList.toggle('activo', result.agregado);
+                    } else {
+                        alert('Hubo un error al procesar tu solicitud.');
+                    }
+                } catch (error) {
+                    console.error('Error en la solicitud de favoritos:', error);
+                }
+            }
+        });
+    });
+
+    function ocultarModal() {
+        modal.style.display = 'none';
+    }
+
+    if (cerrarBtn) {
+        cerrarBtn.addEventListener('click', ocultarModal);
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            ocultarModal();
+        }
+    }
+});
+</script>

@@ -685,3 +685,179 @@ a.listing-card-v2 { text-decoration: none; color: inherit; }
     font-size: 1rem;
     font-weight: 500;
 }
+
+/* --- Estilos para el Menú Desplegable de Usuario --- */
+
+/* Contenedor principal del menú */
+.nav-user-dropdown {
+    position: relative; /* Clave para que el menú se posicione correctamente */
+}
+
+/* El botón "Hola, Prueba3!" */
+.nav-user-dropdown .nav-link-button {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Espacio entre el ícono, texto y flecha */
+}
+
+/* El menú que está oculto */
+.dropdown-menu-custom {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    right: 0;
+    top: 100%; /* Se posiciona justo debajo del botón */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 180px; /* Ancho del menú */
+    padding: 8px;
+    z-index: 1000;
+    margin-top: 5px; /* Pequeña separación de la barra */
+    border: 1px solid #eee;
+}
+
+/* Clase que mostrará el menú (se añade con JavaScript) */
+.dropdown-menu-custom.show {
+    display: block;
+}
+
+/* Estilos para los enlaces y el botón dentro del menú */
+.dropdown-menu-custom a,
+.dropdown-menu-custom form button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+    width: 100%;
+    text-align: left;
+    
+    /* Reseteo para el botón de logout */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+}
+
+.dropdown-menu-custom a:hover,
+.dropdown-menu-custom form button:hover {
+    background-color: #f4f4f4; /* Color al pasar el mouse */
+    color: #000;
+}
+
+/*
+=========================================
+ ESTILOS PARA LA PÁGINA "MANAGE ACCOUNT"
+=========================================
+*/
+
+/* Contenedor principal */
+.manage-account-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 40px;
+    background-color: #fff; /* Fondo blanco para el contenido */
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+/* Títulos de la página */
+.manage-account-container .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+}
+.manage-account-container .page-subtitle {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/* --- 1. MENÚ DE NAVEGACIÓN LATERAL --- 
+(Profile, Email, Password...) 
+*/
+.manage-account-container .nav-pills .nav-link {
+    background-color: #f8f8f8;
+    color: #444;
+    font-weight: 600;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+/* Botón del menú al pasar el mouse */
+.manage-account-container .nav-pills .nav-link:hover {
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+/* Botón del menú ACTIVO (la página actual) */
+.manage-account-container .nav-pills .nav-link.active,
+.manage-account-container .nav-pills .nav-link.active:hover {
+    background-color: #97a992; /* Verde principal de tu navbar */
+    color: white;
+    box-shadow: 0 4px 10px rgba(151, 169, 146, 0.4);
+}
+
+
+/* --- 2. FORMULARIOS (Inputs y Labels) --- 
+*/
+
+/* Etiquetas (Username, Phone number...) */
+.manage-account-container .form-label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+/* Campos de texto */
+.manage-account-container .form-control {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    box-shadow: none; /* Quita la sombra azul de Bootstrap */
+    transition: border-color 0.3s ease;
+}
+
+/* Campo de texto al hacer clic (focus) */
+.manage-account-container .form-control:focus {
+    background-color: #fff;
+    border-color: #97a992; /* Verde principal */
+    box-shadow: 0 0 0 3px rgba(151, 169, 146, 0.2);
+}
+
+/* Textos de ayuda (ej: "Enter your phone number") */
+.manage-account-container .form-text {
+    color: #777;
+    font-size: 0.9rem;
+}
+
+
+/* --- 3. BOTONES (Save, etc.) --- 
+*/
+
+/* Botón principal (Save) */
+.manage-account-container .btn-primary {
+    background-color: #E88989; /* Color salmón/rosa de tu registro */
+    border: none;
+    color: white !important;
+    font-weight: bold;
+    padding: 12px 35px;
+    border-radius: 30px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: auto; /* Hacemos que no ocupe el 100% */
+}
+
+/* Botón principal al pasar el mouse */
+.manage-account-container .btn-primary:hover {
+    background-color: #d17a7a; /* Un tono más oscuro */
+    box-shadow: 0 4px 15px rgba(232, 137, 137, 0.4);
+    transform: translateY(-2px);
+}

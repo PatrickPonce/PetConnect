@@ -2,15 +2,18 @@
 @model LoginModel
 
 @{
-    ViewData["Title"] = "Log in";
-    Layout = null;
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = null; // Mantenemos tu layout nulo para una página independiente
 }
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewData["Title"] - Purr & Paws</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetConnect</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- Añade Font Awesome para el icono de GitHub -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
     <div class="login-container">
@@ -19,37 +22,70 @@
             <p>Amor, cuidado y diversión para cada patita.</p>
         </div>
         <div class="form-section">
-            <form id="account" method="post">
+            
+            <!-- =========== FORMULARIO PARA PROVEEDORES EXTERNOS (GITHUB) =========== -->
+            @if (Model.ExternalLogins?.Count > 0)
+            {
                 <h4>Iniciar sesión</h4>
-                <button type="button" class="login-button google-login-button">
-                    <img src="~/images/google-icon.png" alt="Google Icon" style="height: 1.2em; vertical-align: middle; margin-right: 10px;" />
-                    Iniciar sesión con Google
-                </button>
-                <p>o con el Email</p>
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                    <div>
+                        @foreach (var provider in Model.ExternalLogins)
+                        {
+                            // Botón personalizado para GitHub
+                            if (provider.Name == "GitHub")
+                            {
+                                <button type="submit" name="provider" value="@provider.Name" class="login-button github-login-button">
+                                    <i class="fab fa-github" style="margin-right: 10px;"></i>
+                                    Iniciar sesión con @provider.DisplayName
+                                </button>
+                            }
+                            else // Botones genéricos para otros proveedores que puedas añadir
+                            {
+                                <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                            }
+                        }
+                    </div>
+                </form>
+                <p class="separator-text">o con el Email</p>
+            }
+            
+            <!-- =========== FORMULARIO PARA INICIO DE SESIÓN LOCAL (EMAIL/CONTRASEÑA) =========== -->
+            <form id="account" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                
                 <div class="form-group">
                     <label asp-for="Input.Email">Correo electrónico</label>
                     <input asp-for="Input.Email" class="form-control form-control-custom" autocomplete="username" aria-required="true" />
                     <span asp-validation-for="Input.Email" class="text-danger"></span>
                 </div>
+                
                 <div class="form-group">
                     <label asp-for="Input.Password">Contraseña</label>
                     <input asp-for="Input.Password" class="form-control form-control-custom" autocomplete="current-password" aria-required="true" />
                     <span asp-validation-for="Input.Password" class="text-danger"></span>
                 </div>
+                
                 <button id="login-submit" type="submit" class="login-button">Iniciar sesión</button>
-                <p>
-                    <a id="forgot-password" asp-page="./ForgotPassword" class="login-link">¿Te olvidaste tu contraseña? Haz click aquí</a>
-                </p>
-                    <a asp-area="Identity" asp-page="/Account/Register" class="btn-register btn-secondary">Registrarse</a>
-                <p>
-                    <a href="~/Home/Index" class="btn-custom btn-link">Volver a la página de inicio</a>
-                </p>
+                
+                <div class="login-links-footer">
+                    <p>
+                        <a id="forgot-password" asp-page="./ForgotPassword" class="login-link">¿Olvidaste tu contraseña?</a>
+                    </p>
+                    <p>
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="login-link">Registrar una nueva cuenta</a>
+                    </p>
+                    <p>
+                        <a href="~/Home/Index" class="btn-custom btn-link mt-3">Volver a la página de inicio</a>
+                    </p>
+                </div>
             </form>
+
         </div>
     </div>
-    @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-    }
+
+    @* Esta sección es necesaria para las validaciones de ASP.NET *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
 </body>
 </html>

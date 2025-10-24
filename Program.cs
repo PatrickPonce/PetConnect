@@ -38,6 +38,8 @@ var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
 
+builder.Services.AddScoped<PetConnect.Services.AnimalApiService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

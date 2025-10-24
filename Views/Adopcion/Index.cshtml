@@ -1,23 +1,23 @@
-@model List<PetConnect.Models.Servicio>
+@model List<PetConnect.Models.Api.AnimalViewModel>
 @{
     ViewData["Title"] = "Adopción de Mascotas";
 }
 
-<div class="adopcion-page">
+<div class="directorio-page-v2">
+    <!-- BANNER DE LA PÁGINA -->
     <div class="hero-banner">
-        <img src="~/images/adopcion/banner.jpg" alt="Gatitos en un sofá" />
-        <div class="hero-text">
-            <h1>Adopción de mascotas</h1>
-        </div>
+        <img src="~/images/banners/adopcion-banner.jpg" alt="Animales esperando adopción" />
+        <div class="hero-text"><h1>Adopta un Amigo</h1></div>
     </div>
 
     <div class="content-wrapper">
-        <h2 class="page-subtitle">Encuentra los mejores lugares de adopción de mascotas</h2>
+        <h2 class="page-subtitle">Encuentra a tu compañero de vida</h2>
 
+        <!-- TU BUSCADOR -->
         <section class="search-section-adopcion">
             <form asp-controller="Adopcion" asp-action="Index" method="get" class="search-form">
                 <span class="material-symbols-outlined search-icon-input">search</span>
-                <input name="busqueda" type="text" class="search-input" placeholder="¿Qué estás buscando?" />
+                <input name="busqueda" type="text" class="search-input" placeholder="Busca por raza, temperamento o tipo (perro/gato)" value="@ViewData["BusquedaActual"]" />
                 <button type="submit" class="search-button">
                     <span class="material-symbols-outlined">tune</span>
                     <span class="material-symbols-outlined">search</span>
@@ -25,24 +25,40 @@
             </form>
         </section>
 
-        <div class="listing-grid">
-            @foreach (var servicio in Model)
-            {
-                <a asp-action="Detalle" asp-route-id="@servicio.Id" class="listing-card">
-                    <div class="card-image">
-                        <img src="@servicio.ImagenPrincipalUrl" alt="Logo de @servicio.Nombre" />
-                    </div>
-                    <div class="card-content">
-                        <div class="card-header">
-                            <span class="card-fundacion">@servicio.FundacionNombre</span>
-                            <span class="material-symbols-outlined card-favorite">star</span>
+        <!-- LISTADO DE ANIMALES -->
+        @if (Model.Any())
+        {
+            <div class="listing-grid-v2">
+                @foreach (var animal in Model)
+                {
+                    <div class="listing-card-v2">
+                        <div class="card-image">
+                            <img src="@animal.UrlImagen" alt="Foto de @animal.Nombre" />
                         </div>
-                        <h3 class="card-title">@servicio.Nombre</h3>
+                        <div class="card-content">
+                            <div class="card-header">
+                                <span class="card-category">@animal.Tipo</span>
+                                <button class="card-favorite-btn"><span class="material-symbols-outlined">favorite</span></button>
+                            </div>
+                            <h3 class="card-title">@animal.Nombre</h3>
+                            <p class="card-location">
+                                <span class="material-symbols-outlined">psychology</span>
+                                @animal.Temperamento
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="btn-ver-mas">Ver más <span class="material-symbols-outlined">arrow_forward</span></a>
+                        </div>
                     </div>
-                </a>
-            }
-        </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center">
+                <p>No se encontraron animales que coincidan con tu búsqueda.</p>
+                <a asp-action="Index">Ver todos los animales disponibles</a>
+            </div>
+        }
     </div>
 </div>
-
-@* Agrega este CSS al final de tu site.css *@   

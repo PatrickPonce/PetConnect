@@ -1,29 +1,39 @@
-@* /Views/Shared/_Navbar.cshtml *@
+@using Microsoft.AspNetCore.Identity
+@using PetConnect.Services
+
+@inject ConfiguracionSitioService configService
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    var logoUrl = await configService.ObtenerValorAsync("UrlLogo", "/images/logoP.png");
+    var logoVersion = await configService.ObtenerValorAsync("UrlLogoVersion", "1");
+    var logoUrlConVersion = $"{logoUrl}?v={logoVersion}";
+    var nombreSitio = await configService.ObtenerValorAsync("NombreSitio", "Purr & Paws");
+}
 
 <header class="app-header">
     <div class="logo-container">
         <div class="logo-icon">
-            <img src="~/images/logoP.png" alt="Purr & Paws Logo">
+            <img src="@logoUrlConVersion" alt="@nombreSitio Logo">
         </div>
-        <span class="logo-text">Purr & Paws</span>
+        <span class="logo-text">@nombreSitio</span>
     </div>
 
     <nav class="main-nav">
         <ul>
             <li>
-                <a asp-controller="Home" asp-action="Guest"> @* He quitado la clase 'active' de aquí para que se gestione dinámicamente *@
+                <a asp-controller="Home" asp-action="Guest">
                     <span class="material-symbols-outlined">home</span>
                     <span class="nav-text">Inicio</span>
                 </a>
             </li>
             <li>
-                <a asp-controller="Noticias" asp-action="Index"> @* He quitado la clase 'active' de aquí para que se gestione dinámicamente *@
+                <a asp-controller="Noticias" asp-action="Index">
                     <span class="material-symbols-outlined">newspaper</span>
                     <span class="nav-text">Noticias</span>
                 </a>
             </li>
             <li>
-                @* Este enlace apunta a la página principal de categorías de servicios *@
                 <a asp-controller="Directorio" asp-action="Index">
                     <span class="material-symbols-outlined">volunteer_activism</span>
                     <span class="nav-text">Servicios</span>
@@ -43,4 +53,38 @@
              </li>
          </ul>
      </nav>
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <li>
+                    <a asp-controller="Favorites" asp-action="Index">
+                        <span class="material-symbols-outlined">favorite</span>
+                        <span class="nav-text">Favoritos</span>
+                    </a>
+                </li>
+
+                <li class="nav-user-info">
+                    <span class="material-symbols-outlined">account_circle</span>
+                    <span class="nav-text">Hola, @User.Identity?.Name!</span>
+                </li>
+                <li>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+                        <button type="submit" class="nav-link-button">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span class="nav-text">Cerrar Sesión</span>
+                        </button>
+                    </form>
+                </li>
+            }
+            else
+            {
+                <li>
+                    <a asp-area="Identity" asp-page="/Account/Login">
+                        <span class="material-symbols-outlined">login</span>
+                        <span class="nav-text">Iniciar Sesión</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
 </header>

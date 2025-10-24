@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -11,9 +12,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016070327_ActualizarIdentityParaRoles")]
+    partial class ActualizarIdentityParaRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -298,149 +301,13 @@ namespace PetConnect.Migrations
 
                     b.Property<string>("Texto")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NoticiaId");
 
                     b.ToTable("Comentarios");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.ComentarioLugar", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("FechaComentario")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("LugarPetFriendlyId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Texto")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LugarPetFriendlyId");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("ComentariosLugar");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.Favorito", b =>
-                {
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("NoticiaId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("FechaAgregado")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UsuarioId", "NoticiaId");
-
-                    b.HasIndex("NoticiaId");
-
-                    b.ToTable("Favoritos");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.FavoritoLugar", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("LugarPetFriendlyId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LugarPetFriendlyId");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("FavoritosLugar");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.LugarPetFriendly", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<double?>("Calificacion")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("Categoria")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DireccionCompleta")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<double>("Latitud")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("Longitud")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Telefono")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Ubicacion")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("UrlFacebook")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UrlImagenPrincipal")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UrlInstagram")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UrlLogo")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LugaresPetFriendly");
                 });
 
             modelBuilder.Entity("PetConnect.Models.Noticia", b =>
@@ -686,63 +553,6 @@ namespace PetConnect.Migrations
                     b.Navigation("Noticia");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.ComentarioLugar", b =>
-                {
-                    b.HasOne("PetConnect.Models.LugarPetFriendly", "LugarPetFriendly")
-                        .WithMany("Comentarios")
-                        .HasForeignKey("LugarPetFriendlyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LugarPetFriendly");
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.Favorito", b =>
-                {
-                    b.HasOne("PetConnect.Models.Noticia", "Noticia")
-                        .WithMany("Favoritos")
-                        .HasForeignKey("NoticiaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Noticia");
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.FavoritoLugar", b =>
-                {
-                    b.HasOne("PetConnect.Models.LugarPetFriendly", "LugarPetFriendly")
-                        .WithMany("Favoritos")
-                        .HasForeignKey("LugarPetFriendlyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LugarPetFriendly");
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("PetConnect.Models.PetShopDetalle", b =>
                 {
                     b.HasOne("PetConnect.Models.Servicio", "Servicio")
@@ -776,18 +586,9 @@ namespace PetConnect.Migrations
                     b.Navigation("Servicio");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.LugarPetFriendly", b =>
-                {
-                    b.Navigation("Comentarios");
-
-                    b.Navigation("Favoritos");
-                });
-
             modelBuilder.Entity("PetConnect.Models.Noticia", b =>
                 {
                     b.Navigation("Comentarios");
-
-                    b.Navigation("Favoritos");
                 });
 
             modelBuilder.Entity("PetConnect.Models.Servicio", b =>

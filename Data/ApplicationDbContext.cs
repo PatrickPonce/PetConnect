@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Models;
+using Microsoft.AspNetCore.Identity;
 namespace PetConnect.Data;
 
-public class ApplicationDbContext : IdentityDbContext
+public class ApplicationDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -19,7 +20,12 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Resena> Resenas { get; set; }
     
     public DbSet<PetShopDetalle> PetShopDetalles { get; set; }
+    public DbSet<ConfiguracionSitio> ConfiguracionesSitio { get; set; }
+    public DbSet<LugarPetFriendly> LugaresPetFriendly { get; set; }
+    public DbSet<ComentarioLugar> ComentariosLugar { get; set; }
+    public DbSet<FavoritoLugar> FavoritosLugar { get; set; }
     public DbSet<Favorito> Favoritos { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -44,13 +50,9 @@ public class ApplicationDbContext : IdentityDbContext
             .WithOne(psd => psd.Servicio)
             .HasForeignKey<PetShopDetalle>(psd => psd.ServicioId);
 
-        modelBuilder.Entity<Favorito>()
-            .HasKey(f => new { f.UsuarioId, f.NoticiaId });
-
-
         modelBuilder.Entity<Favorito>(entity =>
         {
-            entity.HasKey(f => new { f.UsuarioId, f.NoticiaId });
+            entity.HasKey(f => new { f.UsuarioId, f.NoticiaId }); 
             entity.HasOne(f => f.Usuario)
                 .WithMany() 
                 .HasForeignKey(f => f.UsuarioId)
@@ -61,5 +63,6 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasForeignKey(f => f.NoticiaId);
         });
 
-    }   
+    }   
+
 }

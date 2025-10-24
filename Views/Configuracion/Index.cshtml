@@ -1,0 +1,172 @@
+@using System.Collections.Generic
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Configuración del Sitio";
+    
+    var configuraciones = ViewBag.Configuraciones as Dictionary<string, string> ?? new Dictionary<string, string>();
+    
+    var logoUrl = configuraciones.GetValueOrDefault("UrlLogo", "/images/logoP.png");
+    var logoVersion = configuraciones.GetValueOrDefault("UrlLogoVersion", "1");
+    var logoUrlConVersion = $"{logoUrl}?v={logoVersion}";
+    
+    var urlBanner = configuraciones.GetValueOrDefault("UrlBanner", "/images/veterinaria_banner.jpg");
+    var bannerVersion = configuraciones.GetValueOrDefault("UrlBannerVersion", "1");
+    var bannerUrlConVersion = $"{urlBanner}?v={bannerVersion}";
+}
+
+<style>
+    .config-panel { max-width: 900px; margin: 40px auto; }
+    .config-title { text-align: center; color: #E88989; font-weight: bold; font-size: 2.5rem; margin-bottom: 50px; }
+    .btn-save { background-color: #97a992; color: white; font-weight: bold; padding: 12px 30px; border-radius: 8px; font-size: 1.1rem; border: none; }
+
+    .config-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 50px;
+        margin-bottom: 40px;
+    }
+
+    .config-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .item-label {
+        background-color: #d8d8d8;
+        color: #555;
+        font-weight: 600;
+        padding: 8px 25px;
+        border-radius: 20px;
+        margin-bottom: 15px;
+    }
+
+    .preview-box {
+        position: relative;
+        background-color: #e9e9e9;
+        border-radius: 25px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .preview-box.logo {
+        width: 200px;
+        height: 200px;
+    }
+    .preview-box.logo img {
+        width: 150px;
+        height: 150px;
+        object-fit: contain;
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 10px;
+    }
+
+    .preview-box.banner {
+        width: 550px;
+        height: auto;
+    }
+    .preview-box.banner img {
+        width: 100%;
+        height: auto;
+        max-height: 150px;
+        object-fit: cover;
+        border-radius: 15px;
+    }
+    
+    .file-input-hidden {
+        display: none;
+    }
+    
+    .edit-btn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    .edit-btn .material-symbols-outlined {
+        font-size: 20px;
+    }
+</style>
+
+<div class="config-panel">
+    <h1 class="config-title">Configuración General de la Página</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <form asp-action="Guardar" method="post" enctype="multipart/form-data">
+        <div class="config-wrapper">
+            <div class="config-item">
+                <span class="item-label">Logo</span>
+                <div class="preview-box logo">
+                    <img id="logo-preview-img" src="@logoUrlConVersion" alt="Previsualización del logo" />
+                    
+                    <label for="logo" class="edit-btn" title="Cambiar logo">
+                        <span class="material-symbols-outlined">edit</span>
+                    </label>
+                    <input type="file" name="logo" id="logo" class="file-input-hidden" onchange="previewImage(this, 'logo-preview-img');" />
+                </div>
+            </div>
+
+            <div class="config-item">
+                <span class="item-label">Banner</span>
+                <div class="preview-box banner">
+                    <img id="banner-preview-img" src="@bannerUrlConVersion" alt="Previsualización del banner" />
+                    
+                    <label for="banner" class="edit-btn" title="Cambiar banner">
+                        <span class="material-symbols-outlined">edit</span>
+                    </label>
+                    <input type="file" name="banner" id="banner" class="file-input-hidden" onchange="previewImage(this, 'banner-preview-img');" />
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 40px;">
+            <div class="config-item" style="width: 100%;">
+                <span class="item-label">Datos Generales</span>
+                <div class="preview-box" style="padding: 30px; background-color: #fff; border: 1px solid #e0e0e0; margin-top: 15px; width: 100%;">
+                    @{
+                        var nombreSitio = configuraciones.GetValueOrDefault("NombreSitio", "Purr & Paws");
+                    }
+                    <div class="form-group" style="width:100%;">
+                        <label for="nombreSitio" class="form-label fw-bold">Nombre del Sitio</label>
+                        <input type="text" name="nombreSitio" class="form-control" value="@nombreSitio" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-save">Guardar Cambios</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

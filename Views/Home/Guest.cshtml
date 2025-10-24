@@ -1,14 +1,63 @@
+@using PetConnect.Services
+@inject ConfiguracionSitioService configService
+
 @{
     ViewData["Title"] = "Página de Invitado";
+
+    var logoUrl = await configService.ObtenerValorAsync("UrlLogo", "/images/logoP.png");
+    var logoVersion = await configService.ObtenerValorAsync("UrlLogoVersion", "1");
+    var logoUrlConVersion = $"{logoUrl}?v={logoVersion}";
+
+    var urlBanner = await configService.ObtenerValorAsync("UrlBanner", "/images/veterinaria_banner.jpg");
+    var bannerVersion = await configService.ObtenerValorAsync("UrlBannerVersion", "1");
+    var bannerUrlConVersion = $"{urlBanner}?v={bannerVersion}";
 }
 
+<style>
+    .hero-section {
+        position: relative;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 80px 50px;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.4);
+        z-index: 1; 
+    }
+
+    .hero-text, .hero-image {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-image img {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
 <div class="main-content">
-    <div class="hero-section">
+    <div class="hero-section" style="background-image: url('@bannerUrlConVersion');">
         <h1 class="hero-text">La plataforma que cuida a quien más quieres</h1>
         <div class="hero-image">
-            <img src="~/images/pet-logo.png" alt="Logo de Purr & Paws">
+            <img src="@logoUrlConVersion" alt="Logo de Purr & Paws">
         </div>
     </div>
+
     <div class="featured-news-section">
         <h2>Noticias destacadas</h2>
         <div class="news-cards-container">

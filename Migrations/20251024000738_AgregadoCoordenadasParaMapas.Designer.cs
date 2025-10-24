@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -11,9 +12,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251024000738_AgregadoCoordenadasParaMapas")]
+    partial class AgregadoCoordenadasParaMapas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -298,8 +301,7 @@ namespace PetConnect.Migrations
 
                     b.Property<string>("Texto")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -337,24 +339,6 @@ namespace PetConnect.Migrations
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("ComentariosLugar");
-                });
-
-            modelBuilder.Entity("PetConnect.Models.Favorito", b =>
-                {
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("NoticiaId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("FechaAgregado")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UsuarioId", "NoticiaId");
-
-                    b.HasIndex("NoticiaId");
-
-                    b.ToTable("Favoritos");
                 });
 
             modelBuilder.Entity("PetConnect.Models.FavoritoLugar", b =>
@@ -705,25 +689,6 @@ namespace PetConnect.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.Favorito", b =>
-                {
-                    b.HasOne("PetConnect.Models.Noticia", "Noticia")
-                        .WithMany("Favoritos")
-                        .HasForeignKey("NoticiaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Noticia");
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("PetConnect.Models.FavoritoLugar", b =>
                 {
                     b.HasOne("PetConnect.Models.LugarPetFriendly", "LugarPetFriendly")
@@ -786,8 +751,6 @@ namespace PetConnect.Migrations
             modelBuilder.Entity("PetConnect.Models.Noticia", b =>
                 {
                     b.Navigation("Comentarios");
-
-                    b.Navigation("Favoritos");
                 });
 
             modelBuilder.Entity("PetConnect.Models.Servicio", b =>

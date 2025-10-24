@@ -29,7 +29,9 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser, IdentityRole
     public DbSet<ComentarioLugar> ComentariosLugar { get; set; }
     public DbSet<FavoritoLugar> FavoritosLugar { get; set; }
  
- 
+    public DbSet<Guarderia> Guarderias { get; set; }
+    public DbSet<ComentarioGuarderia> ComentariosGuarderia { get; set; }
+    public DbSet<FavoritoGuarderia> FavoritosGuarderia { get; set; }
  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,6 +56,12 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser, IdentityRole
             .HasOne(s => s.PetShopDetalle)
             .WithOne(psd => psd.Servicio)
             .HasForeignKey<PetShopDetalle>(psd => psd.ServicioId);
+        
+        
+        modelBuilder.Entity<FavoritoGuarderia>()
+        .HasKey(f => new { f.GuarderiaId, f.UsuarioId });
+            
+
     }   
 
 }

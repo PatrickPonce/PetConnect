@@ -1,5 +1,6 @@
 @using System.Security.Claims
 @model PetConnect.Models.Guarderia
+@inject GoogleMapsConfig GoogleMapsConfig
 
 @{
     ViewData["Title"] = Model.Nombre;
@@ -71,7 +72,7 @@
         </header>
 
         <div class="banner-container">
-            <img src="@Model.UrlImagenPrincipal" alt="Banner de @Model.Nombre" class="banner-image" />
+            <img src="~/images/nyacat.png" alt="Banner" class="banner-image" />
         </div>
 
         <div class="tabs-wrapper">
@@ -160,7 +161,7 @@
 
 @Html.AntiForgeryToken()
 
-<script src="https://maps.googleapis.com/maps/api/js?key=TU_CLAVE_API_AQUI&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=@GoogleMapsConfig.ApiKey&callback=initMap" async defer></script>
 
 <script>
     function initMap() {

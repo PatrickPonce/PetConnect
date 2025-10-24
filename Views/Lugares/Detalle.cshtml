@@ -112,7 +112,7 @@
             </div>
 
             <div id="ubicacion" class="tab-content">
-                <p>Mapa de ubicación próximamente...</p>
+                <div id="map" style="height: 450px; width: 100%; border-radius: 8px;"></div>
             </div>
         </div>
     </main>
@@ -148,7 +148,31 @@
 
 @Html.AntiForgeryToken()
 
+
+<!-- CAMBIAR POR SU CLAVE -->
+
+<script src="https://maps.googleapis.com/maps/api/js?key=TU_CLAVE_API_AQUI&callback=initMap" async defer></script>
+
+
 <script>
+
+    function initMap() {
+        const lugarPosicion = { lat: @Model.Latitud, lng: @Model.Longitud };
+
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 16, 
+            center: lugarPosicion,
+            mapId: 'DEMO_MAP_ID' // Puedes usar un ID para estilos personalizados más adelante
+        });
+
+        const marker = new google.maps.Marker({
+            position: lugarPosicion,
+            map: map,
+            title: "@Model.Nombre"
+        });
+    }
+
+
 document.addEventListener('DOMContentLoaded', function () {
 
     const usuarioHaIniciadoSesion = @(User.Identity.IsAuthenticated ? "true" : "false");

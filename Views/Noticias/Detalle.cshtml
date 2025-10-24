@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
-    /* --- Estilos Generales --- */
+    
     body { background-color: #FFFDEC; font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
     .noticia-wrapper { display: flex; justify-content: center; align-items: flex-start; padding: 2rem; gap: 3rem; background-color: #748675; border-bottom: 2px solid #ddd; }
     .noticia-info { flex: 1; max-width: 500px; display: flex; flex-direction: column; justify-content: center; position: relative; padding-right: 70px; }
@@ -17,18 +17,36 @@
     .noticia-imagen-container { flex: 1.5; max-width: 600px; }
     .noticia-imagen { width: 100%; height: auto; object-fit: cover; border-radius: 12px; }
     .contenido-principal { max-width: 900px; margin: 2rem auto; padding: 2rem; background-color: #FFFDEC; border-radius: 12px; }
-    .noticia-parrafo p { font-size: 1.1rem; line-height: 1.8; color: #444; }
+    .noticia-parrafo p { font-size: 1.1rem; line-height: 1.5; color: #444; }
+  
+    .noticia-parrafo ul,
+    .noticia-parrafo ol {
+        line-height: 1.5;     
+        margin-top: 0.5rem;     
+        margin-bottom: 1rem;    
+        padding-left: 1.5rem;   
+    }
 
-    /* --- Estilos Botón Favorito (Corregido) --- */
+   
+    .noticia-parrafo li {
+        margin-bottom: 0.25rem; 
+    }
+
+    .noticia-parrafo h2,
+    .noticia-parrafo h3 {
+        margin-top: 1.5rem;     
+        margin-bottom: 0.5rem;  
+    }
+
+    /* Estilos Botón Favorito */
     .favorito-btn { position: absolute; top: 0; right: 0; background-color: #fce4e4; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.2s, background-color 0.2s; }
     .favorito-btn:hover { background-color: #fce4e4; transform: scale(1.1); }
     .favorito-btn.activo { background-color: #ebadad; }
     
     .noticia-info .favorito-btn > .material-symbols-outlined {
         font-size: 28px;
-        color: white; /* Borde blanco por defecto */
+        color: white; 
         transition: all 0.2s ease;
-        /* Se quitó font-variation-settings: 'FILL' 0; */
     }
     .noticia-info .favorito-btn.activo > .material-symbols-outlined {
         color: #e58f8f !important; /* Color relleno activo */
@@ -58,29 +76,29 @@
     .form-comentario button:hover { background-color: #5a4b56; transform: translateY(-2px); }
     
     /* --- Estilos Modales (Login y Confirmación) --- */
-    .modal-overlay { /* SOLO .modal-overlay, no .modal-confirmacion-eliminar */
+    .modal-overlay { 
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgb(0, 0, 0); /* O tu color preferido para el modal de login */
+        background-color: rgb(0, 0, 0); 
         display: none;
         justify-content: center;
         align-items: center;
         z-index: 1000;
     }
     .modal-confirmacion-eliminar {
-        position: fixed; /* Para que flote sobre el contenido */
-        top: 50%; /* Centra verticalmente */
-        left: 50%; /* Centra horizontalmente */
-        transform: translate(-50%, -50%); /* Ajusta para el centrado real */
-        z-index: 1000; /* Asegura que esté por encima de otros elementos */
-        display: none; /* Por defecto estará oculto */
-        /* Aquí no lleva background-color para el "overlay", solo para el contenido */
+        position: fixed; 
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%); 
+        z-index: 1000; 
+        display: none; 
+        
     }
     .modal-contenido {
-        background-color: #fefefe; /* El cuadro blanco */
+        background-color: #fefefe; 
         padding: 2.5rem;
         border-radius: 12px;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
@@ -89,7 +107,7 @@
         max-width: 450px;
         width: 90%;
         animation: fadeIn 0.3s ease-out;
-        pointer-events: auto; /* <-- AÑADE ESTO para que el cuadro blanco se pueda cliquear */
+        pointer-events: auto; /
     }
     .close-button, .modal-cerrar-eliminar-comentario { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; font-weight: bold; cursor: pointer; color: #aaa; transition: color 0.2s; }
     .close-button:hover, .modal-cerrar-eliminar-comentario:hover { color: #5a4b56; }
@@ -107,12 +125,12 @@
     .btn-modal-cancelar { background-color: #f0f0f0; color: #555; border-color: #ddd; }
     .btn-modal-cancelar:hover { background-color: #e0e0e0; transform: translateY(-2px); }
 
-    /* --- Estilos Íconos (Solución !important) --- */
+    /*  Estilos Íconos  */
     .material-symbols-outlined {
-      font-family: 'Material Symbols Outlined' !important; /* <-- FUERZA LA FUENTE */
+      font-family: 'Material Symbols Outlined' !important; 
       font-weight: normal;
       font-style: normal;
-      font-size: 24px; /* Tamaño por defecto */
+      font-size: 24px; 
       line-height: 1;
       letter-spacing: normal;
       text-transform: none;
@@ -123,13 +141,68 @@
       -webkit-font-feature-settings: 'liga';
       -webkit-font-smoothing: antialiased;
     }
-    /* Tamaño específico para botones de acción */
+   
     .btn-accion-comentario .material-symbols-outlined {
         font-size: 1.2rem;
     }
-    /* Tamaño específico para botón favorito */
+   
     .noticia-info .favorito-btn > .material-symbols-outlined {
         font-size: 28px;
+    }
+   
+    .comentario-texto.editando {
+        display: none; 
+    }
+
+    .form-editar-comentario {
+        display: none; 
+        flex-direction: column; 
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .comentario.modo-edicion .form-editar-comentario {
+        display: flex; 
+    }
+
+    .comentario.modo-edicion .comentario-texto {
+        display: none; 
+    }
+
+    .comentario.modo-edicion .comentario-acciones {
+        display: none; 
+    }
+
+    .textarea-editar-comentario {
+        width: 100%;
+        min-height: 80px;
+        padding: 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-family: 'Arial', sans-serif;
+        font-size: 1rem;
+        resize: vertical;
+    }
+
+    .botones-editar {
+        display: flex;
+        justify-content: flex-end; 
+        gap: 0.5rem;
+    }
+    .btn-guardar-edicion, .btn-cancelar-edicion {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-guardar-edicion {
+        background-color: #72626e; 
+        color: white;
+    }
+    .btn-cancelar-edicion {
+        background-color: #f0f0f0; 
+        color: #555;
     }
     
     @@keyframes fadeIn {
@@ -149,7 +222,6 @@
         </div>
         
         @{
-            // Usa ViewData (enviado desde el controlador) para el estado inicial
             bool esFavoritoInicial = ViewData["EsFavorito"] as bool? ?? false; 
         }
         <button id="favorito-btn" class="favorito-btn @(esFavoritoInicial ? "activo" : "")" title="Guardar en favoritos" data-id="@Model.Id"> 
@@ -180,10 +252,9 @@
         {
             @foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
             {
-                // --- Lógica para botón Editar ---
                 bool puedeEditar = false;
                 bool authorMatch = false;
-                bool canEditTime = false;  // <-- Declaración faltante
+                bool canEditTime = false;  
                 TimeSpan difference = TimeSpan.Zero;
                 string currentUsername = "No Logueado";
                 if (SignInManager.IsSignedIn(User))
@@ -201,7 +272,6 @@
                         puedeEditar = canEditTime;
                     }
                 }
-                // --- Fin Lógica Editar ---
 
                 <div class="comentario" data-comentario-id="@comentario.Id">
                     <div class="comentario-header">
@@ -236,7 +306,7 @@
 
     <form id="form-agregar-comentario" class="form-comentario">
         @Html.AntiForgeryToken() <input type="hidden" name="NoticiaId" value="@Model.Id" /> <label for="textoComentario">Deja un comentario</label>
-        <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" placeholder="Escribe tu comentario... (3-500 caracteres)"></textarea>
+        <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" placeholder="Escribe tu comentario... "></textarea>
 
         @if (SignInManager.IsSignedIn(User))
         {
@@ -279,7 +349,6 @@
 </div>
 
 <script>
-    // --- FUNCIÓN PARA FORMATEAR FECHAS ---
     function formatDateElement(spanElement) {
         const utcDateString = spanElement.dataset.utcdate;
         if (!utcDateString) return;
@@ -292,11 +361,9 @@
             spanElement.textContent = "Fecha inválida";
         }
     }
-    // --- FIN FUNCIÓN ---
 
-document.addEventListener('DOMContentLoaded', function() { // Listener principal único
+document.addEventListener('DOMContentLoaded', function() { 
 
-    // --- Seleccionar Elementos Comunes ---
     const loginModal = document.getElementById('login-modal');
     const closeButton = loginModal ? loginModal.querySelector('.close-button') : null;
     const favoritoBtn = document.getElementById('favorito-btn');
@@ -312,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function() { // Listener principal
     let comentarioIdParaEliminar = null;
     const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true';
 
-    // --- Funciones Modales ---
     function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; }
     function ocultarModal() { if (loginModal) loginModal.style.display = 'none'; }
     function mostrarModalConfirmacionComentario(id) {
@@ -326,14 +392,14 @@ document.addEventListener('DOMContentLoaded', function() { // Listener principal
         if (btnConfirmarEliminarComentario) btnConfirmarEliminarComentario.disabled = false;
     }
 
-    // --- Listeners Modales ---
+
     if (closeButton) closeButton.addEventListener('click', ocultarModal);
     window.addEventListener('click', (event) => { if (event.target === loginModal) ocultarModal(); });
     if (cerrarModalConfirmacionComentarioBtn) cerrarModalConfirmacionComentarioBtn.addEventListener('click', ocultarModalConfirmacionComentario);
     if (btnCancelarEliminarComentario) btnCancelarEliminarComentario.addEventListener('click', ocultarModalConfirmacionComentario);
     window.addEventListener('click', function(event) { if (event.target == modalConfirmacionComentario) ocultarModalConfirmacionComentario(); });
 
-    // --- Lógica Favoritos ---
+ 
     function manejarClicFavoritoDetalle() {
         if (estaAutenticadoServer) {
             const noticiaId = favoritoBtn.dataset.id;
@@ -365,7 +431,6 @@ document.addEventListener('DOMContentLoaded', function() { // Listener principal
         if (iconSpan) { iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border'; }
      }
 
-    // --- Lógica Agregar Comentarios ---
     if (formComentario && estaAutenticadoServer) {
         formComentario.addEventListener('submit', async function(event) {
              event.preventDefault();
@@ -390,8 +455,7 @@ document.addEventListener('DOMContentLoaded', function() { // Listener principal
                          const nuevoComentarioDiv = document.createElement('div');
                          nuevoComentarioDiv.className = 'comentario';
                          nuevoComentarioDiv.style.opacity = 0; nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
-                         // Asegúrate de que el controlador devuelva el ID del nuevo comentario
-                         // nuevoComentarioDiv.dataset.comentarioId = data.id; 
+
 
                          const comentarioHeaderDiv = document.createElement('div'); comentarioHeaderDiv.className = 'comentario-header';
                          const autorP = document.createElement('p'); autorP.className = 'comentario-autor'; autorP.textContent = data.autor; comentarioHeaderDiv.appendChild(autorP);
@@ -403,12 +467,12 @@ document.addEventListener('DOMContentLoaded', function() { // Listener principal
                          const textoP = document.createElement('p'); textoP.className = 'comentario-texto'; textoP.textContent = data.texto; nuevoComentarioDiv.appendChild(textoP);
                          const fechaP = document.createElement('p'); fechaP.className = 'comentario-fecha';
                          const fechaSpan = document.createElement('span');
-                         // *** ASEGÚRATE de que tu C# envíe 'fechaISO' ***
+                         
                          fechaSpan.dataset.utcdate = data.fechaISO; 
                          fechaSpan.textContent = "formateando..."; fechaP.appendChild(fechaSpan); nuevoComentarioDiv.appendChild(fechaP);
 
                          listaComentariosDiv.prepend(nuevoComentarioDiv);
-                         formatDateElement(fechaSpan); // Formatea la nueva fecha
+                         formatDateElement(fechaSpan); 
                          requestAnimationFrame(() => { const el = listaComentariosDiv.firstChild; if(el) el.style.opacity = 1; });
                          if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
                      } else { alert('Error al comentar: ' + (data.message || 'Error desconocido')); }
@@ -418,33 +482,116 @@ document.addEventListener('DOMContentLoaded', function() { // Listener principal
          });
     }
 
-    // --- LÓGICA PARA CLICK EN BOTONES EDITAR/ELIMINAR ---
+    
     if (listaComentariosDiv) {
         listaComentariosDiv.addEventListener('click', async function(event) {
             
-            // Lógica Eliminar
+            
             const deleteButton = event.target.closest('.btn-eliminar-comentario');
             if (deleteButton) {
                 event.preventDefault();
                 const comentarioDiv = deleteButton.closest('.comentario');
                 const comentarioId = comentarioDiv ? comentarioDiv.dataset.comentarioId : null;
                 if (!comentarioId) { console.error('No se pudo encontrar ID del comentario (eliminar).'); return; }
-                mostrarModalConfirmacionComentario(comentarioId); // Muestra el modal correcto
+                mostrarModalConfirmacionComentario(comentarioId);
             }
 
-            // Lógica Editar (Placeholder)
+            
             const editButton = event.target.closest('.btn-editar-comentario');
-             if (editButton) {
-                 event.preventDefault();
-                 const comentarioDiv = editButton.closest('.comentario');
-                 const comentarioId = comentarioDiv ? comentarioDiv.dataset.comentarioId : null;
-                 if (!comentarioId) { console.error('No se pudo encontrar ID del comentario (editar).'); return; }
-                 alert(`Funcionalidad de editar para ID ${comentarioId} aún no implementada.`);
-             }
-        });
-    }
+            if (editButton) {
+                event.preventDefault();
+                const comentarioDiv = editButton.closest('.comentario');
+                if (!comentarioDiv || comentarioDiv.classList.contains('modo-edicion')) {
+                    return; 
+                }
 
-    // --- Listener para confirmar eliminación DESDE EL MODAL ---
+                const textoElement = comentarioDiv.querySelector('.comentario-texto');
+                const textoOriginal = textoElement.textContent;
+
+                
+                comentarioDiv.classList.add('modo-edicion');
+
+                
+                const formEdicionHtml = `
+                    <form class="form-editar-comentario" onsubmit="return false;">
+                        <textarea class="textarea-editar-comentario" required minlength="3" maxlength="500">${textoOriginal}</textarea>
+                        <div class="botones-editar">
+                            <button type="button" class="btn-cancelar-edicion">Cancelar</button>
+                            <button type="submit" class="btn-guardar-edicion">Guardar</button>
+                        </div>
+                    </form>
+                `;
+                
+                textoElement.insertAdjacentHTML('afterend', formEdicionHtml);
+            }
+
+           
+            const cancelButton = event.target.closest('.btn-cancelar-edicion');
+            if (cancelButton) {
+                event.preventDefault();
+                const comentarioDiv = cancelButton.closest('.comentario');
+                const formEdicion = comentarioDiv.querySelector('.form-editar-comentario');
+                if (formEdicion) formEdicion.remove(); 
+                comentarioDiv.classList.remove('modo-edicion'); 
+            }
+
+            
+            const saveButton = event.target.closest('.btn-guardar-edicion');
+            if (saveButton) {
+                event.preventDefault(); 
+                const comentarioDiv = saveButton.closest('.comentario');
+                const comentarioId = comentarioDiv.dataset.comentarioId;
+                const formEdicion = saveButton.closest('.form-editar-comentario');
+                const textarea = formEdicion.querySelector('.textarea-editar-comentario');
+                const nuevoTexto = textarea.value.trim();
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+
+                if (!tokenInput) { alert('Error seguridad. Recarga.'); return; }
+                if (!nuevoTexto || nuevoTexto.length < 3 || nuevoTexto.length > 500) { alert('El comentario debe tener entre 3 y 500 caracteres.'); return; }
+
+                const token = tokenInput.value;
+                saveButton.disabled = true; 
+
+                try {
+                    const response = await fetch('/Noticias/EditarComentario', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                        body: `comentarioId=${encodeURIComponent(comentarioId)}&nuevoTexto=${encodeURIComponent(nuevoTexto)}`
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                         const data = await response.json();
+                         if (data.success) {
+                            
+                            const textoElement = comentarioDiv.querySelector('.comentario-texto');
+                            textoElement.textContent = data.texto; // Actualiza el texto
+                            const fechaSpan = comentarioDiv.querySelector('.comentario-fecha span[data-utcdate]');
+                            if (fechaSpan) {
+                                
+                                fechaSpan.dataset.utcdate = data.fechaISO; 
+                                
+                                formatDateElement(fechaSpan);
+                            }
+                            formEdicion.remove(); 
+                            comentarioDiv.classList.remove('modo-edicion'); 
+                         } else {
+                            alert('Error al editar: ' + (data.message || 'Error desconocido'));
+                            saveButton.disabled = false; 
+                         }
+                    } else { const errorText = await response.text(); console.error('Respuesta no JSON (EditarComentario):', errorText); alert('Error servidor al editar.'); saveButton.disabled = false; }
+                } catch (error) {
+                    console.error('Error al editar comentario:', error);
+                    alert('Error conexión al intentar editar.');
+                    saveButton.disabled = false;
+                }
+            }
+
+        }); 
+    } 
+
+    
     if (btnConfirmarEliminarComentario) {
         if (!btnConfirmarEliminarComentario.dataset.listenerAdded) {
              btnConfirmarEliminarComentario.addEventListener('click', async function() {
@@ -490,13 +637,13 @@ document.addEventListener('DOMContentLoaded', function() { // Listener principal
         }
     }
 
-     // Listener para botón Comentar (si NO está logueado)
+     
      if (comentarBtnSubmit && !estaAutenticadoServer) {
          comentarBtnSubmit.addEventListener('click', function(e){ e.preventDefault(); mostrarModal(); });
      }
 
-    // --- Llamada inicial para formatear fechas existentes ---
+    
     document.querySelectorAll('#lista-comentarios .comentario-fecha span[data-utcdate]').forEach(formatDateElement);
 
-}); // Fin DOMContentLoaded principal
+}); 
 </script>

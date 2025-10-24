@@ -13,12 +13,12 @@ using System.Collections.Generic;
 public class NoticiasController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager; // <-- Vuelve a IdentityUser
-    private readonly SignInManager<IdentityUser> _signInManager; // <-- Vuelve a IdentityUser
+    private readonly UserManager<IdentityUser> _userManager; 
+    private readonly SignInManager<IdentityUser> _signInManager; 
 
     public NoticiasController(ApplicationDbContext context, 
-                              UserManager<IdentityUser> userManager, // <-- Vuelve a IdentityUser
-                              SignInManager<IdentityUser> signInManager) // <-- Vuelve a IdentityUser
+                              UserManager<IdentityUser> userManager, 
+                              SignInManager<IdentityUser> signInManager) 
     {
         _context = context;
         _userManager = userManager;
@@ -206,27 +206,26 @@ public class NoticiasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AgregarComentario(int noticiaId, string textoComentario)
     {
-        // ... (validaciones) ...
 
-        var userId = _userManager.GetUserId(User); // Obtiene el ID del usuario actual
-        var user = await _userManager.FindByIdAsync(userId); // Obtiene el IdentityUser
+        var userId = _userManager.GetUserId(User); 
+        var user = await _userManager.FindByIdAsync(userId); 
 
-        // --- INICIO NUEVA LÓGICA PARA OBTENER NOMBRE ---
-        string autorNombre = "Usuario Anónimo"; // Valor por defecto
+        
+        string autorNombre = "Usuario Anónimo";
 
         if (user != null)
         {
-            // Intenta obtener el Claim "NombreCompleto" (o como lo hayas llamado al guardar)
+            
             var nombreClaim = await _userManager.GetClaimsAsync(user);
             var nombreCompletoClaim = nombreClaim.FirstOrDefault(c => c.Type == "NombreCompleto"); // <-- REVISA ESTE NOMBRE
 
             if (nombreCompletoClaim != null && !string.IsNullOrEmpty(nombreCompletoClaim.Value))
             {
-                autorNombre = nombreCompletoClaim.Value; // Usa el valor del Claim
+                autorNombre = nombreCompletoClaim.Value; 
             }
             else
             {
-                // Si no hay Claim "NombreCompleto", usa el UserName (email) y córtalo
+                
                 autorNombre = user.UserName ?? "Usuario Anónimo";
                 if (autorNombre.Contains("@"))
                 {
@@ -234,13 +233,12 @@ public class NoticiasController : Controller
                 }
             }
         }
-        // --- FIN NUEVA LÓGICA ---
-
+        
         var nuevoComentario = new Comentario
         {
             NoticiaId = noticiaId,
             Texto = textoComentario,
-            Autor = autorNombre, // <-- Usa la nueva variable
+            Autor = autorNombre, 
             FechaComentario = DateTime.UtcNow
         };
 
@@ -250,13 +248,13 @@ public class NoticiasController : Controller
         return Json(new
         {
             success = true,
-            autor = nuevoComentario.Autor, // <-- Envía el nombre correcto
+            autor = nuevoComentario.Autor, 
             texto = nuevoComentario.Texto,
             fechaISO = nuevoComentario.FechaComentario.ToString("o")
         });
     }
     [HttpPost]
-    [Authorize] // Solo usuarios logueados pueden intentar borrar
+    [Authorize] 
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarComentario(int comentarioId)
     {
@@ -273,25 +271,66 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "Comentario no encontrado." });
         }
 
-        // --- Verificación de Autor ---
-        // Obtiene el UserName cortado del usuario actual
+    
         var currentUser = User.Identity?.Name ?? string.Empty;
         if (currentUser.Contains("@"))
         {
             currentUser = currentUser.Split('@')[0];
         }
 
-        // Compara con el autor guardado en el comentario
+        
         if (comentario.Autor != currentUser)
         {
-            // Si no es el autor, no permite borrar (a menos que seas admin, lógica no incluida aquí)
+            
             return Json(new { success = false, message = "No tienes permiso para eliminar este comentario." });
         }
-        // --- Fin Verificación ---
+       
 
         _context.Comentarios.Remove(comentario);
         await _context.SaveChangesAsync();
 
-        return Json(new { success = true }); // Devuelve éxito
+        return Json(new { success = true }); 
+    }
+   [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditarComentario(int comentarioId, string nuevoTexto) // <-- ¡SIN [FromForm]!
+    {
+       
+        if (comentarioId <= 0 || string.IsNullOrWhiteSpace(nuevoTexto) || nuevoTexto.Length < 3 || nuevoTexto.Length > 500)
+        {
+            return Json(new { success = false, message = "El comentario no es válido (3-500 caracteres)." });
+        }
+
+        var userId = _userManager.GetUserId(User);
+        var comentario = await _context.Comentarios.FindAsync(comentarioId);
+
+        if (comentario == null)
+        {
+            return Json(new { success = false, message = "Comentario no encontrado." });
+        }
+
+        var currentUser = User.Identity?.Name ?? string.Empty;
+        if (currentUser.Contains("@")) { currentUser = currentUser.Split('@')[0]; }
+
+        if (comentario.Autor != currentUser)
+        {
+            return Json(new { success = false, message = "No tienes permiso para editar este comentario." });
+        }
+
+       
+        TimeSpan diferencia = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime();
+        if (diferencia.TotalMinutes > 15)
+        {
+            return Json(new { success = false, message = "Ya no puedes editar este comentario (límite de 15 min)." });
+        }
+
+
+        comentario.Texto = nuevoTexto; 
+        comentario.FechaComentario = DateTime.UtcNow;
+        _context.Comentarios.Update(comentario);
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true, texto = nuevoTexto,fechaISO = comentario.FechaComentario.ToString("o") });
     }
 }

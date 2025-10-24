@@ -1,7 +1,9 @@
+using PetConnect.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using PetConnect.Data;
+using PetConnect.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,11 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.Sign
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<PetConnect.Services.ConfiguracionSitioService>();
+
+var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
+
+
+builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
 
 var app = builder.Build();
 

@@ -113,6 +113,30 @@ public class LugaresController : Controller
             fecha = comentario.FechaComentario.ToString("g")
         });
     }
+    
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EliminarComentario(int comentarioId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var comentario = await _context.ComentariosLugar.FindAsync(comentarioId);
+
+        if (comentario == null)
+        {
+            return NotFound();
+        }
+
+        if (comentario.UsuarioId != userId)
+        {
+            return Forbid();
+        }
+
+        _context.ComentariosLugar.Remove(comentario);
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
 
     [HttpPost]
     [Authorize]

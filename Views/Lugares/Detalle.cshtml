@@ -1,7 +1,9 @@
+@using System.Security.Claims
 @model PetConnect.Models.LugarPetFriendly
 
 @{
     ViewData["Title"] = Model.Nombre;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -35,6 +37,12 @@
     .btn-contactar { display: block; width: 100%; padding: 1rem; background-color: #d17a7a; color: white; text-align: center; text-decoration: none; border-radius: 8px; margin-top: 1.5rem; font-weight: bold; transition: background-color 0.3s; box-sizing: border-box; }
     .btn-contactar:hover { background-color: #c96868; }
     .comentarios-container { margin-top: 1rem; }
+    .comentario { position: relative; background-color: #fefefe; border-left: 4px solid #72626e; border-radius: 8px; padding: 1.2rem; margin-bottom: 1.5rem; }
+    .comentario-autor { font-weight: bold; color: #555; }
+    .comentario-texto { color: #333; }
+    .comentario-fecha { font-size: 0.8rem; color: #aaa; text-align: right; margin-top: 0.5rem; }
+    .btn-eliminar-comentario { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #e57373; cursor: pointer; font-size: 1rem; opacity: 0.5; transition: opacity 0.2s; }
+    .comentario:hover .btn-eliminar-comentario { opacity: 1; }
     .form-comentario textarea { width: 100%; height: 80px; padding: 0.75rem; border-radius: 8px; border: 1px solid #ccc; }
     .form-comentario button { margin-top: 1rem; padding: 0.5rem 1rem; background-color: #72626e; color: white; border: none; border-radius: 8px; cursor: pointer; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
@@ -86,19 +94,29 @@
             <div id="comentarios" class="tab-content">
                  <section class="comentarios-container">
                      <h3>Opiniones de la comunidad</h3>
-                     @if (Model.Comentarios != null && Model.Comentarios.Any())
-                     {
-                         foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
-                         {
-                             <div class="comentario">
-                                 <p class="comentario-autor">@(comentario.Usuario?.UserName ?? "Anónimo")</p>
-                                 <p class="comentario-texto">@comentario.Texto</p>
-                                 <p class="comentario-fecha">@comentario.FechaComentario.ToString("g")</p>
-                             </div>
-                         }
-                     }
-                     else { <p>Aún no hay comentarios. ¡Sé el primero en compartir tu experiencia!</p> }
-                     
+                     <div id="lista-comentarios">
+                        @if (Model.Comentarios != null && Model.Comentarios.Any())
+                        {
+                            foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
+                            {
+                                <div class="comentario" id="comentario-@comentario.Id">
+                                    @if (comentario.UsuarioId == currentUserId)
+                                    {
+                                        <button class="btn-eliminar-comentario" data-id="@comentario.Id" title="Eliminar mi comentario">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    }
+                                    <p class="comentario-autor">@(comentario.Usuario?.UserName ?? "Anónimo")</p>
+                                    <p class="comentario-texto">@comentario.Texto</p>
+                                    <p class="comentario-fecha">@comentario.FechaComentario.ToString("g")</p>
+                                </div>
+                            }
+                        }
+                        else 
+                        { 
+                            <p id="sin-comentarios-msg">Aún no hay comentarios. ¡Sé el primero en compartir tu experiencia!</p> 
+                        }
+                     </div>
                      <div class="form-comentario">
                          <label for="textoComentario">Deja tu comentario</label>
                          <textarea id="textoComentario" name="textoComentario" required placeholder="Escribe tu opinión aquí..."></textarea>
@@ -149,22 +167,21 @@
 @Html.AntiForgeryToken()
 
 
-<!-- CAMBIAR POR SU CLAVE -->
+<!-- CAMBIAR CLAVE API AQUI-->
 
-<script src="https://maps.googleapis.com/maps/api/js?key=TU_CLAVE_API_AQUI&callback=initMap" async defer></script>
-
+<script src="https://maps.googleapis.com/maps/api/js?key=CAMBIAR_CLAVE_API_AQUI&callback=initMap" async defer></script>
 
 <script>
-
     function initMap() {
-        const lugarPosicion = { lat: @Model.Latitud, lng: @Model.Longitud };
-
+        if (@Model.Latitud == 0 && @Model.Longitud == 0) {
+            document.getElementById("map").innerHTML = "Ubicación no disponible.";
+            return;
+        }
+        const lugarPosicion = { lat: @Model.Latitud.ToString().Replace(",", "."), lng: @Model.Longitud.ToString().Replace(",", ".") };
         const map = new google.maps.Map(document.getElementById("map"), {
-            zoom: 16, 
+            zoom: 16,
             center: lugarPosicion,
-            mapId: 'DEMO_MAP_ID' // Puedes usar un ID para estilos personalizados más adelante
         });
-
         const marker = new google.maps.Marker({
             position: lugarPosicion,
             map: map,
@@ -172,79 +189,97 @@
         });
     }
 
+    document.addEventListener('DOMContentLoaded', function () {
 
-document.addEventListener('DOMContentLoaded', function () {
+        const usuarioHaIniciadoSesion = @(User.Identity.IsAuthenticated ? "true" : "false");
+        const loginModal = document.getElementById('login-modal');
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-    const usuarioHaIniciadoSesion = @(User.Identity.IsAuthenticated ? "true" : "false");
-    const loginModal = document.getElementById('login-modal');
-
-    const tabs = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            tab.classList.add('active');
-            const activeContent = document.getElementById(tab.dataset.tab);
-            if (activeContent) {
-                activeContent.classList.add('active');
-            }
-        });
-    });
-
-    const comentarBtn = document.getElementById('comentar-btn');
-    if (comentarBtn) {
-        comentarBtn.addEventListener('click', async function() {
-            if (!usuarioHaIniciadoSesion) {
-                if (loginModal) {
-                    loginModal.style.display = 'flex';
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const activeContent = document.getElementById(tab.dataset.tab);
+                if (activeContent) {
+                    activeContent.classList.add('active');
                 }
-                return; 
-            }
-
-            const textoInput = document.getElementById('textoComentario');
-            const texto = textoInput.value;
-            const lugarId = @Model.Id;
-
-            if (!texto.trim()) {
-                alert('Por favor, escribe un comentario.');
-                return;
-            }
-
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-            try {
-                const response = await fetch('/Lugares/AgregarComentario', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                    body: `lugarId=${lugarId}&textoComentario=${encodeURIComponent(texto)}`
-                });
-                const result = await response.json();
-                if (result.success) {
-                    alert('¡Gracias por tu comentario!');
-                    location.reload();
-                } else {
-                    alert('Error: ' + result.message);
-                }
-            } catch (error) {
-                console.error('Error al enviar el comentario:', error);
-                alert('Ocurrió un error inesperado al intentar comentar.');
-            }
+            });
         });
-    }
 
-    if (loginModal) {
-        const closeButton = loginModal.querySelector('.close-button');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                loginModal.style.display = 'none';
+        const comentarBtn = document.getElementById('comentar-btn');
+        if (comentarBtn) {
+            comentarBtn.addEventListener('click', async function() {
+                if (!usuarioHaIniciadoSesion) {
+                    if (loginModal) loginModal.style.display = 'flex';
+                    return; 
+                }
+
+                const textoInput = document.getElementById('textoComentario');
+                const texto = textoInput.value;
+
+                if (!texto.trim()) {
+                    alert('Por favor, escribe un comentario.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Lugares/AgregarComentario', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                        body: `lugarId=@Model.Id&textoComentario=${encodeURIComponent(texto)}`
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error al enviar el comentario:', error);
+                    alert('Ocurrió un error inesperado al intentar comentar.');
+                }
             });
         }
-        window.addEventListener('click', (event) => {
-            if (event.target === loginModal) {
-                loginModal.style.display = 'none';
+
+        const attachDeleteListeners = () => {
+            document.querySelectorAll('.btn-eliminar-comentario').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const comentarioId = this.dataset.id;
+                    if (confirm('¿Estás seguro de que quieres eliminar este comentario?')) {
+                        try {
+                            const response = await fetch('/Lugares/EliminarComentario', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                                body: `comentarioId=${comentarioId}`
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                const comentarioDiv = document.getElementById(`comentario-${comentarioId}`);
+                                if (comentarioDiv) comentarioDiv.remove();
+                            } else {
+                                alert('No se pudo eliminar el comentario.');
+                            }
+                        } catch (error) {
+                            console.error('Error al eliminar comentario:', error);
+                        }
+                    }
+                });
+            });
+        };
+        
+        attachDeleteListeners();
+
+        if (loginModal) {
+            const closeButton = loginModal.querySelector('.close-button');
+            if (closeButton) {
+                closeButton.addEventListener('click', () => { loginModal.style.display = 'none'; });
             }
-        });
-    }
-});
+            window.addEventListener('click', (event) => {
+                if (event.target === loginModal) { loginModal.style.display = 'none'; }
+            });
+        }
+    });
 </script>

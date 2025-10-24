@@ -861,3 +861,70 @@ a.listing-card-v2 { text-decoration: none; color: inherit; }
     box-shadow: 0 4px 15px rgba(232, 137, 137, 0.4);
     transform: translateY(-2px);
 }
+
+/* Estilo para la foto de perfil en la navbar */
+.navbar-profile-pic {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: -2px; /* Ajuste visual */
+    border: 1px solid #fff;
+}
+
+/*
+=========================================
+ ESTILOS PARA EL BOTÓN DE SUBIR FOTO
+=========================================
+*/
+
+/* Título de la pestaña (ej: "Perfil") */
+.manage-account-container h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+/* Títulos de las columnas (ej: "Foto de Perfil") */
+.manage-account-container h5 {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px; 
+}
+
+/* Botón secundario (Cambiar foto) - Pequeño y compacto */
+.manage-account-container .btn-secondary {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 6px 12px; /* <-- Relleno pequeño */
+    border-radius: 20px;
+    font-size: 0.85rem; /* <-- Fuente pequeña */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px; /* Espacio entre icono y texto */
+    line-height: 1;
+    width: auto; /* Evita que ocupe el 100% */
+    min-width: 130px;
+}
+
+.manage-account-container .btn-secondary:hover {
+    background-color: #e0e0e0;
+}
+
+/* Icono dentro del botón secundario */
+.manage-account-container .btn-secondary .material-symbols-outlined {
+    font-size: 1rem;
+    margin-right: 0;
+}
+
+/* Estilo para el nombre del archivo seleccionado */
+#file-upload-filename {
+    color: #555;
+    font-style: italic;
+    font-size: 0.85rem;
+}

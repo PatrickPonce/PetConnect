@@ -8,9 +8,33 @@
 
 <h3 class="mb-3">@ViewData["Title"]</h3>
 <partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-12">
-        <form id="profile-form" method="post">
+
+<form id="profile-form" method="post" enctype="multipart/form-data">
+    <div class="row">
+        
+        <div class="col-md-4 text-center"> 
+            <h5 class="mb-3">Foto de Perfil</h5>
+            
+            <img id="profilePicturePreview"
+                 src="@(Model.ProfilePictureUrl ?? "/images/avatars/default.png")" 
+                 alt="Foto de perfil"
+                 class="img-fluid rounded-circle mb-3" 
+                 style="width: 200px; height: 200px; object-fit: cover; border: 4px solid #f0f0f0;">
+            
+            <div class="mb-3">
+                <input asp-for="Input.ProfilePictureFile" accept="image/*" style="display: none;" id="file-upload-input" />
+                
+                <label for="file-upload-input" class="btn btn-secondary">
+                    <span class="material-symbols-outlined">upload_file</span>
+                    Cambiar foto
+                </label>
+                
+                <div id="file-upload-filename" class="form-text mt-2"></div>
+            </div>
+            </div>
+
+        <div class="col-md-8">
+            <h5 class="mb-3">Datos de la Cuenta</h5>
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             
             <div class="mb-3">
@@ -25,10 +49,28 @@
             </div>
             
             <button id="update-profile-button" type="submit" class="btn btn-primary">Guardar Cambios</button>
-        </form>
+        </div>
+        
     </div>
-</div>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Script para previsualizar Y mostrar nombre de archivo
+        document.getElementById('file-upload-input').addEventListener('change', function(event) {
+            
+            // 1. Lógica de previsualización
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('profilePicturePreview');
+                output.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+
+            // 2. Lógica para mostrar el nombre del archivo
+            var fileName = event.target.files[0] ? event.target.files[0].name : "";
+            document.getElementById('file-upload-filename').textContent = fileName;
+        });
+    </script>
 }

@@ -51,7 +51,21 @@
 
                 <li class="nav-user-dropdown"> 
                     <button type="button" class="nav-link-button" id="user-menu-button">
-                        <span class="material-symbols-outlined">account_circle</span>
+                        
+                        @{
+                            // Leemos el Claim de la foto de perfil
+                            var profilePicUrl = User.FindFirst(PetConnectClaimTypes.ProfilePictureUrl)?.Value;
+                        }
+
+                        @if (string.IsNullOrEmpty(profilePicUrl))
+                        {
+                            <span class="material-symbols-outlined">account_circle</span>
+                        }
+                        else
+                        {
+                            <img src="@profilePicUrl" alt="Perfil" class="navbar-profile-pic" />
+                        }
+
                         <span class="nav-text">Hola, @User.Identity?.Name!</span>
                         <span class="material-symbols-outlined" style="font-size: 1.2rem;">arrow_drop_down</span>
                     </button>

@@ -1,5 +1,6 @@
 @model IEnumerable<PetConnect.Models.Noticia>
 
+<!-- Enlace a la biblioteca de Google Material Symbols -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
@@ -40,6 +41,11 @@
         overflow: hidden;
         width: 300px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        
+        display: flex; 
+        flex-direction: column; 
+        min-height: 480px; 
+        box-sizing: border-box; /* ⬅️ Asegura que padding no aumente el tamaño de la tarjeta */
     }
 
     .noticia-card:hover {
@@ -91,6 +97,10 @@
     .noticia-contenido {
         padding: 1.5rem;
         text-align: left;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: space-between;
     }
 
     .noticia-titulo {
@@ -111,72 +121,79 @@
         color: #555;
         line-height: 1.5;
         margin-bottom: 1.5rem;
+        flex-grow: 1;
     }
-
-    /* Estilos para el botón "Leer más" */
+        /* Estilos para el botón "Leer más" */
     .btn-leer-mas {
-        display: inline-block;
-        width: 100%;
-        text-align: center;
-        padding: 0.8rem;
+        align-self: center; /* Centra el botón horizontalmente */
+        
+        /* ⬅️ CORRECCIÓN CLAVE: Ajustes para el estilo de la imagen */
+        padding: 0.6rem 3.5rem;   /* Más ancho, ligeramente menos alto */
+        font-size: 1.1rem;      
+        border-radius: 50px;    /* ¡Mucho más redondeado! */
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+        
         background-color: #72626e;
         color: white;
         text-decoration: none;
-        border-radius: 8px;
-        transition: background-color 0.3s ease, transform 0.2s ease;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Añadimos la transición para la sombra */
+        margin-top: auto;
+        line-height: 1.5;
+        text-align: center;
     }
 
     .btn-leer-mas:hover {
         background-color: #5a4b56;
-        transform: translateY(-2px);
+        transform: translateY(-3px); /* Un efecto de elevación más notable al pasar el ratón */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* La sombra se intensifica al pasar el ratón */
     }
 
-    /* --- ESTILOS PARA EL MODAL DE ALERTA --- */
-    .modal-alerta {
-        position: fixed;
-        z-index: 1000; 
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.7);  
-        display: none; 
-        justify-content: center; 
-        align-items: center;   
+    /* --- ESTILOS MEJORADOS PARA EL MODAL DE ALERTA --- */
+   .modal-alerta {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
     }
 
     .modal-alerta-contenido {
-        background-color: #fefefe; 
-        margin: auto; 
-        padding: 2.5rem; 
+        background-color: #fefefe;
+        padding: 2.5rem;
         border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); 
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
         text-align: center;
-        position: relative; 
+        position: relative;
         max-width: 450px;
-        width: 90%; 
-        box-sizing: border-box; 
+        width: 90%;
+        box-sizing: border-box;
+    }
 
     .modal-alerta-cerrar {
         position: absolute;
         top: 15px;
         right: 20px;
         color: #aaa;
-        font-size: 1.8rem; 
-        font-weight: normal;
+        font-size: 1.8rem;
+        font-weight: bold;
         cursor: pointer;
         transition: color 0.2s;
     }
 
     .modal-alerta-cerrar:hover,
     .modal-alerta-cerrar:focus {
-        color: #5a4b56; 
+        color: #5a4b56;
         text-decoration: none;
     }
 
     .modal-alerta-contenido h3 {
-        color: #d67a7a; 
+        color: #d67a7a;
         font-size: 1.5rem;
         margin-bottom: 1.5rem;
     }
@@ -188,44 +205,59 @@
         line-height: 1.6;
     }
 
+/* Contenedor de los botones */
+
     .login-button-group {
-        display: flex; 
-        justify-content: center;
-        gap: 15px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
     }
 
-    .login-button, .register-link {
-        display: inline-block;
-        padding: 1rem 2rem; 
+    /* Ambos botones iguales */
+    .login-button, 
+    .register-link {
+        flex: 1;                       /* Ambos ocupan el mismo espacio horizontal */
+        display: flex;                 
+        justify-content: center;
+        align-items: center;
+        height: 50px;                  /* Altura uniforme */
         border-radius: 8px;
         font-weight: bold;
         text-decoration: none;
-        transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s ease, border-color 0.3s ease;
-        border: 2px solid transparent; 
+        border: 2px solid #72626e;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        cursor: pointer;
     }
 
+    /* Botón Iniciar Sesión */
     .login-button {
         background-color: #72626e;
         color: white;
-        border-color: #72626e; 
     }
 
+    /* Botón Registrarse */
+    .register-link {
+        background-color: transparent;
+        color: #72626e;
+    }
+
+    /* Hover */
     .login-button:hover {
         background-color: #5a4b56;
         border-color: #5a4b56;
-        transform: translateY(-1px);
-    }
-
-    .register-link {
-        background-color: transparent; 
-        color: #72626e;
-        border-color: #72626e; 
+        transform: translateY(-2px);
     }
 
     .register-link:hover {
-        background-color: #72626e; 
+        background-color: #72626e;
         color: white;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
     }
 
 </style>
@@ -301,7 +333,6 @@
             cerrarBtn.addEventListener('click', ocultarModal);
         }
         
-        // Cierra el modal si se hace clic fuera de su contenido (en el overlay)
         window.onclick = function(event) {
             if (event.target == modal) {
                 ocultarModal();

@@ -230,45 +230,60 @@ ul li {
     color: #5a4b56;
 }
 
-.login-button-group {
+/* Contenedor de los botones */
+
+    .login-button-group {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 15px;
-}
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    }
 
-.login-button {
-    display: inline-block;
-    padding: 1rem 2rem; /* Botones más grandes */
-    background-color: #72626e; 
-    color: #fff;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    border: 2px solid #72626e;
-}
+    /* Ambos botones iguales */
+    .login-button, 
+    .register-link {
+        flex: 1;                       /* Ambos ocupan el mismo espacio horizontal */
+        display: flex;                 
+        justify-content: center;
+        align-items: center;
+        height: 50px;                  /* Altura uniforme */
+        border-radius: 8px;
+        font-weight: bold;
+        text-decoration: none;
+        border: 2px solid #72626e;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        cursor: pointer;
+    }
 
-.login-button:hover {
-    background-color: #5a4b56;
-    transform: translateY(-1px);
-}
+    /* Botón Iniciar Sesión */
+    .login-button {
+        background-color: #72626e;
+        color: white;
+    }
 
-.register-link {
-    display: inline-block;
-    padding: 1rem 2rem;
-    background-color: transparent;
-    color: #72626e;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-    border: 2px solid #72626e; /* Contorno de botón */
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
+    /* Botón Registrarse */
+    .register-link {
+        background-color: transparent;
+        color: #72626e;
+    }
 
-.register-link:hover {
-    background-color: #72626e;
-    color: white;
-}
+    /* Hover */
+    .login-button:hover {
+        background-color: #5a4b56;
+        border-color: #5a4b56;
+        transform: translateY(-2px);
+    }
+
+    .register-link:hover {
+        background-color: #72626e;
+        color: white;
+        transform: translateY(-2px);
+    }
 </style>
 
 <div class="noticia-wrapper">

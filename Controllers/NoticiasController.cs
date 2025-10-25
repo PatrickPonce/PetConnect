@@ -13,13 +13,12 @@ using System.Collections.Generic;
 public class NoticiasController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
-    // --- Añadido ---
-    private readonly SignInManager<IdentityUser> _signInManager; 
+    private readonly UserManager<IdentityUser> _userManager; // <-- Vuelve a IdentityUser
+    private readonly SignInManager<IdentityUser> _signInManager; // <-- Vuelve a IdentityUser
 
     public NoticiasController(ApplicationDbContext context, 
-                                UserManager<IdentityUser> userManager, 
-                                SignInManager<IdentityUser> signInManager) // Añadido signInManager
+                              UserManager<IdentityUser> userManager, // <-- Vuelve a IdentityUser
+                              SignInManager<IdentityUser> signInManager) // <-- Vuelve a IdentityUser
     {
         _context = context;
         _userManager = userManager;
@@ -156,8 +155,8 @@ public class NoticiasController : Controller
 
         return Json(new { success = true, esFavorito = esFavoritoAhora });
     }
-    
-  [HttpPost]
+
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> EliminarFavoritos([FromBody] List<int> noticiaIds)
     {
@@ -169,41 +168,90 @@ public class NoticiasController : Controller
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrEmpty(userId))
         {
-            // Aunque [Authorize] debería prevenir esto, es una buena práctica.
+            
             return Unauthorized(new { success = false, message = "Usuario no autorizado." });
         }
 
-        // --- CAMBIO PRINCIPAL: Buscar solo los que EXISTEN ---
+        
         var favoritosAEliminar = await _context.Favoritos
             .Where(f => f.UsuarioId == userId && noticiaIds.Contains(f.NoticiaId))
             .ToListAsync();
 
-        // Si encontramos algunos (o ninguno), procedemos a intentar eliminarlos
+        
         if (favoritosAEliminar.Any())
         {
             _context.Favoritos.RemoveRange(favoritosAEliminar);
-            
+
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                // --- MANEJO DEL ERROR ---
-                // Si ocurre el error de concurrencia (0 filas afectadas), lo ignoramos
-                // porque significa que los registros ya fueron eliminados por otra acción.
-                Console.WriteLine($"Advertencia de concurrencia al eliminar favoritos: {ex.Message}"); 
-                // Opcional: Loggear la advertencia en lugar de solo imprimirla
-                // Consideramos esto como un éxito parcial o total, ya que el estado final es el deseado (registros eliminados).
+            
+                Console.WriteLine($"Advertencia de concurrencia al eliminar favoritos: {ex.Message}");
+                
             }
-            catch (Exception ex) // Capturar otros posibles errores de BD
+            catch (Exception ex) 
             {
                 Console.WriteLine($"Error al guardar cambios al eliminar favoritos: {ex.Message}");
-                // Devolver un error al cliente en caso de otros problemas
+               
                 return Json(new { success = false, message = "Ocurrió un error inesperado al eliminar." });
             }
         }
-        // Siempre devolvemos éxito, ya que el objetivo (que no estén) se cumple.
         return Json(new { success = true });
     }
+    [HttpPost] 
+    [Authorize] 
+    [ValidateAntiForgeryToken] 
+   public async Task<IActionResult> AgregarComentario(int noticiaId, string textoComentario)
+{
+    // ... (validaciones) ...
+
+    var userId = _userManager.GetUserId(User); // Obtiene el ID del usuario actual
+    var user = await _userManager.FindByIdAsync(userId); // Obtiene el IdentityUser
+
+    // --- INICIO NUEVA LÓGICA PARA OBTENER NOMBRE ---
+    string autorNombre = "Usuario Anónimo"; // Valor por defecto
+
+    if (user != null) 
+    {
+        // Intenta obtener el Claim "NombreCompleto" (o como lo hayas llamado al guardar)
+        var nombreClaim = await _userManager.GetClaimsAsync(user);
+        var nombreCompletoClaim = nombreClaim.FirstOrDefault(c => c.Type == "NombreCompleto"); // <-- REVISA ESTE NOMBRE
+
+        if (nombreCompletoClaim != null && !string.IsNullOrEmpty(nombreCompletoClaim.Value))
+        {
+            autorNombre = nombreCompletoClaim.Value; // Usa el valor del Claim
+        }
+        else 
+        {
+            // Si no hay Claim "NombreCompleto", usa el UserName (email) y córtalo
+            autorNombre = user.UserName ?? "Usuario Anónimo";
+            if (autorNombre.Contains("@"))
+            {
+                autorNombre = autorNombre.Split('@')[0];
+            }
+        }
+    }
+    // --- FIN NUEVA LÓGICA ---
+
+    var nuevoComentario = new Comentario
+    {
+        NoticiaId = noticiaId,
+        Texto = textoComentario,
+        Autor = autorNombre, // <-- Usa la nueva variable
+        FechaComentario = DateTime.UtcNow
+    };
+
+    _context.Comentarios.Add(nuevoComentario);
+    await _context.SaveChangesAsync();
+
+    return Json(new {
+        success = true,
+        autor = nuevoComentario.Autor, // <-- Envía el nombre correcto
+        texto = nuevoComentario.Texto,
+        fechaISO = nuevoComentario.FechaComentario.ToString("o")
+    });
+}
 }

@@ -1,9 +1,11 @@
 @model PetConnect.Models.Noticia
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
-/* Estilo del cuerpo de la página */
+
     body {
         background-color: #FFFDEC;
         font-family: 'Arial', sans-serif;
@@ -28,38 +30,37 @@
         max-width: 500px;
         display: flex;
         flex-direction: column;
-        justify-content: center; /* <-- CORRECCIÓN: Centra verticalmente */
+        justify-content: center; 
         position: relative;
-        padding-right: 70px; /* <-- CORRECCIÓN: Evita que el texto choque con el botón de favorito */
+        padding-right: 70px; 
     }
 
-    /* NUEVO: Estilos para el breadcrumb */
+    
     .breadcrumbs {
-        margin-bottom: 1.5rem; /* <-- CORRECCIÓN: Añade espacio inferior */
+        margin-bottom: 1.5rem; 
         font-size: 0.9rem;
     }
 
-    /* Estilos para el título y la fecha (CORREGIDO) */
+   
     .noticia-titulo {
         font-size: 3rem;
         font-weight: 700;
         color: #FFFDEC; 
         line-height: 1.2;
-        margin-bottom: 1rem; /* <-- CORRECCIÓN: Añade espacio debajo del título */
+        margin-bottom: 1rem; 
     }
 
     .noticia-fecha {
         font-size: 1rem;
         color: #FFFDEC; 
-        margin-top: 0; /* <-- CORRECCIÓN: Resetea el margen superior */
+        margin-top: 0; 
     }
 
-    /* Botón de favoritos*/
     .favorito-btn {
         position: absolute; 
         top: 0;
         right: 0;
-        background-color: #d67a7a;
+        background-color: #fce4e4;
         border: none;
         border-radius: 50%;
         width: 50px;
@@ -73,25 +74,25 @@
     }
 
     .favorito-btn:hover {
-        background-color: #c96868;
+        background-color: #fce4e4;
         transform: scale(1.1);
     }
 
-    .favorito-btn .material-symbols-outlined {
-        font-size: 28px;
-        color: white;
-        font-weight: 700;
-        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    .noticia-info .favorito-btn.activo > .material-symbols-outlined {
+    color: #e58f8f !important; 
+    transform: scale(1.1);
     }
-    .favorito-btn.activo .material-symbols-outlined {
-        font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
-        color: #d67a7a;
+
+    .noticia-info .favorito-btn > .material-symbols-outlined {
+    font-size: 28px;
+    color: white; 
+    font-variation-settings: 'FILL' 0;
+    transition: all 0.2s ease;
     }
 
     .favorito-btn.activo {
-        background-color: #fce4e4;
+    background-color: #ebadad; 
     }
-
     .noticia-imagen-container {
         flex: 1.5;
         max-width: 600px;
@@ -193,7 +194,6 @@
         margin-bottom: 0.5rem;
     }
 
-    /* Estilos del MODAL UNIFICADO (Mejora visual) */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -209,9 +209,9 @@
 
     .modal-content {
         background-color: #fff6f6;
-        padding: 2.5rem; /* Más espacio */
+        padding: 2.5rem; 
         border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); 
         text-align: center;
         position: relative;
         max-width: 450px;
@@ -222,7 +222,7 @@
         position: absolute;
         top: 15px;
         right: 20px;
-        font-size: 1.8rem; /* Icono de cierre más grande */
+        font-size: 1.8rem; 
         font-weight: normal;
         cursor: pointer;
         color: #aaa;
@@ -234,7 +234,7 @@
     }
 
     .modal-body h3 {
-        color: #d67a7a; /* Un color de acento para el título */
+        color: #d67a7a; 
         font-size: 1.5rem;
         margin-bottom: 1.5rem;
     }
@@ -245,9 +245,7 @@
         color: #5a4b56;
     }
 
-    /* Contenedor de los botones */
-
-        .login-button-group {
+    .login-button-group {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -257,14 +255,13 @@
         margin: 0 auto;
         }
 
-    /* Ambos botones iguales */
     .login-button, 
     .register-link {
-        flex: 1;                     /* Ambos ocupan el mismo espacio horizontal */
+        flex: 1;                     
         display: flex;               
         justify-content: center;
         align-items: center;
-        height: 50px;                 /* Altura uniforme */
+        height: 50px;                 
         border-radius: 8px;
         font-weight: bold;
         text-decoration: none;
@@ -299,6 +296,49 @@
         color: white;
         transform: translateY(-2px);
     }
+    .breadcrumbs a {
+    text-decoration: none; 
+    }
+    /* --- ESTILOS PARA ACCIONES DE COMENTARIO --- */
+    .comentario-header {
+        display: flex;
+        justify-content: space-between; /* Pone autor a la izq, botones a la der */
+        align-items: center;
+        margin-bottom: 0.5rem; /* Ajusta según necesites */
+    }
+
+    .comentario-autor {
+        /* Quita el margen inferior por defecto si lo tiene */
+        margin-bottom: 0; 
+    }
+
+    .comentario-acciones {
+        display: flex;
+        gap: 0.5rem; /* Espacio entre botones */
+    }
+
+    .btn-accion-comentario {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        color: #aaa; /* Color gris tenue */
+        transition: color 0.2s ease;
+    }
+
+    .btn-accion-comentario .material-symbols-outlined {
+        font-size: 1.1rem; /* Tamaño de los íconos */
+        vertical-align: middle; /* Alinea el ícono */
+    }
+
+    .btn-accion-comentario:hover {
+        color: #72626e; /* Color oscuro al pasar el ratón */
+    }
+
+    /* Opcional: Color específico para eliminar al pasar el ratón */
+    .btn-eliminar-comentario:hover {
+        color: #d67a7a; /* Rojo */
+    }
     
 </style>
 
@@ -312,8 +352,16 @@
             <span style="font-weight: bold; color: #d67a7a;">@Model.Titulo</span>
         </div>
         
-        <button id="favorito-btn" class="favorito-btn @(ViewBag.EsFavorito ? "activo" : "")" title="Guardar en favoritos" data-id="@Model.Id">
-            <span class="material-symbols-outlined">favorite</span>
+        @{
+            bool esFavoritoInicial = ViewData["EsFavorito"] as bool? ?? false; 
+        }
+
+        <button id="favorito-btn" class="favorito-btn @(esFavoritoInicial ? "activo" : "")" title="Guardar en favoritos" data-id="@Model.Id"> 
+        @* ^--- CORREGIDO: Usa esFavoritoInicial *@
+            <span class="material-symbols-outlined">
+                @(esFavoritoInicial ? "favorite" : "favorite_border") 
+        @* ^--- CORREGIDO: Usa esFavoritoInicial *@
+            </span>
         </button>
 
         <h1 class="noticia-titulo">@Model.Titulo</h1>
@@ -331,29 +379,110 @@
     </article>
 
     <section class="comentarios-container">
-        <h3>Comentarios</h3>
-        
+    <h3>Comentarios</h3>
+
+    <div id="lista-comentarios">
         @if (Model.Comentarios != null && Model.Comentarios.Any())
         {
-            foreach (var comentario in Model.Comentarios)
+            @foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
             {
-                <div class="comentario">
-                    <p class="comentario-autor">@comentario.Autor</p>
+                // --- LÓGICA CORREGIDA PARA 'puedeEditar' ---
+                bool puedeEditar = false;
+                bool authorMatch = false; // Variable para debug
+                bool canEditTime = false; // Variable para debug
+                TimeSpan difference = TimeSpan.Zero; // Variable para debug
+                string currentUsername = "No Logueado"; // Variable para debug
+
+                if (SignInManager.IsSignedIn(User))
+                {
+                    // Obtén el UserName (email) y córtalo antes del @
+                    currentUsername = User.Identity?.Name ?? string.Empty;
+                    if (currentUsername.Contains("@"))
+                    {
+                        currentUsername = currentUsername.Split('@')[0];
+                    }
+
+                    // Ahora compara el nombre de usuario cortado con el autor del comentario
+                    authorMatch = currentUsername == comentario.Autor;
+
+                    if (authorMatch) // Solo calcula tiempo si es el autor
+                    {
+                        // Asegúrate de que ambas fechas sean UTC o Local consistentes
+                        // Es más seguro comparar usando UtcNow si guardaste con UtcNow.
+                        difference = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime(); // Convertir a UTC por si acaso
+                        canEditTime = difference.TotalMinutes < 15 && difference.TotalMinutes >= 0; // Asegura que no sea negativo
+                        puedeEditar = canEditTime; // Puede editar si es autor Y tiempo < 15min
+                    }
+                }
+                // --- FIN LÓGICA CORREGIDA ---
+
+                @* --- BLOQUE DE DEBUG (Actualizado) --- *@
+                var timeNow = DateTime.UtcNow;
+                var commentTime = comentario.FechaComentario;
+                var isSignedIn = SignInManager.IsSignedIn(User);
+                <div style="border: 1px dashed red; padding: 5px; margin-bottom: 5px; font-size: 0.8em; color: black; background: white; text-align: left;">
+                    <strong>DEBUG Comentario ID: @comentario.Id</strong><br/>
+                    Usuario Actual (Name): @User.Identity?.Name<br/>
+                    Usuario Actual (Cortado): @currentUsername<br/> @* <-- Añadido para ver el nombre cortado *@
+                    Autor Comentario: @comentario.Autor<br/>
+                    ¿Coinciden Autores?: @authorMatch<br/>
+                    ¿Usuario Logueado?: @isSignedIn<br/>
+                    Hora Actual (UTC): @timeNow.ToString("o")<br/>
+                    Hora Comentario: @commentTime.ToString("o") (Tipo: @commentTime.Kind)<br/>
+                    Diferencia (UTC): @difference.TotalMinutes.ToString("F2") minutos<br/> @* <-- Aclarado que es UTC *@
+                    ¿Menos de 15 min?: @canEditTime<br/>
+                    <strong>¿Puede Editar (Final)?: @puedeEditar</strong>
+                </div>
+                @* --- FIN BLOQUE DE DEBUG --- *@
+
+
+                <div class="comentario" data-comentario-id="@comentario.Id">
+                    @* ... (Resto del HTML del comentario sin cambios) ... *@
+                    <div class="comentario-header">
+                        <p class="comentario-autor">@comentario.Autor</p>
+                        <div class="comentario-acciones">
+                            @if (puedeEditar)
+                            {
+                                <button class="btn-accion-comentario btn-editar-comentario" title="Editar comentario">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </button>
+                            }
+                            @if (SignInManager.IsSignedIn(User) && currentUsername == comentario.Autor) @* Usa currentUsername aquí también *@
+                            {
+                                <button class="btn-accion-comentario btn-eliminar-comentario" title="Eliminar comentario">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
                     <p class="comentario-texto">@comentario.Texto</p>
-                    <p class="comentario-fecha">@comentario.FechaComentario.ToString("g")</p>
+                    <p class="comentario-fecha">
+                        <span data-utcdate="@comentario.FechaComentario.ToString("o")">cargando...</span>
+                    </p>
                 </div>
             }
-        }
+         }
         else
         {
-            <p>No hay comentarios todavía. ¡Sé el primero en comentar!</p>
+            <p id="sin-comentarios-msg">No hay comentarios todavía. ¡Sé el primero!</p> 
+            @* ^-- NUEVO ID AQUÍ *@
         }
-        
-        <div class="form-comentario">
-            <label for="texto">Deja un comentario</label>
-            <textarea id="texto" name="Texto" required></textarea>
-            <button id="comentar-btn" type="button">Comentar</button>
-        </div>
+    </div>
+
+    <form id="form-agregar-comentario" class="form-comentario">
+        @Html.AntiForgeryToken() <input type="hidden" name="NoticiaId" value="@Model.Id" /> <label for="textoComentario">Deja un comentario</label>
+        <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" placeholder="Escribe tu comentario... (3-500 caracteres)"></textarea>
+
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <button type="submit" class="btn-comentar">Comentar</button> }
+        else
+        {
+            <p style="margin-top: 1rem;">
+                <a href="/Identity/Account/Login?ReturnUrl=@Context.Request.Path">Inicia sesión</a> para comentar.
+            </p>
+        }
+    </form>
     </section>
 </div>
 
@@ -372,70 +501,199 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // --- Lógica del Modal (para usuarios no logueados) ---
-    const comentarBtn = document.getElementById('comentar-btn');
-    const loginModal = document.getElementById('login-modal');
-    const closeButton = document.querySelector('.close-button');
+document.addEventListener('DOMContentLoaded', function() { // OK - Listener principal para carga del DOM.
 
-    function mostrarModal() {
-        if (loginModal) loginModal.style.display = 'flex';
+    // --- Lógica del Modal Login ---
+    const loginModal = document.getElementById('login-modal'); // OK
+    const closeButton = loginModal ? loginModal.querySelector('.close-button') : null; // OK
+    function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; } // OK
+    function ocultarModal() { if (loginModal) loginModal.style.display = 'none'; } // OK
+    if (closeButton) closeButton.addEventListener('click', ocultarModal); // OK
+    window.addEventListener('click', (event) => { if (event.target === loginModal) ocultarModal(); }); // OK
+
+    // --- Lógica de Favoritos ---
+    const favoritoBtn = document.getElementById('favorito-btn'); // OK
+    // OK - Obtiene estado de autenticación inicial.
+    const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true'; 
+
+    function manejarClicFavoritoDetalle() { // OK - Handler para clic en favorito.
+        console.log('DEBUG Vista Detalle - Click - Autenticado:', estaAutenticadoServer); // OK - Log.
+        if (estaAutenticadoServer) { // OK - Comprobación.
+            const noticiaId = favoritoBtn.dataset.id; // OK
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]'); // OK
+            if (!tokenInput) { console.error('No se encontró AntiForgeryToken.'); alert('Error seguridad. Recarga.'); return; } // OK
+            const token = tokenInput.value; // OK
+            // OK - Fetch para ToggleFavorito.
+            fetch('/Noticias/ToggleFavorito', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify(parseInt(noticiaId)) 
+            })
+            .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); }) // OK
+            .then(data => { // OK - Procesa respuesta.
+                console.log('Respuesta del servidor (ToggleFavorito):', data); // OK - Log.
+                 if (data.success) { // OK
+                    favoritoBtn.classList.toggle('activo', data.esFavorito); // OK - Cambia clase.
+                    const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined'); // OK
+                    if (iconSpan) { iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border'; } // OK - Cambia ícono.
+                } else { console.error('Error del servidor al cambiar favorito:', data.message); alert('Error del servidor: ' + (data.message || 'Desconocido')); } // OK
+            })
+            .catch(error => { console.error('Error en fetch o al procesar respuesta:', error); alert('Error de conexión o del servidor al intentar cambiar favorito.'); }); // OK
+        } else { // OK
+            mostrarModal(); // OK
+        }
     }
+    // OK - Añade listener a botón favorito.
+    if (favoritoBtn) { favoritoBtn.addEventListener('click', manejarClicFavoritoDetalle); } 
+    
+    // OK - Inicialización del ícono favorito al cargar.
+    if (favoritoBtn) { 
+        const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
+        const esFavoritoInicial = favoritoBtn.classList.contains('activo'); 
+        if (iconSpan) { iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border'; }
+     }
 
-    if (closeButton) {
-        closeButton.addEventListener('click', () => loginModal.style.display = 'none');
-    }
-    window.addEventListener('click', (event) => {
-        if (event.target === loginModal) loginModal.style.display = 'none';
-    });
+    // --- LÓGICA PARA AGREGAR COMENTARIOS ---
+    const formComentario = document.getElementById('form-agregar-comentario'); // OK
+    console.log('DEBUG: Formulario encontrado:', formComentario); // OK - Log.
+    const textoComentarioInput = document.getElementById('textoComentario'); // OK
+    const listaComentariosDiv = document.getElementById('lista-comentarios'); // OK
+    const sinComentariosMsg = document.getElementById('sin-comentarios-msg'); // OK
+    console.log('DEBUG Comentarios - Formulario encontrado:', formComentario); // OK - Log repetido.
+    console.log('DEBUG Comentarios - Autenticado:', estaAutenticadoServer); // OK - Log.
 
-    // --- Lógica de Favoritos (para usuarios logueados) ---
-    const favoritoBtn = document.getElementById('favorito-btn');
+    // OK - Añade listener submit si form existe y está autenticado.
+    if (formComentario && estaAutenticadoServer) { 
+        formComentario.addEventListener('submit', async function(event) { // OK
+            event.preventDefault(); // OK
 
-    // Comprobamos si el usuario está autenticado usando Razor
-    const usuarioAutenticado = @User.Identity.IsAuthenticated.ToString().ToLower();
+            const noticiaId = this.querySelector('input[name="NoticiaId"]').value; // OK
+            const texto = textoComentarioInput.value.trim(); // OK
+            const token = this.querySelector('input[name="__RequestVerificationToken"]').value; // OK
 
-    if (favoritoBtn) {
-        favoritoBtn.addEventListener('click', function() {
-            if (usuarioAutenticado) {
-                // Si está autenticado, llama al controlador
-                const noticiaId = this.dataset.id;
+            // OK - Validación cliente.
+            if (!texto || texto.length < 3 || texto.length > 500) { 
+                alert('El comentario debe tener entre 3 y 500 caracteres.');
+                return;
+            }
 
-                fetch('/Noticias/ToggleFavorito', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // Importante para la seguridad de ASP.NET Core
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            const submitButton = this.querySelector('button[type="submit"]'); // OK
+            if(submitButton) submitButton.disabled = true; // OK
+
+            try { // OK
+                // OK - Fetch a AgregarComentario.
+                const response = await fetch('/Noticias/AgregarComentario', { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded', 
+                        'RequestVerificationToken': token 
                     },
-                    body: JSON.stringify(parseInt(noticiaId)) // Enviamos el ID como un simple número
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Si la operación fue exitosa, actualizamos el botón
-                        this.classList.toggle('activo', data.esFavorito);
-                    } else {
-                        // Opcional: manejar errores
-                        console.error('Error al cambiar el estado de favorito:', data.message);
+                    body: `noticiaId=${encodeURIComponent(noticiaId)}&textoComentario=${encodeURIComponent(texto)}` 
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); // OK
+                
+                // OK - Verifica Content-Type.
+                const contentType = response.headers.get("content-type"); 
+                if (contentType && contentType.includes("application/json")) { // OK
+                    const data = await response.json(); // OK
+                    // --- INICIO Bloque if (data.success) ---
+                    if (data.success) { // OK
+                        textoComentarioInput.value = ''; // OK
+
+                        // --- Bloque CORREGIDO para crear elementos HTML ---
+                        const nuevoComentarioDiv = document.createElement('div'); // OK
+                        nuevoComentarioDiv.className = 'comentario'; // OK
+                        nuevoComentarioDiv.style.opacity = 0; // OK
+                        nuevoComentarioDiv.style.transition = 'opacity 0.5s ease'; // OK
+
+                        // Define autorP y textoP ANTES de usarlos
+                        const autorP = document.createElement('p'); 
+                        autorP.className = 'comentario-autor';      
+                        autorP.textContent = data.autor;             
+                        nuevoComentarioDiv.appendChild(autorP);      
+
+                        const textoP = document.createElement('p');  
+                        textoP.className = 'comentario-texto';       
+                        textoP.textContent = data.texto;             
+                        nuevoComentarioDiv.appendChild(textoP);      
+                        // --- FIN Bloque CORREGIDO ---
+
+
+                        // --- Bloque correcto para fecha ---
+                        const fechaP = document.createElement('p'); // OK
+                        fechaP.className = 'comentario-fecha'; // OK
+                        const fechaSpan = document.createElement('span'); // OK
+                        // *** ASEGÚRATE de que tu C# envíe 'fechaISO' ***
+                        fechaSpan.dataset.utcdate = data.fechaISO; 
+                        fechaSpan.textContent = "formateando..."; // OK
+                        fechaP.appendChild(fechaSpan); // OK
+                        nuevoComentarioDiv.appendChild(fechaP); // OK
+                        // --- FIN Bloque correcto para fecha ---
+
+                        listaComentariosDiv.prepend(nuevoComentarioDiv); // OK
+                        
+                        // OK - Formatea la fecha nueva.
+                        formatDateElement(fechaSpan); 
+
+                        // OK - Anima aparición.
+                        requestAnimationFrame(() => {  
+                           const nuevoElemento = listaComentariosDiv.firstChild;
+                           if (nuevoElemento) nuevoElemento.style.opacity = 1;
+                        }); 
+                        // OK - Oculta mensaje "sin comentarios".
+                        if (sinComentariosMsg) sinComentariosMsg.style.display = 'none'; 
+                    // --- FIN Bloque if (data.success) ---
+                    } else { // OK
+                        alert('Error al comentar: ' + (data.message || 'Error desconocido'));
                     }
-                })
-                .catch(error => console.error('Error en la llamada fetch:', error));
-
-            } else {
-                // Si NO está autenticado, muestra el modal
-                mostrarModal();
+                } else { // OK
+                     const errorText = await response.text();
+                     console.error('Respuesta no JSON recibida (AgregarComentario):', errorText);
+                     alert('Error del servidor al comentar. Revisa la consola.');
+                }
+            } catch (error) { // OK
+                console.error('Error al enviar comentario:', error);
+                alert('Error de conexión al comentar.');
+            } finally { // OK
+                 if(submitButton) submitButton.disabled = false; 
             }
         });
-    }
+    } // Fin if (formComentario && estaAutenticadoServer)
 
-    if (comentarBtn) {
-        comentarBtn.addEventListener('click', function() {
-            if (!usuarioAutenticado) {
-                mostrarModal();
-            }
-            // Aquí iría la lógica para enviar el comentario si el usuario está logueado
-        });
-    }
-});
+     // Listener para botón Comentar (si NO está logueado) - OK
+     const comentarBtnSubmit = document.querySelector('#form-agregar-comentario button[type="submit"]'); 
+     if (comentarBtnSubmit && !estaAutenticadoServer) {
+         comentarBtnSubmit.addEventListener('click', function(e){
+             e.preventDefault(); 
+             mostrarModal(); 
+         });
+     } else if (!comentarBtnSubmit && !estaAutenticadoServer) {
+         // OK
+     }
+
+     // --- Función formatDateElement ---
+     function formatDateElement(spanElement) { // OK - Definición de la función.
+         const utcDateString = spanElement.dataset.utcdate; // OK - Obtiene data-attribute.
+         if (!utcDateString) return; // OK - Sale si no hay fecha.
+
+         try { // OK
+             const date = new Date(utcDateString); // OK - Parsea ISO a fecha local.
+             const options = { // OK - Opciones de formato.
+                 year: 'numeric', month: 'numeric', day: 'numeric',
+                 hour: 'numeric', minute: 'numeric', hour12: true 
+             };
+             spanElement.textContent = date.toLocaleString(undefined, options); // OK - Formatea.
+         } catch (e) { // OK - Manejo de error de parseo.
+             console.error("Error formateando fecha:", utcDateString, e);
+             spanElement.textContent = "Fecha inválida";
+         }
+     }
+     // --- FIN Función formatDateElement ---
+
+     // --- CORRECCIÓN: Llamada inicial DENTRO del DOMContentLoaded principal ---
+     document.querySelectorAll('#lista-comentarios .comentario-fecha span[data-utcdate]').forEach(formatDateElement);
+
+
+}); // Fin DOMContentLoaded principal
 </script>

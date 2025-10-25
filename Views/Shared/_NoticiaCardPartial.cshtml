@@ -1,28 +1,11 @@
 @model IEnumerable<PetConnect.Models.Noticia>
+@using Microsoft.AspNetCore.Identity
+@using System.Text.RegularExpressions
+@inject SignInManager<IdentityUser> SignInManager
 
-<!-- Enlace a la biblioteca de Google Material Symbols -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
-    /* Estilo del cuerpo de la página */
-    body {
-        background-color: #f7f3e8; /* Un color de fondo crema suave */
-        font-family: 'Arial', sans-serif;
-    }
-
-    /* Estilos para el contenedor de la sección de noticias */
-    .news-list-container {
-        padding: 2rem 1rem;
-        text-align: center;
-    }
-
-    .news-list-container h2 {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #FFCFCF;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
     /* Estilos para el contenedor de las tarjetas */
     .news-cards-wrapper {
         display: flex;
@@ -45,7 +28,7 @@
         display: flex; 
         flex-direction: column; 
         min-height: 480px; 
-        box-sizing: border-box; /* ⬅️ Asegura que padding no aumente el tamaño de la tarjeta */
+        box-sizing: border-box;
     }
 
     .noticia-card:hover {
@@ -87,10 +70,13 @@
     .favorito-btn .material-symbols-outlined {
         color: #a8798e;
         font-size: 1.4rem;
+        /* Estilo para que se vea solo el borde por defecto */
+        font-variation-settings: 'FILL' 0; 
     }
 
     .favorito-btn.activo .material-symbols-outlined {
-        color: #e25e83;
+        color: #e25e83; /* Color de relleno */
+        font-variation-settings: 'FILL' 1; /* Rellena el ícono */
     }
 
     /* Estilos para el contenido de la tarjeta */
@@ -125,18 +111,16 @@
     }
         /* Estilos para el botón "Leer más" */
     .btn-leer-mas {
-        align-self: center; /* Centra el botón horizontalmente */
-        
-        /* ⬅️ CORRECCIÓN CLAVE: Ajustes para el estilo de la imagen */
-        padding: 0.6rem 3.5rem;   /* Más ancho, ligeramente menos alto */
+        align-self: center; 
+        padding: 0.6rem 3.5rem;
         font-size: 1.1rem;      
-        border-radius: 50px;    /* ¡Mucho más redondeado! */
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+        border-radius: 50px; 
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         
         background-color: #72626e;
         color: white;
         text-decoration: none;
-        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Añadimos la transición para la sombra */
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
         margin-top: auto;
         line-height: 1.5;
         text-align: center;
@@ -144,23 +128,23 @@
 
     .btn-leer-mas:hover {
         background-color: #5a4b56;
-        transform: translateY(-3px); /* Un efecto de elevación más notable al pasar el ratón */
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* La sombra se intensifica al pasar el ratón */
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     }
 
     /* --- ESTILOS MEJORADOS PARA EL MODAL DE ALERTA --- */
-   .modal-alerta {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
+    .modal-alerta {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
     }
 
     .modal-alerta-contenido {
@@ -208,23 +192,23 @@
 /* Contenedor de los botones */
 
     .login-button-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
     }
 
     /* Ambos botones iguales */
     .login-button, 
     .register-link {
-        flex: 1;                       /* Ambos ocupan el mismo espacio horizontal */
-        display: flex;                 
+        flex: 1; 
+        display: flex;               
         justify-content: center;
         align-items: center;
-        height: 50px;                  /* Altura uniforme */
+        height: 50px;
         border-radius: 8px;
         font-weight: bold;
         text-decoration: none;
@@ -259,52 +243,47 @@
         color: white;
         transform: translateY(-2px);
     }
-
 </style>
 
-<div class="news-list-container">
-    @Html.AntiForgeryToken()
-    <h2>Noticias destacadas</h2>
-    <div class="news-cards-wrapper">
-        @foreach (var noticia in Model)
-        {
-            <div class="noticia-card">
-                <img src="@noticia.UrlImagen" alt="@noticia.Titulo" class="noticia-imagen" />
-                <div class="favorito-btn" data-id="@noticia.Id">
-                    <span class="material-symbols-outlined">favorite</span>
-                </div>
-                <div class="noticia-contenido">
-                    <h3 class="noticia-titulo">@noticia.Titulo</h3>
-                    <p class="noticia-fecha">@noticia.FechaPublicacion.ToString("dd/MM/yyyy")</p>
-                    
-                    @{
-                        // Eliminar las etiquetas <p> del resumen
-                        string contenidoLimpio = noticia.Contenido.Replace("<p>", "").Replace("</p>", "");
-                        string resumen;
+@foreach (var noticia in Model)
+{
+    <div class="noticia-card">
+        <img src="@noticia.UrlImagen" alt="@noticia.Titulo" class="noticia-imagen" />
+        
+        <div class="favorito-btn" data-id="@noticia.Id">
+            <span class="material-symbols-outlined">favorite</span>
+        </div>
+        
+        <div class="noticia-contenido">
+            <h3 class="noticia-titulo">@noticia.Titulo</h3>
+            <p class="noticia-fecha">@noticia.FechaPublicacion.ToString("dd/MM/yyyy")</p>
+            
+            @{
+                // Eliminar las etiquetas <p> del resumen
+                string contenidoLimpio = Regex.Replace(noticia.Contenido, "<.*?>", String.Empty);
+                string resumen;
 
-                        if (contenidoLimpio.Length > 100)
-                        {
-                            resumen = contenidoLimpio.Substring(0, 100) + "...";
-                        }
-                        else
-                        {
-                            resumen = contenidoLimpio;
-                        }
-                    }
-                    <p class="noticia-resumen">@resumen</p>
-                    
-                    <a href="@Url.Action("Detalle", "Noticias", new { id = noticia.Id })" class="btn-leer-mas">Leer más...</a>
-                </div>
-            </div>
-        }
+                if (contenidoLimpio.Length > 100)
+                {
+                    resumen = contenidoLimpio.Substring(0, 100) + "...";
+                }
+                else
+                {
+                    resumen = contenidoLimpio;
+                }
+            }
+            <p class="noticia-resumen">@Html.Raw(resumen)</p>
+            
+            <a href="@Url.Action("Detalle", "Noticias", new { id = noticia.Id })" class="btn-leer-mas">Leer más...</a>
+        </div>
     </div>
-</div>
+}
 
 <div id="modal-alerta" class="modal-alerta">
     <div class="modal-alerta-contenido">
         <span class="modal-alerta-cerrar">&times;</span>
         <h3>Acceso Requerido</h3>
-        <p>¡Hola! Debes iniciar sesión o registrarte para comentar y guardar esta noticia en favoritos.</p>
+        <p>¡Hola! Debes iniciar sesión o registrarte para guardar esta noticia en favoritos.</p>
         <div class="login-button-group">
             <a href="/Identity/Account/Login" class="login-button">Iniciar Sesión</a>
             <a href="/Identity/Account/Register" class="register-link">Registrarse</a>
@@ -313,53 +292,77 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('modal-alerta');
-    const cerrarBtn = document.querySelector('.modal-alerta-cerrar');
-    const usuarioAutenticado = @User.Identity.IsAuthenticated.ToString().ToLower();
+    if (!window.favoritoScriptCargado) {
+        window.favoritoScriptCargado = true;
 
-    function mostrarModal() {
-        if (modal) modal.style.display = 'flex';
-    }
-    function ocultarModal() {
-        if (modal) modal.style.display = 'none';
-    }
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('modal-alerta');
+            const cerrarBtn = document.querySelector('.modal-alerta-cerrar');
 
-    if (cerrarBtn) cerrarBtn.addEventListener('click', ocultarModal);
-    window.onclick = function(event) {
-        if (event.target == modal) ocultarModal();
-    }
+            if (cerrarBtn) {
+                cerrarBtn.addEventListener('click', ocultarModal);
+            }
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    ocultarModal();
+                }
+            }
+        });
 
-    // Lógica para TODOS los botones de favorito en la página
-    document.querySelectorAll('.favorito-btn').forEach(btn => {
-        btn.addEventListener('click', function(event) {
-            event.preventDefault(); // Evita que se navegue a otra página si el botón está en un <a>
+        function mostrarModal() {
+            const modal = document.getElementById('modal-alerta');
+            if (modal) modal.style.display = 'flex';
+        }
+        function ocultarModal() {
+            const modal = document.getElementById('modal-alerta');
+            if (modal) modal.style.display = 'none';
+        }
+        
+        // Función para manejar el clic en favoritos
+        function manejarClicFavorito(event) {
+            event.preventDefault();
+            const botonActual = event.currentTarget; // 'currentTarget' es más seguro
+            const usuarioAutenticado = @SignInManager.IsSignedIn(User).ToString().ToLower();
+            console.log('Estado de autenticación detectado:', usuarioAutenticado);
+            
+            if (usuarioAutenticado === true) {
+                const noticiaId = botonActual.dataset.id;
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
-            if (usuarioAutenticado) {
-                const noticiaId = this.dataset.id;
-                const botonActual = this; // Guardamos referencia al botón
+                if (!token) {
+                    console.error('Error: No se encontró el AntiForgeryToken.');
+                    return;
+                }
 
                 fetch('/Noticias/ToggleFavorito', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'RequestVerificationToken': token
                     },
                     body: JSON.stringify(parseInt(noticiaId))
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Actualizamos solo el botón que se clickeó
                         botonActual.classList.toggle('activo', data.esFavorito);
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => console.error('Error en fetch:', error));
 
             } else {
                 mostrarModal();
             }
+        }
+
+        // Delegación de eventos: Escuchamos clics en el contenedor
+        // Esto es MÁS EFICIENTE y funciona aunque se añadan nuevas tarjetas
+        document.addEventListener('click', function(event) {
+            // Verificamos si el clic fue en un botón de favorito o en un hijo
+            const boton = event.target.closest('.favorito-btn');
+            if (boton) {
+                manejarClicFavorito(event);
+            }
         });
-    });
-});
+    }
 </script>

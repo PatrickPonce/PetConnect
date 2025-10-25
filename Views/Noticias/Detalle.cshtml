@@ -4,252 +4,267 @@
 
 <style>
 /* Estilo del cuerpo de la página */
-body {
-    background-color: #FFFDEC;
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-/* Contenedor principal para la noticia */
-.noticia-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 2rem;
-    gap: 3rem;
-    background-color: #748675;
-    border-bottom: 2px solid #ddd;
-}
-
-/* Contenedor para la información de la noticia */
-.noticia-info {
-    flex: 1; 
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    position: relative;  
-}
-
-/* Estilos para el título y la fecha */
-.noticia-titulo {
-    font-size: 3rem;
-    font-weight: 700;
-    color: #FFFDEC; 
-    line-height: 1.2;
-}
-
-.noticia-fecha {
-    font-size: 1rem;
-    color: #FFFDEC; 
-    margin-top: 0.5rem;
-}
-
-/* Botón de favoritos*/
-.favorito-btn {
-    position: absolute; 
-    top: 0;
-    right: 0;
-    background-color: #d67a7a;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, background-color 0.2s;
-}
-
-.favorito-btn:hover {
-    background-color: #c96868;
-    transform: scale(1.1);
-}
-
-.favorito-btn .material-symbols-outlined {
-    font-size: 28px;
-    color: white;
-    font-weight: 700;
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-
-.noticia-imagen-container {
-    flex: 1.5;
-    max-width: 600px;
-}
-
-.noticia-imagen {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-.contenido-principal {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: #FFFDEC;
-    border-radius: 12px;
-}
-
-.noticia-parrafo p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #444;
-}
-
-.comentarios-container {
-    margin-top: 3rem;
-    padding: 2rem;
-    background-color: #fff6f6;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-}
-
-.comentario {
-    background-color: #fefefe;
-    border-left: 4px solid #72626e;
-    border-radius: 8px;
-    padding: 1.2rem;
-    margin-bottom: 1.5rem;
-}
-.comentario-autor {
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 0.3rem;
-}
-.comentario-texto {
-    color: #333;
-    line-height: 1.6;
-}
-.comentario-fecha {
-    font-size: 0.8rem;
-    color: #aaa;
-    text-align: right;
-    margin-top: 0.5rem;
-}
-.form-comentario {
-    margin-top: 2rem;
-}
-.form-comentario label {
-    font-weight: bold;
-    color: #72626e;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-.form-comentario textarea {
-    width: 100%;
-    height: 120px;
-    padding: 0.75rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    resize: vertical;
-    font-size: 1rem;
-}
-.form-comentario button {
-    margin-top: 1rem;
-    padding: 0.75rem 1.5rem;
-    background-color: #72626e;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-.form-comentario button:hover {
-    background-color: #5a4b56;
-    transform: translateY(-2px);
-}
-ul {
-    list-style-type: disc;
-    margin: 1.5rem 0;
-    padding-left: 2.5rem;
-}
-
-ul li {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #444;
-    margin-bottom: 0.5rem;
-}
-
-/* Estilos del MODAL UNIFICADO (Mejora visual) */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: none; 
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background-color: #fff6f6;
-    padding: 2.5rem; /* Más espacio */
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
-    text-align: center;
-    position: relative;
-    max-width: 450px;
-    width: 90%;
-}
-
-.close-button {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 1.8rem; /* Icono de cierre más grande */
-    font-weight: normal;
-    cursor: pointer;
-    color: #aaa;
-    transition: color 0.2s;
-}
-
-.close-button:hover {
-    color: #5a4b56;
-}
-
-.modal-body h3 {
-    color: #d67a7a; /* Un color de acento para el título */
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.modal-body p {
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-    color: #5a4b56;
-}
-
-/* Contenedor de los botones */
-
-    .login-button-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
+    body {
+        background-color: #FFFDEC;
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
     }
+
+    /* Contenedor principal para la noticia */
+    .noticia-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 2rem;
+        gap: 3rem;
+        background-color: #748675;
+        border-bottom: 2px solid #ddd;
+    }
+
+    /* Contenedor para la información de la noticia (CORREGIDO) */
+    .noticia-info {
+        flex: 1; 
+        max-width: 500px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* <-- CORRECCIÓN: Centra verticalmente */
+        position: relative;
+        padding-right: 70px; /* <-- CORRECCIÓN: Evita que el texto choque con el botón de favorito */
+    }
+
+    /* NUEVO: Estilos para el breadcrumb */
+    .breadcrumbs {
+        margin-bottom: 1.5rem; /* <-- CORRECCIÓN: Añade espacio inferior */
+        font-size: 0.9rem;
+    }
+
+    /* Estilos para el título y la fecha (CORREGIDO) */
+    .noticia-titulo {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #FFFDEC; 
+        line-height: 1.2;
+        margin-bottom: 1rem; /* <-- CORRECCIÓN: Añade espacio debajo del título */
+    }
+
+    .noticia-fecha {
+        font-size: 1rem;
+        color: #FFFDEC; 
+        margin-top: 0; /* <-- CORRECCIÓN: Resetea el margen superior */
+    }
+
+    /* Botón de favoritos*/
+    .favorito-btn {
+        position: absolute; 
+        top: 0;
+        right: 0;
+        background-color: #d67a7a;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .favorito-btn:hover {
+        background-color: #c96868;
+        transform: scale(1.1);
+    }
+
+    .favorito-btn .material-symbols-outlined {
+        font-size: 28px;
+        color: white;
+        font-weight: 700;
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .favorito-btn.activo .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+        color: #d67a7a;
+    }
+
+    .favorito-btn.activo {
+        background-color: #fce4e4;
+    }
+
+    .noticia-imagen-container {
+        flex: 1.5;
+        max-width: 600px;
+    }
+
+    .noticia-imagen {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .contenido-principal {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #FFFDEC;
+        border-radius: 12px;
+    }
+
+    .noticia-parrafo p {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #444;
+    }
+
+    .comentarios-container {
+        margin-top: 3rem;
+        padding: 2rem;
+        background-color: #fff6f6;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .comentario {
+        background-color: #fefefe;
+        border-left: 4px solid #72626e;
+        border-radius: 8px;
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+    .comentario-autor {
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 0.3rem;
+    }
+    .comentario-texto {
+        color: #333;
+        line-height: 1.6;
+    }
+    .comentario-fecha {
+        font-size: 0.8rem;
+        color: #aaa;
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+    .form-comentario {
+        margin-top: 2rem;
+    }
+    .form-comentario label {
+        font-weight: bold;
+        color: #72626e;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .form-comentario textarea {
+        width: 100%;
+        height: 120px;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        resize: vertical;
+        font-size: 1rem;
+    }
+    .form-comentario button {
+        margin-top: 1rem;
+        padding: 0.75rem 1.5rem;
+        background-color: #72626e;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .form-comentario button:hover {
+        background-color: #5a4b56;
+        transform: translateY(-2px);
+    }
+    ul {
+        list-style-type: disc;
+        margin: 1.5rem 0;
+        padding-left: 2.5rem;
+    }
+
+    ul li {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #444;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Estilos del MODAL UNIFICADO (Mejora visual) */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: none; 
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background-color: #fff6f6;
+        padding: 2.5rem; /* Más espacio */
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+        text-align: center;
+        position: relative;
+        max-width: 450px;
+        width: 90%;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 1.8rem; /* Icono de cierre más grande */
+        font-weight: normal;
+        cursor: pointer;
+        color: #aaa;
+        transition: color 0.2s;
+    }
+
+    .close-button:hover {
+        color: #5a4b56;
+    }
+
+    .modal-body h3 {
+        color: #d67a7a; /* Un color de acento para el título */
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-body p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        color: #5a4b56;
+    }
+
+    /* Contenedor de los botones */
+
+        .login-button-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
+        }
 
     /* Ambos botones iguales */
     .login-button, 
     .register-link {
-        flex: 1;                       /* Ambos ocupan el mismo espacio horizontal */
-        display: flex;                 
+        flex: 1;                     /* Ambos ocupan el mismo espacio horizontal */
+        display: flex;               
         justify-content: center;
         align-items: center;
-        height: 50px;                  /* Altura uniforme */
+        height: 50px;                 /* Altura uniforme */
         border-radius: 8px;
         font-weight: bold;
         text-decoration: none;
@@ -284,6 +299,7 @@ ul li {
         color: white;
         transform: translateY(-2px);
     }
+    
 </style>
 
 <div class="noticia-wrapper">
@@ -296,7 +312,7 @@ ul li {
             <span style="font-weight: bold; color: #d67a7a;">@Model.Titulo</span>
         </div>
         
-        <button id="favorito-btn" class="favorito-btn" title="Guardar en favoritos">
+        <button id="favorito-btn" class="favorito-btn @(ViewBag.EsFavorito ? "activo" : "")" title="Guardar en favoritos" data-id="@Model.Id">
             <span class="material-symbols-outlined">favorite</span>
         </button>
 
@@ -309,6 +325,7 @@ ul li {
 </div>
 
 <div class="contenido-principal">
+    @Html.AntiForgeryToken()
     <article class="noticia-parrafo">
         @Html.Raw(Model.Contenido)
     </article>
@@ -355,35 +372,70 @@ ul li {
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const favoritoBtn = document.getElementById('favorito-btn');
-        const comentarBtn = document.getElementById('comentar-btn');
-        const loginModal = document.getElementById('login-modal');
-        const closeButton = document.querySelector('.close-button');
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Lógica del Modal (para usuarios no logueados) ---
+    const comentarBtn = document.getElementById('comentar-btn');
+    const loginModal = document.getElementById('login-modal');
+    const closeButton = document.querySelector('.close-button');
 
-        function mostrarModal() {
-           
-            loginModal.style.display = 'flex';
-        }
+    function mostrarModal() {
+        if (loginModal) loginModal.style.display = 'flex';
+    }
 
-        if (favoritoBtn) {
-            favoritoBtn.addEventListener('click', mostrarModal);
-        }
+    if (closeButton) {
+        closeButton.addEventListener('click', () => loginModal.style.display = 'none');
+    }
+    window.addEventListener('click', (event) => {
+        if (event.target === loginModal) loginModal.style.display = 'none';
+    });
 
-        if (comentarBtn) {
-            comentarBtn.addEventListener('click', mostrarModal);
-        }
+    // --- Lógica de Favoritos (para usuarios logueados) ---
+    const favoritoBtn = document.getElementById('favorito-btn');
 
-        if (closeButton) {
-            closeButton.addEventListener('click', function() {
-                loginModal.style.display = 'none';
-            });
-        }
+    // Comprobamos si el usuario está autenticado usando Razor
+    const usuarioAutenticado = @User.Identity.IsAuthenticated.ToString().ToLower();
 
-        window.addEventListener('click', function(event) {
-            if (event.target === loginModal) {
-                loginModal.style.display = 'none';
+    if (favoritoBtn) {
+        favoritoBtn.addEventListener('click', function() {
+            if (usuarioAutenticado) {
+                // Si está autenticado, llama al controlador
+                const noticiaId = this.dataset.id;
+
+                fetch('/Noticias/ToggleFavorito', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Importante para la seguridad de ASP.NET Core
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify(parseInt(noticiaId)) // Enviamos el ID como un simple número
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Si la operación fue exitosa, actualizamos el botón
+                        this.classList.toggle('activo', data.esFavorito);
+                    } else {
+                        // Opcional: manejar errores
+                        console.error('Error al cambiar el estado de favorito:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error en la llamada fetch:', error));
+
+            } else {
+                // Si NO está autenticado, muestra el modal
+                mostrarModal();
             }
         });
-    });
+    }
+
+    if (comentarBtn) {
+        comentarBtn.addEventListener('click', function() {
+            if (!usuarioAutenticado) {
+                mostrarModal();
+            }
+            // Aquí iría la lógica para enviar el comentario si el usuario está logueado
+        });
+    }
+});
 </script>

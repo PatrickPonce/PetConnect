@@ -64,17 +64,19 @@ namespace PetConnect.Data
             
             modelBuilder.Entity<Favorito>()
             .HasKey(f => new { f.UsuarioId, f.NoticiaId });
+            modelBuilder.Entity<Favorito>(entity =>
+            {
+                entity.HasKey(f => new { f.UsuarioId, f.NoticiaId });
+                entity.HasOne(f => f.Usuario)
+                    .WithMany() 
+                    .HasForeignKey(f => f.UsuarioId)
+                    .OnDelete(DeleteBehavior.Restrict); 
 
-            modelBuilder.Entity<Favorito>()
-                .HasOne(f => f.Usuario)
-                .WithMany() 
-                .HasForeignKey(f => f.UsuarioId)
-                .OnDelete(DeleteBehavior.Restrict); 
-
-            modelBuilder.Entity<Favorito>()
-                .HasOne(f => f.Noticia)
-                .WithMany() 
-                .HasForeignKey(f => f.NoticiaId);
+                entity.HasOne(f => f.Noticia)
+                    .WithMany(n => n.Favoritos)
+                    .HasForeignKey(f => f.NoticiaId);
+            });
+           
         }   
     }
 }

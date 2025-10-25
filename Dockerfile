@@ -2,18 +2,21 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copiar archivos .sln y TODOS los .csproj de la raíz
-COPY *.sln .
-COPY *.csproj . # Usamos comodín por si ayuda
+# Copia SOLO el archivo .sln
+COPY PetConnect.sln .
 
-# Restaurar dependencias (buscará los .csproj en /app)
-RUN dotnet restore
+# Copia SOLO el archivo .csproj al directorio actual (/app)
+# Asegúrate que el nombre "PetConnect.csproj" sea EXACTO
+COPY PetConnect.csproj ./ 
 
-# Copiar todo el resto del código fuente
+# Restaura las dependencias SOLO para ese proyecto
+RUN dotnet restore PetConnect.csproj
+
+# Copia TODO el resto del código fuente al directorio actual (/app)
 COPY . .
 
-# Publicar la aplicación especificando el archivo .csproj
-# Asegúrate que el nombre "PetConnect.csproj" aquí sea EXACTO
+# Publica la aplicación especificando el proyecto
+# (ya estamos en /app donde está el .csproj)
 RUN dotnet publish PetConnect.csproj -c Release -o /app/publish --no-restore 
 
 # --- Stage 2: Final Image ---

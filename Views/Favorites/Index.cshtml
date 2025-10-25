@@ -36,9 +36,10 @@
     <h1 class="page-title">Mis Favoritos</h1>
 
     @{
-        var hasAnyFavorites = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any()|| Model.NoticiasFavoritas.Any();;
+        // <!-- CAMBIO AQUÍ 1: Añadimos la comprobación de PetShops -->
+        var hasAnyFavorites = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any() || Model.NoticiasFavoritas.Any() || Model.PetShopsFavoritos.Any();
         var searchString = Context.Request.Query["searchString"];
-        var hasSearchResults = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any()|| Model.NoticiasFavoritas.Any();;
+        var hasSearchResults = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any() || Model.NoticiasFavoritas.Any() || Model.PetShopsFavoritos.Any();
     }
 
     @if (hasAnyFavorites || !string.IsNullOrEmpty(searchString))
@@ -60,9 +61,7 @@
                 <div class="favorites-grid">
                     @foreach (var lugar in Model.LugaresFavoritos)
                     {
-                        <!-- CAMBIO 1: ID único y genérico para la tarjeta -->
                         <div class="item-card" id="favorito-lugar-@lugar.Id">
-                            <!-- CAMBIO 2: Atributo 'data-type' para saber qué es -->
                             <button class="remove-favorito-btn" data-type="lugar" data-id="@lugar.Id" title="Quitar de favoritos">
                                 <span class="material-symbols-outlined">favorite</span>
                             </button>
@@ -85,9 +84,7 @@
                 <div class="favorites-grid">
                     @foreach (var guarderia in Model.GuarderiasFavoritas)
                     {
-                        <!-- CAMBIO 1: ID único y genérico para la tarjeta -->
                         <div class="item-card" id="favorito-guarderia-@guarderia.Id">
-                            <!-- CAMBIO 2: Atributo 'data-type' para saber qué es -->
                             <button class="remove-favorito-btn" data-type="guarderia" data-id="@guarderia.Id" title="Quitar de favoritos">
                                 <span class="material-symbols-outlined">favorite</span>
                             </button>
@@ -96,6 +93,32 @@
                                 <h3 class="item-nombre">@guarderia.Nombre</h3>
                                 <p>@guarderia.Ubicacion</p>
                                 <a asp-controller="Guarderias" asp-action="Detalle" asp-route-id="@guarderia.Id" class="btn-ver-mas">Ver más detalles</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+        <!-- ============================================== -->
+        <!-- CAMBIO AQUÍ 2: SECCIÓN AÑADIDA PARA PET SHOPS  -->
+        <!-- ============================================== -->
+        @if (Model.PetShopsFavoritos.Any())
+        {
+            <section class="service-section">
+                <h2>Pet Shops</h2>
+                <div class="favorites-grid">
+                    @foreach (var petshop in Model.PetShopsFavoritos)
+                    {
+                        <div class="item-card" id="favorito-petshop-@petshop.Id">
+                            <button class="remove-favorito-btn" data-type="petshop" data-id="@petshop.Id" title="Quitar de favoritos">
+                                <span class="material-symbols-outlined">favorite</span>
+                            </button>
+                            <img src="@petshop.UrlImagenPrincipal" alt="Imagen de @petshop.Nombre" class="item-imagen" />
+                            <div class="item-contenido">
+                                <h3 class="item-nombre">@petshop.Nombre</h3>
+                                <p>@petshop.Ubicacion</p>
+                                <a asp-controller="PetShops" asp-action="Detalle" asp-route-id="@petshop.Id" class="btn-ver-mas">Ver más detalles</a>
                             </div>
                         </div>
                     }
@@ -143,21 +166,16 @@
 
 @Html.AntiForgeryToken()
 
-<!-- ======================================================= -->
-<!-- CAMBIO 3: LÓGICA DEL SCRIPT TOTALMENTE ACTUALIZADA      -->
-<!-- ======================================================= -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const removeButtons = document.querySelectorAll('.remove-favorito-btn');
 
     removeButtons.forEach(btn => {
         btn.addEventListener('click', async function() {
-            // Leemos los datos del botón
             const id = this.dataset.id;
-            const type = this.dataset.type; // <-- Esto nos dirá si es 'lugar' o 'guarderia'
+            const type = this.dataset.type;
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             
-            // Construimos la URL y el cuerpo de la petición dinámicamente
             let url = '';
             let body = '';
 
@@ -167,15 +185,20 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (type === 'guarderia') {
                 url = '/Guarderias/ToggleFavorito';
                 body = `guarderiaId=${id}`;
-            } else if (type === 'noticia') {
+            } 
+            // <!-- CAMBIO AQUÍ 3: AÑADIMOS LA CONDICIÓN PARA PETSHOP -->
+            else if (type === 'petshop') {
+                url = '/PetShops/ToggleFavorito';
+                body = `petShopId=${id}`;
+            } 
+            else if (type === 'noticia') {
                 url = '/Noticias/ToggleFavorito';
                 body = `noticiaId=${id}`;
             } else {
                 console.error('Tipo de favorito desconocido:', type);
-                return; // Si no es ni lugar ni guardería, no hacemos nada
+                return;
             }
 
-            // El resto de la lógica es la misma
             if (confirm('¿Estás seguro de que quieres quitar este favorito?')) {
                 try {
                     const response = await fetch(url, {
@@ -188,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
 
                     const result = await response.json();
-                    if (result.success && !result.agregado) { // Si fue exitoso y el resultado es "no agregado"
+                    if (result.success && !result.agregado) {
                         const card = document.getElementById(`favorito-${type}-${id}`);
                         if(card) {
                             card.style.transition = 'opacity 0.5s, transform 0.5s';
@@ -196,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             card.style.transform = 'scale(0.9)';
                             setTimeout(() => {
                                 card.remove();
-                                // Si ya no quedan tarjetas de ningún tipo, recargamos para mostrar el mensaje de "vacío"
                                 if(document.querySelectorAll('.item-card').length === 0) {
                                     window.location.reload();
                                 }

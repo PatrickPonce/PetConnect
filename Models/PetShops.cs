@@ -25,7 +25,7 @@ namespace PetConnect.Models
         public string Categorias { get; set; }
         public bool CompraOnline { get; set; }
 
-        public virtual ICollection<ComentarioPetShop> Comentarios { get; set; }
-        public virtual ICollection<FavoritoPetShop> Favoritos { get; set; }
+        public virtual ICollection<ComentarioPetShop> Comentarios { get; set; } = new List<ComentarioPetShop>();
+        public virtual ICollection<FavoritoPetShop> Favoritos { get; set; } = new List<FavoritoPetShop>();
     }
 }

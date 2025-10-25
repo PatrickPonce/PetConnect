@@ -35,12 +35,17 @@ public class FavoritesController : Controller
             .Where(f => f.UsuarioId == userId)
             .Select(f => f.Noticia);
 
+        var petShopsQuery = _context.FavoritosPetShop
+                .Where(f => f.UsuarioId == userId)
+                .Select(f => f.PetShop);
+
         // 3. Aplicar el filtro de búsqueda a AMBAS listas
         if (!string.IsNullOrEmpty(searchString))
         {
             lugaresQuery = lugaresQuery.Where(l => l.Nombre.Contains(searchString) || l.Ubicacion.Contains(searchString));
             guarderiasQuery = guarderiasQuery.Where(g => g.Nombre.Contains(searchString) || g.Ubicacion.Contains(searchString));
             noticiasQuery = noticiasQuery.Where(n => n.Titulo.Contains(searchString));
+            petShopsQuery = petShopsQuery.Where(p => p.Nombre.Contains(searchString) || p.Ubicacion.Contains(searchString));
         }
 
         // 4. Crear el ViewModel y poblar AMBAS listas
@@ -48,7 +53,8 @@ public class FavoritesController : Controller
         {
             LugaresFavoritos = await lugaresQuery.AsNoTracking().ToListAsync(),
             GuarderiasFavoritas = await guarderiasQuery.AsNoTracking().ToListAsync(),
-            NoticiasFavoritas = await noticiasQuery.AsNoTracking().ToListAsync()
+            NoticiasFavoritas = await noticiasQuery.AsNoTracking().ToListAsync(),
+            PetShopsFavoritos = await petShopsQuery.ToListAsync()
         };
 
         return View(viewModel);

@@ -201,57 +201,97 @@ public class NoticiasController : Controller
         }
         return Json(new { success = true });
     }
-    [HttpPost] 
-    [Authorize] 
-    [ValidateAntiForgeryToken] 
-   public async Task<IActionResult> AgregarComentario(int noticiaId, string textoComentario)
-{
-    // ... (validaciones) ...
-
-    var userId = _userManager.GetUserId(User); // Obtiene el ID del usuario actual
-    var user = await _userManager.FindByIdAsync(userId); // Obtiene el IdentityUser
-
-    // --- INICIO NUEVA LÓGICA PARA OBTENER NOMBRE ---
-    string autorNombre = "Usuario Anónimo"; // Valor por defecto
-
-    if (user != null) 
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AgregarComentario(int noticiaId, string textoComentario)
     {
-        // Intenta obtener el Claim "NombreCompleto" (o como lo hayas llamado al guardar)
-        var nombreClaim = await _userManager.GetClaimsAsync(user);
-        var nombreCompletoClaim = nombreClaim.FirstOrDefault(c => c.Type == "NombreCompleto"); // <-- REVISA ESTE NOMBRE
+        // ... (validaciones) ...
 
-        if (nombreCompletoClaim != null && !string.IsNullOrEmpty(nombreCompletoClaim.Value))
+        var userId = _userManager.GetUserId(User); // Obtiene el ID del usuario actual
+        var user = await _userManager.FindByIdAsync(userId); // Obtiene el IdentityUser
+
+        // --- INICIO NUEVA LÓGICA PARA OBTENER NOMBRE ---
+        string autorNombre = "Usuario Anónimo"; // Valor por defecto
+
+        if (user != null)
         {
-            autorNombre = nombreCompletoClaim.Value; // Usa el valor del Claim
-        }
-        else 
-        {
-            // Si no hay Claim "NombreCompleto", usa el UserName (email) y córtalo
-            autorNombre = user.UserName ?? "Usuario Anónimo";
-            if (autorNombre.Contains("@"))
+            // Intenta obtener el Claim "NombreCompleto" (o como lo hayas llamado al guardar)
+            var nombreClaim = await _userManager.GetClaimsAsync(user);
+            var nombreCompletoClaim = nombreClaim.FirstOrDefault(c => c.Type == "NombreCompleto"); // <-- REVISA ESTE NOMBRE
+
+            if (nombreCompletoClaim != null && !string.IsNullOrEmpty(nombreCompletoClaim.Value))
             {
-                autorNombre = autorNombre.Split('@')[0];
+                autorNombre = nombreCompletoClaim.Value; // Usa el valor del Claim
+            }
+            else
+            {
+                // Si no hay Claim "NombreCompleto", usa el UserName (email) y córtalo
+                autorNombre = user.UserName ?? "Usuario Anónimo";
+                if (autorNombre.Contains("@"))
+                {
+                    autorNombre = autorNombre.Split('@')[0];
+                }
             }
         }
+        // --- FIN NUEVA LÓGICA ---
+
+        var nuevoComentario = new Comentario
+        {
+            NoticiaId = noticiaId,
+            Texto = textoComentario,
+            Autor = autorNombre, // <-- Usa la nueva variable
+            FechaComentario = DateTime.UtcNow
+        };
+
+        _context.Comentarios.Add(nuevoComentario);
+        await _context.SaveChangesAsync();
+
+        return Json(new
+        {
+            success = true,
+            autor = nuevoComentario.Autor, // <-- Envía el nombre correcto
+            texto = nuevoComentario.Texto,
+            fechaISO = nuevoComentario.FechaComentario.ToString("o")
+        });
     }
-    // --- FIN NUEVA LÓGICA ---
-
-    var nuevoComentario = new Comentario
+    [HttpPost]
+    [Authorize] // Solo usuarios logueados pueden intentar borrar
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EliminarComentario(int comentarioId)
     {
-        NoticiaId = noticiaId,
-        Texto = textoComentario,
-        Autor = autorNombre, // <-- Usa la nueva variable
-        FechaComentario = DateTime.UtcNow
-    };
+        if (comentarioId <= 0)
+        {
+            return Json(new { success = false, message = "ID de comentario inválido." });
+        }
 
-    _context.Comentarios.Add(nuevoComentario);
-    await _context.SaveChangesAsync();
+        var userId = _userManager.GetUserId(User);
+        var comentario = await _context.Comentarios.FindAsync(comentarioId);
 
-    return Json(new {
-        success = true,
-        autor = nuevoComentario.Autor, // <-- Envía el nombre correcto
-        texto = nuevoComentario.Texto,
-        fechaISO = nuevoComentario.FechaComentario.ToString("o")
-    });
-}
+        if (comentario == null)
+        {
+            return Json(new { success = false, message = "Comentario no encontrado." });
+        }
+
+        // --- Verificación de Autor ---
+        // Obtiene el UserName cortado del usuario actual
+        var currentUser = User.Identity?.Name ?? string.Empty;
+        if (currentUser.Contains("@"))
+        {
+            currentUser = currentUser.Split('@')[0];
+        }
+
+        // Compara con el autor guardado en el comentario
+        if (comentario.Autor != currentUser)
+        {
+            // Si no es el autor, no permite borrar (a menos que seas admin, lógica no incluida aquí)
+            return Json(new { success = false, message = "No tienes permiso para eliminar este comentario." });
+        }
+        // --- Fin Verificación ---
+
+        _context.Comentarios.Remove(comentario);
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true }); // Devuelve éxito
+    }
 }

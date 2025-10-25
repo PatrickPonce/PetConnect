@@ -12,5 +12,6 @@ namespace PetConnect.Models
         public required string UrlImagen { get; set; }
         public DateTime FechaPublicacion { get; set; } // <-- ¡Corregido!
         public ICollection<Comentario> Comentarios { get; set; } = new List<Comentario>();
+        public ICollection<Favorito> Favoritos { get; set; } = new List<Favorito>();
     }
 }

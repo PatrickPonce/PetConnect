@@ -11,6 +11,6 @@ namespace PetConnect.Models
         public DateTime FechaComentario { get; set; }
 
         public int NoticiaId { get; set; }
-        public Noticia? Noticia { get; set; }
+        public Noticia Noticia { get; set; } = default!;
     }
 }

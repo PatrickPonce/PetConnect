@@ -5,6 +5,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 using PetConnect.Data;
 using PetConnect.Services;
 using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants;
+using System; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,24 @@ builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey }
 builder.Services.AddScoped<PetConnect.Services.AnimalApiService>();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // 1. Obtener el contexto de la base de datos
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        
+        // 2. Ejecutar la inicialización de datos (inserta Noticias y Comentarios)
+        DbInitializer.Initialize(context); 
+    }
+    catch (Exception ex)
+    {
+        // 3. Si ocurre un error, loguearlo y continuar
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error al sembrar la base de datos.");
+    }
+}
 
 using (var scope = app.Services.CreateScope())
 {

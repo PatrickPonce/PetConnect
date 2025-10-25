@@ -33,6 +33,34 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddControllersWithViews();
 
+var redisConnectionString = builder.Configuration["REDIS_URL"]; // Lee desde variables de entorno
+if (!string.IsNullOrEmpty(redisConnectionString))
+{
+    try
+    {
+        builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(
+            StackExchange.Redis.ConnectionMultiplexer.Connect(redisConnectionString)
+        );
+        // Opcional: Registrar IDistributedCache para usar la caché de ASP.NET Core
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "PetConnect_"; // Prefijo opcional
+        });
+        Console.WriteLine("Redis configurado exitosamente.");
+    }
+    catch (Exception ex)
+    {
+         Console.WriteLine($"Error al configurar Redis: {ex.Message}");
+         // Considera cómo manejar el fallo (¿la app puede funcionar sin Redis?)
+    }
+}
+else
+{
+    Console.WriteLine("Variable de entorno REDIS_URL no encontrada. Redis no será configurado.");
+}
+
+
 builder.Services.AddScoped<PetConnect.Services.ConfiguracionSitioService>();
 
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];

@@ -43,21 +43,6 @@ namespace PetConnect.Migrations
                     b.ToTable("ConfiguracionesSitio");
                 });
 
-            modelBuilder.Entity("FavoritoNoticia", b =>
-                {
-                    b.Property<int>("NoticiaId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("text");
-
-                    b.HasKey("NoticiaId", "UsuarioId");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("FavoritosNoticia");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -704,25 +689,6 @@ namespace PetConnect.Migrations
                     b.ToTable("veterinaria_detalles");
                 });
 
-            modelBuilder.Entity("FavoritoNoticia", b =>
-                {
-                    b.HasOne("PetConnect.Models.Noticia", "Noticia")
-                        .WithMany("Favoritos")
-                        .HasForeignKey("NoticiaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Noticia");
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -922,8 +888,6 @@ namespace PetConnect.Migrations
             modelBuilder.Entity("PetConnect.Models.Noticia", b =>
                 {
                     b.Navigation("Comentarios");
-
-                    b.Navigation("Favoritos");
                 });
 
             modelBuilder.Entity("PetConnect.Models.Servicio", b =>

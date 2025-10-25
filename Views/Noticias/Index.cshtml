@@ -1,6 +1,4 @@
-@model List<PetConnect.ViewModels.NoticiaViewModel>
-@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
+@model IEnumerable<PetConnect.Models.Noticia>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -85,11 +83,8 @@
         font-size: 1.4rem;
     }
 
-    /* --- ESTILO CLAVE AÑADIDO --- */
-    /* Cuando el botón tiene la clase 'activo' (es favorito) */
     .favorito-btn.activo .material-symbols-outlined {
         color: #e25e83;
-        font-variation-settings: 'FILL' 1; /* Rellena el corazón */
     }
 
     /* Estilos para el contenido de la tarjeta */
@@ -145,10 +140,10 @@
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgba(0, 0, 0, 0.7); 
+        background-color: rgba(0, 0, 0, 0.7);  
         display: none; 
         justify-content: center; 
-        align-items: center; 
+        align-items: center;   
     }
 
     .modal-alerta-contenido {
@@ -162,7 +157,6 @@
         max-width: 450px;
         width: 90%; 
         box-sizing: border-box; 
-    }
 
     .modal-alerta-cerrar {
         position: absolute;
@@ -230,7 +224,7 @@
 
     .register-link:hover {
         background-color: #72626e; 
-        color: white; 
+        color: white;
         transform: translateY(-1px);
     }
 
@@ -239,24 +233,22 @@
 <div class="news-list-container">
     <h2>Noticias destacadas</h2>
     <div class="news-cards-wrapper">
-        
-        @foreach (var item in Model)
+        @foreach (var noticia in Model)
         {
             <div class="noticia-card">
-                <img src="@item.Noticia.UrlImagen" alt="@item.Noticia.Titulo" class="noticia-imagen" />
-                
-                <div class="favorito-btn @(item.EsFavorito ? "activo" : "")" data-id="@item.Noticia.Id">
+                <img src="@noticia.UrlImagen" alt="@noticia.Titulo" class="noticia-imagen" />
+                <div class="favorito-btn" data-id="@noticia.Id">
                     <span class="material-symbols-outlined">favorite</span>
                 </div>
-                
                 <div class="noticia-contenido">
-                    <h3 class="noticia-titulo">@item.Noticia.Titulo</h3>
-                    <p class="noticia-fecha">@item.Noticia.FechaPublicacion.ToString("dd/MM/yyyy")</p>
+                    <h3 class="noticia-titulo">@noticia.Titulo</h3>
+                    <p class="noticia-fecha">@noticia.FechaPublicacion.ToString("dd/MM/yyyy")</p>
                     
                     @{
-                        // 3. Usamos item.Noticia.Contenido
-                        string contenidoLimpio = item.Noticia.Contenido.Replace("<p>", "").Replace("</p>", "");
+                        // Eliminar las etiquetas <p> del resumen
+                        string contenidoLimpio = noticia.Contenido.Replace("<p>", "").Replace("</p>", "");
                         string resumen;
+
                         if (contenidoLimpio.Length > 100)
                         {
                             resumen = contenidoLimpio.Substring(0, 100) + "...";
@@ -268,11 +260,11 @@
                     }
                     <p class="noticia-resumen">@resumen</p>
                     
-                    <a href="@Url.Action("Detalle", "Noticias", new { id = item.Noticia.Id })" class="btn-leer-mas">Leer más...</a>
+                    <a href="@Url.Action("Detalle", "Noticias", new { id = noticia.Id })" class="btn-leer-mas">Leer más...</a>
                 </div>
             </div>
         }
-        </div>
+    </div>
 </div>
 
 <div id="modal-alerta" class="modal-alerta">
@@ -286,8 +278,6 @@
         </div>
     </div>
 </div>
-
-@Html.AntiForgeryToken()
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -304,57 +294,14 @@
         }
 
         botonesFavoritos.forEach(btn => {
-            btn.addEventListener('click', async function(event) {
-                
-                // 1. VERIFICAMOS SI EL USUARIO ESTÁ LOGUEADO
-                // (Razor renderiza 'true' o 'false' en el script)
-                var isUserLoggedIn = @SignInManager.IsSignedIn(User).ToString().ToLower();
-
-                if (!isUserLoggedIn) {
-                    // Si NO está logueado, muestra el modal y termina
-                    mostrarModal();
-                    return;
-                }
-
-                // 2. Si ESTÁ LOGUEADO, continuamos con el AJAX
-                const button = this;
-                const noticiaId = button.dataset.id;
-                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-                try {
-                    const response = await fetch('/Noticias/ToggleFavorito', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'RequestVerificationToken': token
-                        },
-                        body: `noticiaId=${noticiaId}`
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        // 3. Cambia el estilo del botón (añade o quita la clase 'activo')
-                        if (result.agregado) {
-                            button.classList.add('activo');
-                        } else {
-                            button.classList.remove('activo');
-                        }
-                    } else {
-                        alert('Hubo un error al guardar el favorito.');
-                    }
-                } catch (error) {
-                    console.error('Error en el fetch:', error);
-                    alert('Ocurrió un error de red.');
-                }
-            });
+            btn.addEventListener('click', mostrarModal);
         });
 
-        // Tu lógica para cerrar el modal (sin cambios)
         if (cerrarBtn) {
             cerrarBtn.addEventListener('click', ocultarModal);
         }
         
+        // Cierra el modal si se hace clic fuera de su contenido (en el overlay)
         window.onclick = function(event) {
             if (event.target == modal) {
                 ocultarModal();

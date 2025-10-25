@@ -13,7 +13,7 @@
     .search-bar-container { display: flex; justify-content: center; margin-bottom: 3.5rem; }
     .search-form { display: flex; width: 100%; max-width: 600px; background-color: white; border-radius: 50px; padding: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
     .search-input { flex-grow: 1; padding: 0.5rem 1rem; border: none; outline: none; background: transparent; font-size: 1rem; }
-    .search-button { padding: 0.6rem 1.8rem; border:    none; background-color: #ff8fab; color: white; border-radius: 50px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
+    .search-button { padding: 0.6rem 1.8rem; border: none; background-color: #ff8fab; color: white; border-radius: 50px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
     .search-button:hover { background-color: #f87aa0; }
     .service-section h2 { font-size: 1.8rem; color: #333; border-bottom: 2px solid #ffc2d1; padding-bottom: 0.5rem; margin-top: 2rem; }
     .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem; }
@@ -36,9 +36,9 @@
     <h1 class="page-title">Mis Favoritos</h1>
 
     @{
-        var hasAnyFavorites = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any()|| Model.NoticiasFavoritas.Any();;
+        var hasAnyFavorites = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any();
         var searchString = Context.Request.Query["searchString"];
-        var hasSearchResults = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any()|| Model.NoticiasFavoritas.Any();;
+        var hasSearchResults = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any();
     }
 
     @if (hasAnyFavorites || !string.IsNullOrEmpty(searchString))
@@ -102,29 +102,6 @@
                 </div>
             </section>
         }
-        
-        @if (Model.NoticiasFavoritas.Any())
-        {
-            <section class="service-section">
-                <h2>Noticias</h2>
-                <div class="favorites-grid">
-                    @foreach (var noticia in Model.NoticiasFavoritas)
-                    {
-                        <div class="item-card" id="favorito-noticia-@noticia.Id">
-                            <button class="remove-favorito-btn" data-type="noticia" data-id="@noticia.Id" title="Quitar de favoritos">
-                                <span class="material-symbols-outlined">favorite</span>
-                            </button>
-                            <img src="@noticia.UrlImagen" alt="Imagen de @noticia.Titulo" class="item-imagen" />
-                            <div class="item-contenido">
-                                <h3 class="item-nombre">@noticia.Titulo</h3>
-                                <p>@noticia.FechaPublicacion.ToString("dd/MM/yyyy")</p>
-                                <a asp-controller="Noticias" asp-action="Detalle" asp-route-id="@noticia.Id" class="btn-ver-mas">Leer más...</a>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </section>
-        }
 
         @if (!hasSearchResults && !string.IsNullOrEmpty(searchString))
         {
@@ -167,9 +144,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (type === 'guarderia') {
                 url = '/Guarderias/ToggleFavorito';
                 body = `guarderiaId=${id}`;
-            } else if (type === 'noticia') {
-                url = '/Noticias/ToggleFavorito';
-                body = `noticiaId=${id}`;
             } else {
                 console.error('Tipo de favorito desconocido:', type);
                 return; // Si no es ni lugar ni guardería, no hacemos nada

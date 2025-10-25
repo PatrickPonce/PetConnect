@@ -26,6 +26,7 @@ namespace PetConnect.Data
         public DbSet<Guarderia> Guarderias { get; set; }
         public DbSet<ComentarioGuarderia> ComentariosGuarderia { get; set; }
         public DbSet<FavoritoGuarderia> FavoritosGuarderia { get; set; }
+        public DbSet<Favorito> Favoritos { get; set; }
         public object Configuration { get; internal set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,10 +57,26 @@ namespace PetConnect.Data
             // Configuración para la clave compuesta de FavoritoLugar
             modelBuilder.Entity<FavoritoLugar>()
                 .HasKey(f => new { f.LugarPetFriendlyId, f.UsuarioId });
-                
+
             // Configuración para la clave compuesta de FavoritoGuarderia
             modelBuilder.Entity<FavoritoGuarderia>()
                 .HasKey(f => new { f.GuarderiaId, f.UsuarioId });
+            
+            modelBuilder.Entity<Favorito>()
+            .HasKey(f => new { f.UsuarioId, f.NoticiaId });
+            modelBuilder.Entity<Favorito>(entity =>
+            {
+                entity.HasKey(f => new { f.UsuarioId, f.NoticiaId });
+                entity.HasOne(f => f.Usuario)
+                    .WithMany() 
+                    .HasForeignKey(f => f.UsuarioId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+
+                entity.HasOne(f => f.Noticia)
+                    .WithMany(n => n.Favoritos)
+                    .HasForeignKey(f => f.NoticiaId);
+            });
+           
         }   
     }
 }

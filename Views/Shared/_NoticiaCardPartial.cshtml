@@ -1,0 +1,381 @@
+@model IEnumerable<PetConnect.Models.Noticia>
+@using Microsoft.AspNetCore.Identity
+@using System.Text.RegularExpressions
+@using System.Collections.Generic
+@using PetConnect.Models
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    var favoritosDelUsuario = ViewData["FavoritosDelUsuario"] as HashSet<int> ?? new HashSet<int>();
+    bool showCheckbox = (bool)(ViewData["ShowCheckbox"] ?? false);
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<style>
+
+    .card-with-checkbox-container {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .chk-noticia-favorita {
+        width: 24px;
+        height: 24px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+    .news-cards-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    .noticia-card {
+        position: relative;
+        background-color: #FFE2E2;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        width: 300px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        min-height: 480px;
+        box-sizing: border-box;
+    }
+    .noticia-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    .noticia-imagen {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    .favorito-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease; 
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .favorito-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .favorito-btn .material-symbols-outlined {
+        color: #D3B8C2; 
+        font-size: 1.4rem;
+        transition: all 0.3s ease; 
+    }
+
+   
+    .favorito-btn.activo .material-symbols-outlined {
+        color: #eca7a6 !important; 
+        font-size: 1.6rem; 
+        transform: scale(1.2); 
+        filter: drop-shadow(0 0 3px #e9a8a8(255, 0, 0, 0.4));
+    }
+
+    .favorito-btn:not(.activo):hover .material-symbols-outlined {
+        color: #e9a8a8; 
+    }
+  
+    .noticia-contenido {
+        padding: 1.5rem;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: space-between;
+    }
+    .noticia-titulo {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    .noticia-fecha {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1rem;
+    }
+    .noticia-resumen {
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+    }
+    .btn-leer-mas {
+        align-self: center;
+        padding: 0.6rem 3.5rem;
+        font-size: 1.1rem;      
+        border-radius: 50px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        background-color: #72626e;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        margin-top: auto;
+        line-height: 1.5;
+        text-align: center;
+    }
+    .btn-leer-mas:hover {
+        background-color: #5a4b56;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .modal-alerta {
+        position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+        overflow: auto; background-color: rgba(0, 0, 0, 0.7); display: none;
+        justify-content: center; align-items: center;
+    }
+    .modal-alerta-contenido {
+        background-color: #fefefe; padding: 2.5rem; border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); text-align: center;
+        position: relative; max-width: 450px; width: 90%; box-sizing: border-box;
+    }
+    .modal-alerta-cerrar {
+        position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 1.8rem;
+        font-weight: bold; cursor: pointer; transition: color 0.2s;
+    }
+    .modal-alerta-cerrar:hover, .modal-alerta-cerrar:focus {
+        color: #5a4b56; text-decoration: none;
+    }
+    .modal-alerta-contenido h3 {
+        color: #d67a7a; font-size: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .modal-alerta-contenido p {
+        font-size: 1.1rem; margin-bottom: 2rem; color: #5a4b56; line-height: 1.6;
+    }
+    .login-button-group {
+        display: flex; justify-content: center; align-items: center; gap: 15px;
+        width: 100%; max-width: 350px; margin: 0 auto;
+    }
+    .login-button, .register-link {
+        flex: 1; display: flex; justify-content: center; align-items: center;
+        height: 50px; border-radius: 8px; font-weight: bold; text-decoration: none;
+        border: 2px solid #72626e; box-sizing: border-box; transition: all 0.3s ease;
+        font-size: 1rem; cursor: pointer;
+    }
+    .login-button {
+        background-color: #72626e; 
+        color: white; 
+    }
+    .register-link { 
+        background-color: transparent; 
+        color: #72626e; 
+    }
+    .login-button:hover { 
+        background-color: #5a4b56;
+         border-color: #5a4b56;
+          transform: translateY(-2px);
+     }
+    .register-link:hover {
+         background-color: #72626e; 
+         color: white;
+         transform: translateY(-2px); 
+    }
+
+    .custom-checkbox-container {
+    display: block; 
+    position: relative;
+    padding-left: 35px;
+    margin-top: 15px;
+    margin-bottom: 12px; 
+    cursor: pointer;
+    font-size: 22px; 
+    -webkit-user-select: none; 
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    height: 24px; 
+    line-height: 24px; 
+    }
+
+    .custom-checkbox-container input.chk-noticia-favorita {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+    }
+
+    .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: #eee; 
+    border: 1px solid #ccc; 
+    border-radius: 4px;   
+    transition: background-color 0.2s ease;
+    }
+
+    .custom-checkbox-container:hover input ~ .checkmark {
+    background-color: #ccc;
+    }
+
+    .custom-checkbox-container input:checked ~ .checkmark {
+    background-color: #72626e;
+    border-color: #72626e;
+    }
+
+    .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    }
+
+    .custom-checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+    }
+
+    .custom-checkbox-container .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white; 
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+    }
+</style>
+@foreach (var noticia in Model)
+{
+    
+    <div class="card-with-checkbox-container" data-noticia-id="@noticia.Id"> 
+
+        @if (showCheckbox)
+        {
+            <label class="custom-checkbox-container">
+                <input type="checkbox" class="chk-noticia-favorita" value="@noticia.Id" />
+                <span class="checkmark"></span> </label>
+        }
+
+        <div class="noticia-card">
+            <img src="@noticia.UrlImagen" alt="@noticia.Titulo" class="noticia-imagen" />
+
+            <div class="favorito-btn" data-id="@noticia.Id">
+                <span class="material-symbols-outlined">favorite</span>
+            </div>
+
+            <div class="noticia-contenido">
+                <h3 class="noticia-titulo">@noticia.Titulo</h3>
+                <p class="noticia-fecha">@noticia.FechaPublicacion.ToString("dd/MM/yyyy")</p>
+
+                @{
+                    string contenidoLimpio = Regex.Replace(noticia.Contenido ?? string.Empty, "<.*?>", String.Empty);
+                    string resumen = contenidoLimpio.Length > 100 ? contenidoLimpio.Substring(0, 100) + "..." : contenidoLimpio;
+                }
+                <p class="noticia-resumen">@Html.Raw(resumen)</p>
+
+                <a href="@Url.Action("Detalle", "Noticias", new { id = noticia.Id })" class="btn-leer-mas">Leer más...</a>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    
+    if (!window.favoritoScriptListenersAdded) {
+        window.favoritoScriptListenersAdded = true;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalAlerta = document.getElementById('modal-alerta');
+            const cerrarBtnAlerta = modalAlerta ? modalAlerta.querySelector('.modal-alerta-cerrar') : null;
+
+            function mostrarModalAlerta() {
+                if (modalAlerta) modalAlerta.style.display = 'flex';
+            }
+            function ocultarModalAlerta() {
+                if (modalAlerta) modalAlerta.style.display = 'none';
+            }
+
+            if (cerrarBtnAlerta) {
+                cerrarBtnAlerta.addEventListener('click', ocultarModalAlerta);
+            }
+            window.addEventListener('click', function(event) { // Event listener global para clics fuera
+                if (event.target == modalAlerta) {
+                    ocultarModalAlerta();
+                }
+            });
+
+            function manejarClicFavorito(event) {
+                event.preventDefault();
+                const botonActual = event.currentTarget;
+                const usuarioAutenticado = @(SignInManager.IsSignedIn(User).ToString().ToLower()) === 'true';
+
+                if (usuarioAutenticado) {
+                    const noticiaId = botonActual.dataset.id;
+                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                     if (!tokenInput) {
+                        console.error('No se encontró AntiForgeryToken en la página principal.');
+                        alert('Error de seguridad. Recarga.');
+                        return;
+                    }
+                    const token = tokenInput.value;
+
+
+                    fetch('/Noticias/ToggleFavorito', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json','RequestVerificationToken': token},
+                        body: JSON.stringify(parseInt(noticiaId))
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            botonActual.classList.toggle('activo', data.esFavorito);
+                            const iconSpan = botonActual.querySelector('.material-symbols-outlined');
+                            if (iconSpan) {
+                                iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border';
+                            }
+                        } else {
+                            console.error('Error al cambiar favorito:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetch ToggleFavorito:', error);
+                    });
+                } else {
+                    mostrarModalAlerta();
+                }
+            }
+
+            document.addEventListener('click', function(event) {
+                const boton = event.target.closest('.favorito-btn');
+                if (boton) {
+                    manejarClicFavorito.call(boton, event);
+                }
+            });
+
+            document.querySelectorAll('.favorito-btn').forEach(boton => {
+                const iconSpan = boton.querySelector('.material-symbols-outlined');
+                const esFavoritoInicial = boton.classList.contains('activo');
+                if (iconSpan) {
+                    iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border';
+                }
+            });
+        }); 
+    } 
+</script>

@@ -1,0 +1,353 @@
+@model IEnumerable<PetConnect.Models.Noticia>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    ViewData["Title"] = "Mis Favoritos";
+}
+
+<style>
+    .favoritos-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+    }
+
+    .favoritos-titulo-icono {
+        display: flex;
+        align-items: center;
+        color: #444; 
+        font-weight: 700; 
+        font-size: 2rem;
+    }
+    
+    .favoritos-titulo-icono .material-symbols-outlined {
+        vertical-align: middle; 
+        font-size: 2.2rem; 
+        margin-right: 10px; 
+        color: #72626e;
+    }
+
+    .btn-eliminar {
+        background-color: #8B8B8B;
+        font-weight: bold;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-eliminar:hover {
+        background-color: #72626e;
+    }
+
+    .modal-confirmacion-eliminar {
+        display: none; 
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.6); 
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-contenido {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal-cerrar-eliminar {
+        color: #aaa;
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .modal-cerrar-eliminar:hover,
+    .modal-cerrar-eliminar:focus {
+        color: #8B8B8B;
+        text-decoration: none;
+    }
+
+    .modal-titulo-eliminar {
+        color: #d67a7a; /* Un color de alerta */
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .modal-mensaje-eliminar {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        color: #555;
+        line-height: 1.5;
+    }
+
+    .modal-botones-eliminar {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .btn-modal-accion {
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+
+    .btn-modal-confirmar {
+        background-color: #d67a7a;
+        color: white;
+    }
+
+    .btn-modal-confirmar:hover {
+        background-color: #c06969;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn-modal-cancelar {
+        background-color: #f0f0f0; 
+        color: #555;
+        border-color: #ddd;
+    }
+
+    .btn-modal-cancelar:hover {
+        background-color: #e0e0e0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(150%); 
+        color: rgb(244, 244, 244);
+        padding: 16px 30px;
+        border-radius: 8px;
+        background-color:#f1c8c6;
+        z-index: 1002;
+        opacity: 0;
+        transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+        font-size: 1rem;
+        font-weight: bold;
+        max-width: 90%;
+        text-align: center; 
+    }
+
+    .toast-notification.success {
+        background-color:#f1c8c6; 
+    }
+
+    .toast-notification.warning {
+        background-color: #94ac99; 
+    }
+
+   .toast-notification.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <div class="news-list-container" style="padding: 2rem;">
+        
+        @Html.AntiForgeryToken()
+
+        <div class="favoritos-header">
+            <h2 class="favoritos-titulo-icono">
+                <span class="material-symbols-outlined">favorite</span>
+                Historial de Favoritos
+            </h2>
+            <button id="btn-eliminar-seleccion" class="btn-eliminar">Eliminar</button>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            }
+        else
+        {
+            <h3 style="font-size: 1.5rem; color: #555; margin-bottom: 1.5rem; padding: 0 1rem;">Lista de Noticias</h3>
+            <div class="news-cards-wrapper">
+                
+                @await Html.PartialAsync("_NoticiaCardPartial", Model, 
+                    new ViewDataDictionary(ViewData) { { "ShowCheckbox", true } })
+            
+            </div>
+        }
+    </div>
+        <div id="modal-confirmacion-eliminar" class="modal-confirmacion-eliminar">
+        <div class="modal-contenido">
+            <span class="modal-cerrar-eliminar">&times;</span>
+            <h3 class="modal-titulo-eliminar">Confirmar Eliminación</h3>
+            <p class="modal-mensaje-eliminar">¿Estás seguro de que deseas eliminar <span id="cantidad-noticias"></span> noticias seleccionadas?</p>
+            <div class="modal-botones-eliminar">
+                <button id="btn-confirmar-eliminar" class="btn-modal-accion btn-modal-confirmar">Eliminar</button>
+                <button id="btn-cancelar-eliminar" class="btn-modal-accion btn-modal-cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast-notification" class="toast-notification">
+        <span id="toast-message"></span>
+    </div>
+
+    <div id="toast-notification" class="toast-notification success">
+        <span id="toast-message"></span>
+    </div>
+
+    <div id="toast-warning" class="toast-notification warning">
+        <span id="toast-warning-message"></span>
+    </div>
+}
+else
+{
+    }
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const botonEliminar = document.getElementById('btn-eliminar-seleccion');
+        const modalConfirmacion = document.getElementById('modal-confirmacion-eliminar');
+        const cerrarModalConfirmacionBtn = modalConfirmacion ? modalConfirmacion.querySelector('.modal-cerrar-eliminar') : null;
+        const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
+        const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+        const cantidadNoticiasSpan = document.getElementById('cantidad-noticias');
+        let noticiasParaEliminarIds = [];
+
+        function mostrarModalConfirmacion(cantidad) {
+            if (cantidadNoticiasSpan) cantidadNoticiasSpan.textContent = cantidad;
+            if (modalConfirmacion) modalConfirmacion.style.display = 'flex';
+            if (btnConfirmarEliminar) btnConfirmarEliminar.disabled = false;
+        }
+
+        function ocultarModalConfirmacion() {
+            if (modalConfirmacion) modalConfirmacion.style.display = 'none';
+            noticiasParaEliminarIds = [];
+            if (btnConfirmarEliminar) btnConfirmarEliminar.disabled = false;
+        }
+
+        if (cerrarModalConfirmacionBtn) cerrarModalConfirmacionBtn.addEventListener('click', ocultarModalConfirmacion);
+        if (btnCancelarEliminar) btnCancelarEliminar.addEventListener('click', ocultarModalConfirmacion);
+        window.addEventListener('click', function(event) {
+            if (event.target == modalConfirmacion) ocultarModalConfirmacion();
+        });
+
+        if (botonEliminar) {
+            botonEliminar.addEventListener('click', function() {
+                const checkboxesMarcados = document.querySelectorAll('.chk-noticia-favorita:checked');
+                noticiasParaEliminarIds = [];
+                checkboxesMarcados.forEach(chk => {
+                    const id = parseInt(chk.value);
+                    if (!isNaN(id)) {
+                        noticiasParaEliminarIds.push(id);
+                    } else {
+                        console.warn('Checkbox con valor no numérico:', chk);
+                    }
+                });
+
+                if (noticiasParaEliminarIds.length === 0) {
+                    showWarningToast('Por favor, selecciona al menos una noticia para eliminar.'); // Reemplaza alert()
+                    return;
+                }
+                mostrarModalConfirmacion(noticiasParaEliminarIds.length);
+            });
+        }
+
+        if (btnConfirmarEliminar) {
+            btnConfirmarEliminar.addEventListener('click', async function() {
+                btnConfirmarEliminar.disabled = true;
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (!tokenInput) {
+                    console.error('No se encontró AntiForgeryToken.');
+                    alert('Error de seguridad. Recarga.');
+                    btnConfirmarEliminar.disabled = false;
+                    return;
+                }
+                const token = tokenInput.value;
+
+                try {
+                    const response = await fetch('/Noticias/EliminarFavoritos', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                        body: JSON.stringify(noticiasParaEliminarIds)
+                    });
+                    ocultarModalConfirmacion();
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        const data = await response.json();
+                        if (data.success) {
+                            showToast('Noticias eliminadas correctamente.');
+                            setTimeout(() => {
+                            location.reload();
+                            }, 1500);
+                        } else {
+                            alert('Error: ' + (data.message || 'Error servidor'));
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        console.error('Respuesta no JSON:', errorText);
+                        alert('Error servidor. Ver consola.');
+                    }
+                } catch (error) {
+                    ocultarModalConfirmacion();
+                    console.error('Error fetch:', error);
+                    alert('Error al eliminar.');
+                }
+            });
+        }
+    });
+
+    function showToast(message) {
+        const toastElement = document.getElementById('toast-notification');
+        const messageElement = document.getElementById('toast-message');
+
+        if (toastElement && messageElement) {
+            messageElement.textContent = message;
+            toastElement.classList.add('show'); 
+
+            setTimeout(() => {
+                toastElement.classList.remove('show');
+            }, 3000); 
+        }
+    }
+
+    function showWarningToast(message) {
+        const toastElement = document.getElementById('toast-warning');
+        const messageElement = document.getElementById('toast-warning-message');
+
+        if (toastElement && messageElement) {
+            messageElement.textContent = message;
+            toastElement.classList.add('show');
+
+            setTimeout(() => {
+                toastElement.classList.remove('show');
+            }, 3000);
+        }
+    }
+</script>

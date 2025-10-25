@@ -47,7 +47,14 @@
         </div>
 
         <aside class="detalle-sidebar-contacto">
-            <h3>Información de Contacto</h3>
+            <h3>Reservar una Cita</h3>
+            <p>Asegura tu espacio para una consulta. El pago es solo una simulación.</p>
+                
+            <form asp-action="CrearSesionDePago" asp-route-id="@Model.Id" method="post">
+                <button type="submit" class="btn btn-primary w-100">Reservar Cita</button>
+            </form>
+
+            <h3 class="mt-4">Información de Contacto</h3>
             <ul>
                 <li><span class="material-symbols-outlined">call</span> @detalles?.Telefono</li>
                 <li><span class="material-symbols-outlined">schedule</span> @detalles?.Horario</li>

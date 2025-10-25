@@ -289,7 +289,11 @@ ul li {
 <div class="noticia-wrapper">
     <div class="noticia-info">
         <div class="breadcrumbs">
-            Inicio » Noticias » <span style="font-weight: bold; color: #d67a7a;">@Model.Titulo</span>
+            <a href="@Url.Action("Index", "Home")" style="color: #FFFDEC;">Inicio</a> 
+            <span style="color: #FFFDEC;">»</span> 
+            <a href="@Url.Action("Index", "Noticias")" style="color: #FFFDEC;">Noticias</a>
+            <span style="color: #FFFDEC;">»</span>
+            <span style="font-weight: bold; color: #d67a7a;">@Model.Titulo</span>
         </div>
         
         <button id="favorito-btn" class="favorito-btn" title="Guardar en favoritos">

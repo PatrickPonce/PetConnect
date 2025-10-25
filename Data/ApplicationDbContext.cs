@@ -26,7 +26,8 @@ namespace PetConnect.Data
         public DbSet<Guarderia> Guarderias { get; set; }
         public DbSet<ComentarioGuarderia> ComentariosGuarderia { get; set; }
         public DbSet<FavoritoGuarderia> FavoritosGuarderia { get; set; }
-     
+        public object Configuration { get; internal set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

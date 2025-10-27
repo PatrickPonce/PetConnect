@@ -7,6 +7,7 @@
 @{
     
     var favoritosDelUsuario = ViewData["FavoritosDelUsuario"] as HashSet<int> ?? new HashSet<int>();
+    bool estaLogueado = SignInManager.IsSignedIn(User);
 }
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -322,6 +323,7 @@
         const modal = document.getElementById('modal-alerta');
         const cerrarBtn = modal ? modal.querySelector('.modal-alerta-cerrar') : null;
 
+        const usuarioEstaLogueado = @estaLogueado.ToString().ToLower();
         function mostrarModal() {
             if (modal) modal.style.display = 'flex';
         }
@@ -337,6 +339,12 @@
         
         function manejarClicFavorito(event) {
             event.preventDefault(); 
+            if (!usuarioEstaLogueado) {
+                
+                mostrarModal(); 
+                
+                return; 
+            }
             
             const botonActual = this; 
             

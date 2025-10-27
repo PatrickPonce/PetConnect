@@ -7,8 +7,10 @@ using PetConnect.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions; 
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Security.Claims;
+using PetConnect.Claims;
 
 public class NoticiasController : Controller
 {
@@ -206,51 +208,54 @@ public class NoticiasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AgregarComentario(int noticiaId, string textoComentario)
     {
-
-        var userId = _userManager.GetUserId(User); 
-        var user = await _userManager.FindByIdAsync(userId); 
-
-        
-        string autorNombre = "Usuario Anónimo";
-
-        if (user != null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
         {
-            
-            var nombreClaim = await _userManager.GetClaimsAsync(user);
-            var nombreCompletoClaim = nombreClaim.FirstOrDefault(c => c.Type == "NombreCompleto"); // <-- REVISA ESTE NOMBRE
+            return Json(new { success = false, message = "Usuario no encontrado." });
+        }
 
-            if (nombreCompletoClaim != null && !string.IsNullOrEmpty(nombreCompletoClaim.Value))
-            {
-                autorNombre = nombreCompletoClaim.Value; 
-            }
-            else
-            {
-                
-                autorNombre = user.UserName ?? "Usuario Anónimo";
-                if (autorNombre.Contains("@"))
-                {
-                    autorNombre = autorNombre.Split('@')[0];
-                }
-            }
+        // 1. Obtener la Foto de Perfil (Usando la lógica de Claims)
+        var claims = await _userManager.GetClaimsAsync(user);
+        var fotoClaim = claims.FirstOrDefault(c => c.Type == PetConnectClaimTypes.ProfilePictureUrl);
+        var fotoUrl = fotoClaim?.Value ?? "/images/avatars/default.png"; // <-- Tu ruta por defecto
+
+        // 2. Obtener el Nombre de Usuario
+        var autorNombre = user.UserName ?? "Anónimo";
+        if (autorNombre.Contains("@"))
+        {
+            autorNombre = autorNombre.Split('@')[0];
         }
         
+        // 3. Validar texto
+        if (string.IsNullOrWhiteSpace(textoComentario) || textoComentario.Length < 3 || textoComentario.Length > 500)
+        {
+            return Json(new { success = false, message = "El comentario debe tener entre 3 y 500 caracteres." });
+        }
+
         var nuevoComentario = new Comentario
         {
             NoticiaId = noticiaId,
             Texto = textoComentario,
             Autor = autorNombre, 
-            FechaComentario = DateTime.UtcNow
+            FechaComentario = DateTime.UtcNow,
+            
+            // --- GUARDAR LOS DATOS NUEVOS ---
+            AutorId = user.Id,         // <-- Guardar el ID
+            AutorFotoUrl = fotoUrl     // <-- Guardar la Foto URL
         };
 
         _context.Comentarios.Add(nuevoComentario);
         await _context.SaveChangesAsync();
 
+        // --- DEVOLVER LA FOTO URL EN EL JSON ---
         return Json(new
         {
             success = true,
+            id = nuevoComentario.Id, // <-- Devolver el ID es buena idea
             autor = nuevoComentario.Autor, 
             texto = nuevoComentario.Texto,
-            fechaISO = nuevoComentario.FechaComentario.ToString("o")
+            fechaISO = nuevoComentario.FechaComentario.ToString("o"),
+            fotoUrl = nuevoComentario.AutorFotoUrl // <-- ¡El JS lo necesita!
         });
     }
     [HttpPost]
@@ -263,7 +268,7 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "ID de comentario inválido." });
         }
 
-        var userId = _userManager.GetUserId(User);
+        var userId = _userManager.GetUserId(User); // <-- Obtener el ID del usuario actual
         var comentario = await _context.Comentarios.FindAsync(comentarioId);
 
         if (comentario == null)
@@ -271,21 +276,13 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "Comentario no encontrado." });
         }
 
-    
-        var currentUser = User.Identity?.Name ?? string.Empty;
-        if (currentUser.Contains("@"))
+        // --- COMPROBACIÓN DE PERMISO CORRECTA ---
+        if (comentario.AutorId != userId)
         {
-            currentUser = currentUser.Split('@')[0];
-        }
-
-        
-        if (comentario.Autor != currentUser)
-        {
-            
+            // El usuario actual no es el autor del comentario
             return Json(new { success = false, message = "No tienes permiso para eliminar este comentario." });
         }
-       
-
+        
         _context.Comentarios.Remove(comentario);
         await _context.SaveChangesAsync();
 
@@ -294,15 +291,14 @@ public class NoticiasController : Controller
    [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditarComentario(int comentarioId, string nuevoTexto) // <-- ¡SIN [FromForm]!
+    public async Task<IActionResult> EditarComentario(int comentarioId, string nuevoTexto)
     {
-       
         if (comentarioId <= 0 || string.IsNullOrWhiteSpace(nuevoTexto) || nuevoTexto.Length < 3 || nuevoTexto.Length > 500)
         {
             return Json(new { success = false, message = "El comentario no es válido (3-500 caracteres)." });
         }
 
-        var userId = _userManager.GetUserId(User);
+        var userId = _userManager.GetUserId(User); // <-- Obtener el ID del usuario actual
         var comentario = await _context.Comentarios.FindAsync(comentarioId);
 
         if (comentario == null)
@@ -310,27 +306,29 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "Comentario no encontrado." });
         }
 
-        var currentUser = User.Identity?.Name ?? string.Empty;
-        if (currentUser.Contains("@")) { currentUser = currentUser.Split('@')[0]; }
-
-        if (comentario.Autor != currentUser)
+        // --- COMPROBACIÓN DE PERMISO CORRECTA ---
+        if (comentario.AutorId != userId)
         {
             return Json(new { success = false, message = "No tienes permiso para editar este comentario." });
         }
 
-       
         TimeSpan diferencia = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime();
         if (diferencia.TotalMinutes > 15)
         {
             return Json(new { success = false, message = "Ya no puedes editar este comentario (límite de 15 min)." });
         }
 
-
         comentario.Texto = nuevoTexto; 
-        comentario.FechaComentario = DateTime.UtcNow;
+        comentario.FechaComentario = DateTime.UtcNow; // Actualizar la fecha al editar
+        
         _context.Comentarios.Update(comentario);
         await _context.SaveChangesAsync();
 
-        return Json(new { success = true, texto = nuevoTexto,fechaISO = comentario.FechaComentario.ToString("o") });
+        // --- JSON DE RESPUESTA CORREGIDO (SIN EL ERROR) ---
+        return Json(new { 
+            success = true, 
+            texto = nuevoTexto, 
+            fechaISO = comentario.FechaComentario.ToString("o") 
+        });
     }
 }

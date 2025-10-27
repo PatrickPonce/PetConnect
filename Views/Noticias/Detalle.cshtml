@@ -82,7 +82,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgb(0, 0, 0); 
+        background-color: rgba(0, 0, 0, 0.6);
         display: none;
         justify-content: center;
         align-items: center;
@@ -204,6 +204,28 @@
         background-color: #f0f0f0; 
         color: #555;
     }
+
+    .comentario-header {
+        display: flex;
+        align-items: center; /* Alinea verticalmente la foto y el nombre */
+        margin-bottom: 0.5rem;
+        gap: 10px; /* Espacio entre la foto y el nombre */
+    }
+
+    .comentario-foto-perfil {
+        width: 40px;  /* Tamaño de la foto */
+        height: 40px;
+        border-radius: 50%; /* La hace redonda */
+        object-fit: cover;  /* Evita que la imagen se deforme */
+        flex-shrink: 0;     /* Evita que la imagen se encoja */
+    }
+
+    .comentario-autor {
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 0;
+        flex-grow: 1; /* Esto empuja las 'acciones' a la derecha */
+    }
     
     @@keyframes fadeIn {
         from { opacity: 0; transform: translateY(-20px); }
@@ -254,9 +276,10 @@
             {
                 bool puedeEditar = false;
                 bool authorMatch = false;
-                bool canEditTime = false;  
+                bool canEditTime = false;   
                 TimeSpan difference = TimeSpan.Zero;
                 string currentUsername = "No Logueado";
+
                 if (SignInManager.IsSignedIn(User))
                 {
                     currentUsername = User.Identity?.Name ?? string.Empty;
@@ -264,10 +287,25 @@
                     {
                         currentUsername = currentUsername.Split('@')[0];
                     }
+                    
                     authorMatch = currentUsername == comentario.Autor;
+                    
                     if (authorMatch)
                     {
-                        difference = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime();
+                        // --- INICIO DE LA CORRECCIÓN RAZOR ---
+                        // Asumimos que la fecha del comentario se guardó en UTC.
+                        var fechaComentarioUtc = comentario.FechaComentario;
+                        
+                        // Si EF no especificó el Kind, lo forzamos a UTC.
+                        if (fechaComentarioUtc.Kind == DateTimeKind.Unspecified)
+                        {
+                            fechaComentarioUtc = DateTime.SpecifyKind(fechaComentarioUtc, DateTimeKind.Utc);
+                        }
+
+                        // Ahora calculamos la diferencia con seguridad
+                        difference = DateTime.UtcNow - fechaComentarioUtc; 
+                        // --- FIN DE LA CORRECCIÓN RAZOR ---
+
                         canEditTime = difference.TotalMinutes < 15 && difference.TotalMinutes >= 0;
                         puedeEditar = canEditTime;
                     }
@@ -275,7 +313,13 @@
 
                 <div class="comentario" data-comentario-id="@comentario.Id">
                     <div class="comentario-header">
+
+                        <img class="comentario-foto-perfil" 
+                            src="@(comentario.AutorFotoUrl ?? "/images/avatars/default.png")" 
+                            alt="@comentario.Autor" />
+
                         <p class="comentario-autor">@comentario.Autor</p>
+                        
                         <div class="comentario-acciones">
                             @if (puedeEditar)
                             {
@@ -283,7 +327,8 @@
                                     <span class="material-symbols-outlined">edit</span>
                                 </button>
                             }
-                            @if (SignInManager.IsSignedIn(User) && currentUsername == comentario.Autor)
+
+                            @if (authorMatch) 
                             {
                                 <button class="btn-accion-comentario btn-eliminar-comentario" title="Eliminar comentario">
                                     <span class="material-symbols-outlined">delete</span>
@@ -305,17 +350,27 @@
     </div>
 
     <form id="form-agregar-comentario" class="form-comentario">
-        @Html.AntiForgeryToken() <input type="hidden" name="NoticiaId" value="@Model.Id" /> <label for="textoComentario">Deja un comentario</label>
-        <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" placeholder="Escribe tu comentario... "></textarea>
+        @Html.AntiForgeryToken() 
+        <input type="hidden" name="NoticiaId" value="@Model.Id" /> 
+        <label for="textoComentario">Deja un comentario</label>
 
         @if (SignInManager.IsSignedIn(User))
         {
-            <button type="submit" class="btn-comentar">Comentar</button> }
+            <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" 
+                    placeholder="Escribe tu comentario... "></textarea>
+        }
         else
         {
-            <p style="margin-top: 1rem;">
-                <a href="/Identity/Account/Login?ReturnUrl=@Context.Request.Path">Inicia sesión</a> para comentar.
-            </p>
+            <textarea id="textoComentario" name="TextoComentario" 
+                    placeholder="Inicia sesión para dejar un comentario..." disabled></textarea>
+        }
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <button type="submit" class="btn-comentar">Comentar</button> 
+        }
+        else
+        {
+            <button type="button" class="btn-comentar" id="btn-abrir-login-modal" style="margin-top: 1rem;">Inicia sesión para comentar</button>
         }
     </form>
     </section>
@@ -335,7 +390,7 @@
 </div>
 
 <div id="login-modal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-contenido">
         <span class="close-button">&times;</span>
         <div class="modal-body">
              <h3>Acceso Requerido</h3>
@@ -380,6 +435,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true';
 
     function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; }
+    if (!estaAutenticadoServer && textoComentarioInput) {
+
+        textoComentarioInput.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            mostrarModal();    
+        });
+    }
+    if (!estaAutenticadoServer) {
+        const btnAbrirLogin = document.getElementById('btn-abrir-login-modal');
+        if (btnAbrirLogin) {
+            btnAbrirLogin.addEventListener('click', function() {
+                mostrarModal();
+            });
+        }
+    }
     function ocultarModal() { if (loginModal) loginModal.style.display = 'none'; }
     function mostrarModalConfirmacionComentario(id) {
         comentarioIdParaEliminar = id;
@@ -456,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
                          nuevoComentarioDiv.className = 'comentario';
                          nuevoComentarioDiv.style.opacity = 0; nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
 
-
+                        nuevoComentarioDiv.dataset.comentarioId = data.id;
                          const comentarioHeaderDiv = document.createElement('div'); comentarioHeaderDiv.className = 'comentario-header';
                          const autorP = document.createElement('p'); autorP.className = 'comentario-autor'; autorP.textContent = data.autor; comentarioHeaderDiv.appendChild(autorP);
                          const accionesDiv = document.createElement('div'); accionesDiv.className = 'comentario-acciones';

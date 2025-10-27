@@ -184,4 +184,35 @@ public class LugaresController : Controller
         await _context.SaveChangesAsync();
         return Json(new { success = true, agregado = agregado });
     }
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken] // ¡Importante para seguridad!
+    public async Task<IActionResult> EliminarFavoritos([FromBody] List<int> lugarIds) 
+    {
+        if (lugarIds == null || !lugarIds.Any())
+        {
+            return Json(new { success = false, message = "No se seleccionaron lugares." });
+        }
+
+        // Usar FindFirstValue es más directo que UserManager si solo necesitas el ID
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new { success = false, message = "Usuario no autorizado." });
+        }
+
+        // Busca en la tabla 'FavoritosLugar' (o como se llame tu tabla join)
+        var favoritosAEliminar = await _context.FavoritosLugar 
+            .Where(f => f.UsuarioId == userId && lugarIds.Contains(f.LugarPetFriendlyId)) // <-- Ajusta 'LugarPetFriendlyId' al nombre real de tu FK
+            .ToListAsync();
+
+        if (favoritosAEliminar.Any())
+        {
+            _context.FavoritosLugar.RemoveRange(favoritosAEliminar);
+            await _context.SaveChangesAsync();
+        }
+        
+        // Devuelve siempre success = true, incluso si no se encontró nada que borrar
+        return Json(new { success = true }); 
+    }
 }

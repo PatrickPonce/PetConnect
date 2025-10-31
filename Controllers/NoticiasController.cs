@@ -288,7 +288,7 @@ public class NoticiasController : Controller
 
         return Json(new { success = true }); 
     }
-   [HttpPost]
+    [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditarComentario(int comentarioId, string nuevoTexto)
@@ -318,17 +318,137 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "Ya no puedes editar este comentario (límite de 15 min)." });
         }
 
-        comentario.Texto = nuevoTexto; 
+        comentario.Texto = nuevoTexto;
         comentario.FechaComentario = DateTime.UtcNow; // Actualizar la fecha al editar
-        
+
         _context.Comentarios.Update(comentario);
         await _context.SaveChangesAsync();
 
         // --- JSON DE RESPUESTA CORREGIDO (SIN EL ERROR) ---
-        return Json(new { 
-            success = true, 
-            texto = nuevoTexto, 
-            fechaISO = comentario.FechaComentario.ToString("o") 
+        return Json(new
+        {
+            success = true,
+            texto = nuevoTexto,
+            fechaISO = comentario.FechaComentario.ToString("o")
         });
+    }
+    // Añade estos métodos DENTRO de tu clase NoticiasController
+
+// 1. GET: /Noticias/Administrador (Muestra la lista de noticias como en image_3cc995.png)
+    [Authorize(Roles = "Admin")] // ¡Importante! Solo los admins pueden ver esto
+    public async Task<IActionResult> Administrador()
+    {
+        var noticias = await _context.Noticias
+                                    .OrderByDescending(n => n.FechaPublicacion)
+                                    .ToListAsync();
+        // Esta acción usará una nueva vista: Views/Noticias/Administrador.cshtml
+        return View(noticias);
+    }
+
+    // 2. GET: /Noticias/Crear (Muestra el formulario para crear una noticia nueva)
+    [Authorize(Roles = "Admin")]
+    public IActionResult Crear()
+    {
+        // Usará la vista: Views/Noticias/Crear.cshtml
+        return View();
+    }
+
+    // 3. POST: /Noticias/Crear (Recibe los datos del formulario y guarda la noticia)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Crear([Bind("Titulo,Contenido,UrlImagen")] Noticia noticia)
+    {
+        if (ModelState.IsValid)
+        {
+            noticia.FechaPublicacion = DateTime.UtcNow; // Pone la fecha actual
+            _context.Add(noticia);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Administrador)); // Vuelve al panel de admin
+        }
+        // Si hay un error, vuelve a mostrar el formulario con los datos
+        return View(noticia);
+    }
+
+    // 4. GET: /Noticias/Editar/5 (Muestra el formulario de edición como en image_3cc977.png)
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Editar(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var noticia = await _context.Noticias.FindAsync(id);
+        if (noticia == null)
+        {
+            return NotFound();
+        }
+        // Usará la vista: Views/Noticias/Editar.cshtml
+        return View(noticia);
+    }
+
+// 5. POST: /Noticias/Editar/5 (Recibe los datos del formulario de edición y guarda los cambios)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Editar(int id, [Bind("Id,Titulo,Contenido,UrlImagen,FechaPublicacion")] Noticia noticia)
+    {
+        if (id != noticia.Id)
+        {
+            return NotFound();
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                _context.Update(noticia);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Noticias.Any(e => e.Id == noticia.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Administrador));
+        }
+        return View(noticia);
+    }
+
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Eliminar(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var noticia = await _context.Noticias.FirstOrDefaultAsync(m => m.Id == id);
+        if (noticia == null)
+        {
+            return NotFound();
+        }
+        // Usará la vista: Views/Noticias/Eliminar.cshtml
+        return View(noticia);
+    }
+
+    [HttpPost, ActionName("Eliminar")]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> EliminarConfirmado(int id)
+    {
+        var noticia = await _context.Noticias.FindAsync(id);
+        if (noticia != null)
+        {
+            _context.Noticias.Remove(noticia);
+        }
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Administrador));
     }
 }

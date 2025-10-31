@@ -123,7 +123,7 @@ public class NoticiasController : Controller
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> ToggleFavorito([FromBody] int noticiaId)
+    public async Task<IActionResult> ToggleFavorito([FromForm] int noticiaId)
     {
         var userId = _userManager.GetUserId(User);
         if (userId == null)
@@ -160,7 +160,7 @@ public class NoticiasController : Controller
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> EliminarFavoritos([FromBody] List<int> noticiaIds)
+    public async Task<IActionResult> EliminarFavoritos([FromForm] List<int> noticiaIds)
     {
         if (noticiaIds == null || !noticiaIds.Any())
         {

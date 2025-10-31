@@ -503,53 +503,124 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (formComentario && estaAutenticadoServer) {
         formComentario.addEventListener('submit', async function(event) {
-             event.preventDefault();
-             const noticiaId = this.querySelector('input[name="NoticiaId"]').value;
-             const texto = textoComentarioInput.value.trim();
-             const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
-             if (!texto || texto.length < 3 || texto.length > 500) { alert('El comentario debe tener entre 3 y 500 caracteres.'); return; }
-             const submitButton = this.querySelector('button[type="submit"]');
-             if(submitButton) submitButton.disabled = true;
-             try {
-                 const response = await fetch('/Noticias/AgregarComentario', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                     body: `noticiaId=${encodeURIComponent(noticiaId)}&textoComentario=${encodeURIComponent(texto)}`
-                 });
-                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                 const contentType = response.headers.get("content-type");
-                 if (contentType && contentType.includes("application/json")) {
-                     const data = await response.json();
-                     if (data.success) {
-                         textoComentarioInput.value = '';
-                         const nuevoComentarioDiv = document.createElement('div');
-                         nuevoComentarioDiv.className = 'comentario';
-                         nuevoComentarioDiv.style.opacity = 0; nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
+            event.preventDefault();
+            const noticiaId = this.querySelector('input[name="NoticiaId"]').value;
+            const texto = textoComentarioInput.value.trim();
+            const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            if (!texto || texto.length < 3 || texto.length > 500) { 
+                alert('El comentario debe tener entre 3 y 500 caracteres.'); 
+                return; 
+            }
 
-                        nuevoComentarioDiv.dataset.comentarioId = data.id;
-                         const comentarioHeaderDiv = document.createElement('div'); comentarioHeaderDiv.className = 'comentario-header';
-                         const autorP = document.createElement('p'); autorP.className = 'comentario-autor'; autorP.textContent = data.autor; comentarioHeaderDiv.appendChild(autorP);
-                         const accionesDiv = document.createElement('div'); accionesDiv.className = 'comentario-acciones';
-                         const editButton = document.createElement('button'); editButton.className = 'btn-accion-comentario btn-editar-comentario'; editButton.title = 'Editar comentario'; editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>'; accionesDiv.appendChild(editButton);
-                         const deleteButton = document.createElement('button'); deleteButton.className = 'btn-accion-comentario btn-eliminar-comentario'; deleteButton.title = 'Eliminar comentario'; deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>'; accionesDiv.appendChild(deleteButton);
-                         comentarioHeaderDiv.appendChild(accionesDiv); nuevoComentarioDiv.appendChild(comentarioHeaderDiv);
+            const submitButton = this.querySelector('button[type="submit"]');
+            if(submitButton) submitButton.disabled = true;
 
-                         const textoP = document.createElement('p'); textoP.className = 'comentario-texto'; textoP.textContent = data.texto; nuevoComentarioDiv.appendChild(textoP);
-                         const fechaP = document.createElement('p'); fechaP.className = 'comentario-fecha';
-                         const fechaSpan = document.createElement('span');
-                         
-                         fechaSpan.dataset.utcdate = data.fechaISO; 
-                         fechaSpan.textContent = "formateando..."; fechaP.appendChild(fechaSpan); nuevoComentarioDiv.appendChild(fechaP);
+            try {
+                const response = await fetch('/Noticias/AgregarComentario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                    body: `noticiaId=${encodeURIComponent(noticiaId)}&textoComentario=${encodeURIComponent(texto)}`
+                });
 
-                         listaComentariosDiv.prepend(nuevoComentarioDiv);
-                         formatDateElement(fechaSpan); 
-                         requestAnimationFrame(() => { const el = listaComentariosDiv.firstChild; if(el) el.style.opacity = 1; });
-                         if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
-                     } else { alert('Error al comentar: ' + (data.message || 'Error desconocido')); }
-                 } else { const errorText = await response.text(); console.error('Respuesta no JSON (AgregarComentario):', errorText); alert('Error servidor al comentar.'); }
-             } catch (error) { console.error('Error al enviar comentario:', error); alert('Error conexión al comentar.'); }
-             finally { if(submitButton) submitButton.disabled = false; }
-         });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        textoComentarioInput.value = '';
+                        const nuevoComentarioDiv = document.createElement('div');
+                        nuevoComentarioDiv.className = 'comentario';
+                        nuevoComentarioDiv.dataset.comentarioId = data.id; // <-- Importante para editar/borrar
+                        nuevoComentarioDiv.style.opacity = 0; 
+                        nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
+
+                        // --- INICIO DE LA CORRECCIÓN ---
+                        
+                        const comentarioHeaderDiv = document.createElement('div'); 
+                        comentarioHeaderDiv.className = 'comentario-header';
+
+                        // 1. Obtenemos la URL de la foto del JSON (que ya devuelve tu controller)
+                        const fotoUrl = data.fotoUrl || '/images/avatars/default.png'; // <-- Tu ruta por defecto
+
+                        // 2. Creamos el elemento <img>
+                        const imgPerfil = document.createElement('img');
+                        imgPerfil.className = 'comentario-foto-perfil'; // <-- Esta clase debe estar en tu CSS
+                        imgPerfil.src = fotoUrl;
+                        imgPerfil.alt = data.autor; 
+                        
+                        // 3. Lo añadimos AL INICIO del header
+                        comentarioHeaderDiv.appendChild(imgPerfil); 
+                        
+                        // --- FIN DE LA CORRECCIÓN ---
+
+                        // 4. Añadimos el autor (como antes)
+                        const autorP = document.createElement('p'); 
+                        autorP.className = 'comentario-autor'; 
+                        autorP.textContent = data.autor; 
+                        comentarioHeaderDiv.appendChild(autorP);
+
+                        // 5. Añadimos las acciones (como antes)
+                        const accionesDiv = document.createElement('div'); 
+                        accionesDiv.className = 'comentario-acciones';
+                        
+                        const editButton = document.createElement('button'); 
+                        editButton.className = 'btn-accion-comentario btn-editar-comentario'; 
+                        editButton.title = 'Editar comentario'; 
+                        editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>'; 
+                        accionesDiv.appendChild(editButton);
+                        
+                        const deleteButton = document.createElement('button'); 
+                        deleteButton.className = 'btn-accion-comentario btn-eliminar-comentario'; 
+                        deleteButton.title = 'Eliminar comentario'; 
+                        deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>'; 
+                        accionesDiv.appendChild(deleteButton);
+                        
+                        comentarioHeaderDiv.appendChild(accionesDiv); 
+                        nuevoComentarioDiv.appendChild(comentarioHeaderDiv);
+
+                        // 6. Añadimos el texto y la fecha (como antes)
+                        const textoP = document.createElement('p'); 
+                        textoP.className = 'comentario-texto'; 
+                        textoP.textContent = data.texto; 
+                        nuevoComentarioDiv.appendChild(textoP);
+                        
+                        const fechaP = document.createElement('p'); 
+                        fechaP.className = 'comentario-fecha';
+                        const fechaSpan = document.createElement('span');
+                        fechaSpan.dataset.utcdate = data.fechaISO; 
+                        fechaSpan.textContent = "formateando..."; 
+                        fechaP.appendChild(fechaSpan); 
+                        nuevoComentarioDiv.appendChild(fechaP);
+
+                        // 7. Añadimos el nuevo comentario a la lista
+                        listaComentariosDiv.prepend(nuevoComentarioDiv);
+                        formatDateElement(fechaSpan); 
+                        requestAnimationFrame(() => { 
+                            const el = listaComentariosDiv.firstChild; 
+                            if(el) el.style.opacity = 1; 
+                        });
+                        
+                        if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
+
+                    } else { 
+                        alert('Error al comentar: ' + (data.message || 'Error desconocido')); 
+                    }
+                } else { 
+                    const errorText = await response.text(); 
+                    console.error('Respuesta no JSON (AgregarComentario):', errorText); 
+                    alert('Error servidor al comentar.'); 
+                }
+            } catch (error) { 
+                console.error('Error al enviar comentario:', error); 
+                alert('Error conexión al comentar.'); 
+            }
+            finally { 
+                if(submitButton) submitButton.disabled = false; 
+            }
+        });
     }
 
     

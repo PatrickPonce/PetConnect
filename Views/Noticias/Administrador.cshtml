@@ -1,0 +1,51 @@
+@using System.Text.RegularExpressions
+@model IEnumerable<PetConnect.Models.Noticia>
+
+@{
+    ViewData["Title"] = "Gestión de Noticias";
+}
+
+<style>
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .admin-header h1 { color: #ff8fab; }
+    .btn-crear { background-color: #72626e; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold; }
+    .news-cards-wrapper { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; }
+    .noticia-card { background-color: #FFE2E2; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 300px; }
+    .noticia-imagen { width: 100%; height: 200px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+    .noticia-contenido-admin { padding: 1.5rem; text-align: left; }
+    .noticia-titulo-admin { font-size: 1.4rem; font-weight: 600; color: #333; margin-bottom: 0.5rem; }
+    .noticia-fecha-admin { font-size: 0.9rem; color: #666; margin-bottom: 1rem; }
+    .noticia-resumen-admin { font-size: 1rem; color: #555; line-height: 1.5; margin-bottom: 1.5rem; }
+    .admin-actions a { display: block; text-align: center; padding: 0.6rem; margin-top: 0.5rem; border-radius: 8px; text-decoration: none; font-weight: bold; color: white; }
+    .btn-leer-mas-admin { background-color: #a0a0a0; }
+    .btn-editar-admin { background-color: #8B8B8B; }
+    .btn-eliminar-admin { background-color: #d67a7a; }
+</style>
+
+<div class="admin-header">
+    <h1>Gestión de Noticias</h1>
+    <a asp-action="Crear" class="btn-crear">Crear</a>
+</div>
+
+<div class="news-cards-wrapper">
+    @foreach (var item in Model)
+    {
+        <div class="noticia-card">
+            <img src="@item.UrlImagen" alt="@item.Titulo" class="noticia-imagen" />
+            <div class="noticia-contenido-admin">
+                <h3 class="noticia-titulo-admin">@item.Titulo</h3>
+                <p class="noticia-fecha-admin">@item.FechaPublicacion.ToShortDateString()</p>
+                @{
+                    string contenidoLimpio = Regex.Replace(item.Contenido, "<.*?>", String.Empty);
+                    string resumen = contenidoLimpio.Length > 100 ? contenidoLimpio.Substring(0, 100) + "..." : contenidoLimpio;
+                }
+                <p class="noticia-resumen-admin">@Html.Raw(resumen)</p>
+                <div class="admin-actions">
+                    <a asp-action="Detalle" asp-route-id="@item.Id" class="btn-leer-mas-admin">Leer más...</a>
+                    <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar-admin">Editar</a>
+                    <a asp-action="Eliminar" asp-route-id="@item.Id" class="btn-eliminar-admin">Eliminar</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

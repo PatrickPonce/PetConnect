@@ -31,7 +31,7 @@
         </div>
         <div class="form-group">
             <label asp-for="Contenido" class="control-label"></label>
-            <textarea asp-for="Contenido" class="form-control" rows="10"></textarea>
+            <textarea asp-for="Contenido" class="form-control" ></textarea>
             <span asp-validation-for="Contenido" class="text-danger"></span>
         </div>
         <div class="button-group">
@@ -43,4 +43,19 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="https://cdn.tiny.cloud/1/us4xrxsoq6f33ntv9173pd2xkhoxj9kl21t4o6owwrw4kqs3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <script>
+        tinymce.init({
+            selector: 'textarea#Contenido', // <-- Apunta a tu <textarea asp-for="Contenido">
+            plugins: 'code table lists image link media',
+            toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                      alignleft aligncenter alignright alignjustify | \
+                      bullist numlist outdent indent | removeformat | \
+                      image link media | code',
+            menubar: false,
+            language: 'es_MX' // O 'es'
+        });
+    </script>
 }

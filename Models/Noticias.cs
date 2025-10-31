@@ -10,7 +10,8 @@ namespace PetConnect.Models
         public required string Titulo { get; set; }
         public required string Contenido { get; set; }
         public required string UrlImagen { get; set; }
-        public DateTime FechaPublicacion { get; set; } // <-- ¡Corregido!
+        public DateTime FechaPublicacion { get; set; } 
+        public bool EsFijada { get; set; } = false;
         public ICollection<Comentario> Comentarios { get; set; } = new List<Comentario>();
         public ICollection<Favorito> Favoritos { get; set; } = new List<Favorito>();
     }

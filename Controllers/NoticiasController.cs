@@ -31,7 +31,8 @@ public class NoticiasController : Controller
     public async Task<IActionResult> Index()
     {
         var noticias = await _context.Noticias
-                                      .OrderByDescending(n => n.FechaPublicacion)
+                                      .OrderByDescending(n => n.EsFijada) 
+                                    .ThenByDescending(n => n.FechaPublicacion) 
                                       .ToListAsync();
 
         var favoritosDelUsuario = new HashSet<int>();
@@ -339,7 +340,8 @@ public class NoticiasController : Controller
     public async Task<IActionResult> Administrador()
     {
         var noticias = await _context.Noticias
-                                    .OrderByDescending(n => n.FechaPublicacion)
+                                    .OrderByDescending(n => n.EsFijada) 
+                                    .ThenByDescending(n => n.FechaPublicacion) 
                                     .ToListAsync();
         // Esta acción usará una nueva vista: Views/Noticias/Administrador.cshtml
         return View(noticias);
@@ -451,5 +453,26 @@ public class NoticiasController : Controller
         }
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Administrador));
+    }
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    // Cambiamos la ruta para que acepte el ID (ej. /Noticias/AlternarFijado/5)
+    [Route("Noticias/AlternarFijado/{id:int}")] 
+    public async Task<IActionResult> AlternarFijado(int id)
+    {
+        var noticia = await _context.Noticias.FindAsync(id);
+        if (noticia == null)
+        {
+            return Json(new { success = false, message = "Noticia no encontrada." });
+        }
+
+        // Invierte el estado actual (si era true, lo vuelve false)
+        noticia.EsFijada = !noticia.EsFijada; 
+        _context.Update(noticia);
+        await _context.SaveChangesAsync();
+
+        // Devuelve el nuevo estado para que el JavaScript actualice la vista
+        return Json(new { success = true, esFijada = noticia.EsFijada });
     }
 }

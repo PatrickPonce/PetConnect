@@ -1,5 +1,7 @@
 @using System.Text.RegularExpressions
 @model IEnumerable<PetConnect.Models.Noticia>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
 
 @{
     ViewData["Title"] = "Gestión de Noticias";
@@ -21,6 +23,21 @@
     .btn-leer-mas-admin { background-color: #a0a0a0; }
     .btn-editar-admin { background-color: #8B8B8B; }
     .btn-eliminar-admin { background-color: #d67a7a; }
+    /* Estilo para la tarjeta cuando está fijada */
+    .noticia-card.fijada {
+        border: 3px solid #ff8fab; /* Borde rosa para destacar */
+        background-color: #fffafb; /* Fondo ligeramente rosado */
+    }
+
+    /* Estilo para el nuevo botón */
+    .btn-fijar-admin {
+        background-color: #6c757d; /* Gris */
+    }
+
+    /* Estilo del botón cuando SÍ está fijada */
+    .noticia-card.fijada .btn-fijar-admin {
+        background-color: #ff8fab; /* Rosa */
+    }
 </style>
 
 <div class="admin-header">
@@ -28,25 +45,70 @@
     <a asp-action="Crear" class="btn-crear">Crear</a>
 </div>
 
+@Html.AntiForgeryToken()
 <div class="news-cards-wrapper">
     @foreach (var item in Model)
     {
-        <div class="noticia-card">
-            <img src="@item.UrlImagen" alt="@item.Titulo" class="noticia-imagen" />
+        <div class="noticia-card @(item.EsFijada ? "fijada" : "")" id="noticia-card-@item.Id">
+        <img src="@item.UrlImagen" alt="@item.Titulo" class="noticia-imagen" />
             <div class="noticia-contenido-admin">
-                <h3 class="noticia-titulo-admin">@item.Titulo</h3>
-                <p class="noticia-fecha-admin">@item.FechaPublicacion.ToShortDateString()</p>
-                @{
-                    string contenidoLimpio = Regex.Replace(item.Contenido, "<.*?>", String.Empty);
-                    string resumen = contenidoLimpio.Length > 100 ? contenidoLimpio.Substring(0, 100) + "..." : contenidoLimpio;
-                }
-                <p class="noticia-resumen-admin">@Html.Raw(resumen)</p>
                 <div class="admin-actions">
                     <a asp-action="Detalle" asp-route-id="@item.Id" class="btn-leer-mas-admin">Leer más...</a>
                     <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar-admin">Editar</a>
                     <a asp-action="Eliminar" asp-route-id="@item.Id" class="btn-eliminar-admin">Eliminar</a>
-                </div>
+                    
+                    <a href="#" class="btn-fijar-admin" data-id="@item.Id" title="Fijar/Quitar Noticia">
+                        <span class="material-symbols-outlined" style="vertical-align: middle;">push_pin</span>
+                        Fijar
+                    </a>
+                    </div>
             </div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtenemos el token
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        document.querySelectorAll('.btn-fijar-admin').forEach(button => {
+            button.addEventListener('click', async function(e) {
+                e.preventDefault(); // Evita que el enlace '#' navegue
+
+                const noticiaId = this.dataset.id;
+                const card = document.getElementById(`noticia-card-${noticiaId}`);
+
+                try {
+                    const response = await fetch(`/Noticias/AlternarFijado/${noticiaId}`, {
+                        method: 'POST',
+                        headers: {
+                            // Enviamos el token en la cabecera
+                            'RequestVerificationToken': token 
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            // Actualiza el estilo de la tarjeta
+                            card.classList.toggle('fijada', data.esFijada);
+                            
+                            // Opcional: Recargar la página para ver el nuevo orden al instante
+                            // location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } else {
+                        alert('Error de red al intentar fijar la noticia.');
+                    }
+                } catch (error) {
+                    console.error('Error en fetch al fijar:', error);
+                }
+            });
+        });
+    });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

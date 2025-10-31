@@ -402,6 +402,7 @@ public class NoticiasController : Controller
         {
             try
             {
+                noticia.FechaPublicacion = noticia.FechaPublicacion.ToUniversalTime();
                 _context.Update(noticia);
                 await _context.SaveChangesAsync();
             }

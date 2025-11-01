@@ -30,19 +30,24 @@ public class FavoritesController : Controller
         var guarderiasQuery = _context.FavoritosGuarderia
             .Where(f => f.UsuarioId == userId)
             .Select(f => f.Guarderia);
+        var noticiasQuery = _context.Favoritos
+            .Where(f => f.UsuarioId == userId)
+            .Select(f => f.Noticia);
 
         // 3. Aplicar el filtro de búsqueda a AMBAS listas
         if (!string.IsNullOrEmpty(searchString))
         {
             lugaresQuery = lugaresQuery.Where(l => l.Nombre.Contains(searchString) || l.Ubicacion.Contains(searchString));
             guarderiasQuery = guarderiasQuery.Where(g => g.Nombre.Contains(searchString) || g.Ubicacion.Contains(searchString));
+            noticiasQuery = noticiasQuery.Where(n => n.Titulo.Contains(searchString) || n.Contenido.Contains(searchString));
         }
 
         // 4. Crear el ViewModel y poblar AMBAS listas
         var viewModel = new FavoritosViewModel
         {
             LugaresFavoritos = await lugaresQuery.AsNoTracking().ToListAsync(),
-            GuarderiasFavoritas = await guarderiasQuery.AsNoTracking().ToListAsync()
+            GuarderiasFavoritas = await guarderiasQuery.AsNoTracking().ToListAsync(),
+            NoticiasFavoritas = await noticiasQuery.AsNoTracking().ToListAsync()
         };
 
         return View(viewModel);

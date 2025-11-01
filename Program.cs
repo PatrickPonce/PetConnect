@@ -14,8 +14,15 @@ using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; // Este
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuración de la Base de Datos
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+Console.WriteLine($"--- DEBUG: La cadena de conexión obtenida es: '{connectionString}' ---");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("--- DEBUG: ¡¡ERROR!! La cadena de conexión está VACÍA o NULA. Verifica la variable de entorno 'ConnectionStrings__DefaultConnection' en Render.");
+}
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 

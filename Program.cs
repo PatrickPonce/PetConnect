@@ -64,11 +64,10 @@ builder.Services.AddAuthentication()
         options.CallbackPath = "/signin-github";
         options.Events.OnRedirectToAuthorizationEndpoint = context =>
         {
-            // Imprimimos la URL en la consola de logs de Render
-            Console.WriteLine("--- DEBUG: Redirigiendo a GitHub. La redirect_uri generada es: " + context.RedirectUri);
+            Console.WriteLine("--- DEBUG: La redirect_uri que se enviará a GitHub es: " + context.RedirectUri);
             
-            // Continuamos con la redirección normal
-            context.Response.Redirect(context.RedirectUri);
+            // ¡NO es necesario llamar a context.Response.Redirect aquí!
+            // Simplemente devolvemos la tarea completada y el middleware continuará.
             return Task.CompletedTask;
         };
     });

@@ -60,16 +60,16 @@ builder.Services.AddAuthentication()
     {
         options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
-        options.Scope.Add("user:email");
-        options.CallbackPath = "/signin-github";
-        options.Events.OnRedirectToAuthorizationEndpoint = context =>
-        {
-            Console.WriteLine("--- DEBUG: La redirect_uri que se enviará a GitHub es: " + context.RedirectUri);
+        //options.Scope.Add("user:email");
+        //options.CallbackPath = "/signin-github";
+        //options.Events.OnRedirectToAuthorizationEndpoint = context =>
+        //{
+        //    Console.WriteLine("--- DEBUG: La redirect_uri que se enviará a GitHub es: " + context.RedirectUri);
             
             // ¡NO es necesario llamar a context.Response.Redirect aquí!
             // Simplemente devolvemos la tarea completada y el middleware continuará.
-            return Task.CompletedTask;
-        };
+        //    return Task.CompletedTask;
+        //};
     });
 
 // Otros servicios

@@ -43,6 +43,31 @@ builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey }
 builder.Services.AddScoped<PetConnect.Services.AnimalApiService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        // Esto aplica cualquier migración pendiente a la base de datos.
+        // Si la base de datos ya está actualizada, no hace nada.
+        context.Database.Migrate(); 
+        
+        // El código para crear el admin ya lo tenías, lo mantenemos aquí
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        await CrearRolesYAdmin(userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error al migrar la base de datos o crear roles.");
+    }
+}
+
+
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -50,9 +75,9 @@ using (var scope = app.Services.CreateScope())
     {
         // 1. Obtener el contexto de la base de datos
         var context = services.GetRequiredService<ApplicationDbContext>();
-        
+
         // 2. Ejecutar la inicialización de datos (inserta Noticias y Comentarios)
-        DbInitializer.Initialize(context); 
+        DbInitializer.Initialize(context);
     }
     catch (Exception ex)
     {

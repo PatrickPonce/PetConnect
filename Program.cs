@@ -49,28 +49,34 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<ApplicationDbContext>();
     
 // Configuración de Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultUI()
-    .AddDefaultTokenProviders();
 
-// Configuración de Autenticación Externa (GitHub)
-builder.Services.AddAuthentication()
-    .AddGitHub(options =>
+// 1. Configura ASP.NET Core Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => 
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+    // No usamos .AddDefaultUI() aquí para tener más control
+
+// 2. Configura los servicios de autenticación por separado
+builder.Services.AddAuthentication(options =>
+    {
+        // Establece el esquema de cookie de Identity como el predeterminado
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddCookie(IdentityConstants.ApplicationScheme) // Añade el handler de cookies para la sesión
+    .AddCookie(IdentityConstants.ExternalScheme)   // Añade el handler para el flujo externo
+    .AddGitHub(options => // Finalmente, añade el proveedor de GitHub
     {
         options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
-        //options.Scope.Add("user:email");
-        //options.CallbackPath = "/signin-github";
-        //options.Events.OnRedirectToAuthorizationEndpoint = context =>
-        //{
-        //    Console.WriteLine("--- DEBUG: La redirect_uri que se enviará a GitHub es: " + context.RedirectUri);
-            
-            // ¡NO es necesario llamar a context.Response.Redirect aquí!
-            // Simplemente devolvemos la tarea completada y el middleware continuará.
-        //    return Task.CompletedTask;
-        //};
+        options.CallbackPath = "/signin-github"; // Mantenemos esta línea explícita
     });
+
+// Esto es necesario porque ya no usamos .AddDefaultUI() en la cadena principal
+builder.Services.AddRazorPages();
 
 // Otros servicios
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();

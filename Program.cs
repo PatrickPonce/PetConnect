@@ -6,6 +6,7 @@ using PetConnect.Data;
 using PetConnect.Services;
 using Microsoft.AspNetCore.HttpOverrides; 
 using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; // Este 'using' puede no ser estrictamente necesario, pero no hace daño
+using Microsoft.AspNetCore.DataProtection;
 
 // ------------------------------------
 // --- CONFIGURACIÓN DE SERVICIOS ---
@@ -44,6 +45,9 @@ else if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<ApplicationDbContext>();
+    
 // Configuración de Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()

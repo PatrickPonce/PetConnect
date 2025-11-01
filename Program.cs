@@ -62,6 +62,15 @@ builder.Services.AddAuthentication()
         options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
         options.Scope.Add("user:email");
         options.CallbackPath = "/signin-github";
+        options.Events.OnRedirectToAuthorizationEndpoint = context =>
+        {
+            // Imprimimos la URL en la consola de logs de Render
+            Console.WriteLine("--- DEBUG: Redirigiendo a GitHub. La redirect_uri generada es: " + context.RedirectUri);
+            
+            // Continuamos con la redirección normal
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
     });
 
 // Otros servicios

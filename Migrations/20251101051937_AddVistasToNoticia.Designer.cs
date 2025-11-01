@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -11,9 +12,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251101051937_AddVistasToNoticia")]
+    partial class AddVistasToNoticia
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -571,9 +574,6 @@ namespace PetConnect.Migrations
                     b.Property<string>("UrlImagen")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Vistas")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

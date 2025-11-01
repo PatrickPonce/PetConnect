@@ -81,6 +81,9 @@ public class NoticiasController : Controller
         {
             return NotFound();
         }
+        noticia.Vistas++;
+        _context.Update(noticia);
+        await _context.SaveChangesAsync();
 
         bool esFavorito = false;
         if (_signInManager.IsSignedIn(User))
@@ -458,7 +461,7 @@ public class NoticiasController : Controller
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
     // Cambiamos la ruta para que acepte el ID (ej. /Noticias/AlternarFijado/5)
-    [Route("Noticias/AlternarFijado/{id:int}")] 
+    [Route("Noticias/AlternarFijado/{id:int}")]
     public async Task<IActionResult> AlternarFijado(int id)
     {
         var noticia = await _context.Noticias.FindAsync(id);
@@ -468,11 +471,36 @@ public class NoticiasController : Controller
         }
 
         // Invierte el estado actual (si era true, lo vuelve false)
-        noticia.EsFijada = !noticia.EsFijada; 
+        noticia.EsFijada = !noticia.EsFijada;
         _context.Update(noticia);
         await _context.SaveChangesAsync();
 
         // Devuelve el nuevo estado para que el JavaScript actualice la vista
         return Json(new { success = true, esFijada = noticia.EsFijada });
+    }
+    // Pega esto dentro de tu clase NoticiasController
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DetalleAdmin(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var noticia = await _context.Noticias
+                                    .Include(n => n.Comentarios) // Incluye los comentarios para contarlos
+                                    .Include(n => n.Favoritos)   // Incluye los favoritos para contarlos
+                                    .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (noticia == null)
+        {
+            return NotFound();
+        }
+
+        // (La vista 'DetalleAdmin.cshtml' se encargará de
+        // inyectar el 'ConfiguracionSitioService' para obtener los colores)
+
+        return View(noticia); // Devuelve la nueva vista 'DetalleAdmin.cshtml'
     }
 }

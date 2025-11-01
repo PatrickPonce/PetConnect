@@ -12,6 +12,8 @@ namespace PetConnect.Models
 
         [Required(ErrorMessage = "El texto del comentario es obligatorio.")] // Validación
         [StringLength(500, MinimumLength = 3, ErrorMessage = "El comentario debe tener entre 3 y 500 caracteres.")] // Validación de longitud
+        public string AutorId { get; set; } // El ID de Identity del autor
+        public string AutorFotoUrl { get; set; } // La URL de la foto en ese momento
         public required string Texto { get; set; }
 
         public DateTime FechaComentario { get; set; } = DateTime.UtcNow; // <-- Valor por defecto

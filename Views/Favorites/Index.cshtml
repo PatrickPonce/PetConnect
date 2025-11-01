@@ -1,4 +1,7 @@
 @model PetConnect.ViewModels.FavoritosViewModel
+@using Microsoft.AspNetCore.Identity
+@using System.Text.RegularExpressions
+@inject SignInManager<IdentityUser> SignInManager
 
 @{
     ViewData["Title"] = "Mis Favoritos";
@@ -7,39 +10,66 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
+    /* Estilos de la página y tarjetas (combinados) */
     body { background-color: #FFF6F6; }
     .page-container { padding: 2rem 1rem; max-width: 1200px; margin: auto; }
     .page-title { text-align: center; font-size: 2.8rem; font-weight: bold; color: #ff8fab; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05); margin-bottom: 2.5rem; }
+
+    /* Barra de Búsqueda */
     .search-bar-container { display: flex; justify-content: center; margin-bottom: 3.5rem; }
     .search-form { display: flex; width: 100%; max-width: 600px; background-color: white; border-radius: 50px; padding: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
     .search-input { flex-grow: 1; padding: 0.5rem 1rem; border: none; outline: none; background: transparent; font-size: 1rem; }
     .search-button { padding: 0.6rem 1.8rem; border: none; background-color: #ff8fab; color: white; border-radius: 50px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
     .search-button:hover { background-color: #f87aa0; }
-    .service-section h2 { font-size: 1.8rem; color: #333; border-bottom: 2px solid #ffc2d1; padding-bottom: 0.5rem; margin-top: 2rem; }
-    .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem; }
+    
+    /* Secciones y Tarjetas */
+    .service-section h2 { font-size: 1.8rem; color: #333; border-bottom: 2px solid #ffc2d1; padding-bottom: 0.5rem; margin-top: 2rem; margin-bottom: 2rem; }
+    .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
     .item-card { position: relative; background-color: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); overflow: hidden; transition: transform 0.2s; }
     .item-card:hover { transform: translateY(-5px); }
     .item-imagen { width: 100%; height: 220px; object-fit: cover; }
     .item-contenido { padding: 1.5rem; text-align: left; }
-    .item-nombre { font-size: 1.5rem; font-weight: 600; color: #333; }
-    .btn-ver-mas { display: block; margin-top: 1rem; padding: 0.75rem; background-color: #d67a7a; color: white; text-align: center; text-decoration: none; border-radius: 8px; }
-    .remove-favorito-btn { position: absolute; top: 15px; right: 15px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; }
+    .item-nombre { font-size: 1.5rem; font-weight: 600; color: #333; margin-bottom: 0.5rem; /* Añadido margen */ }
+    .item-ubicacion { /* Estilo para ubicación si quieres */ color: #666; margin-bottom: 1rem; }
+    .btn-ver-mas { display: block; margin-top: auto; /* Empuja al final */ padding: 0.75rem; background-color: #d67a7a; color: white; text-align: center; text-decoration: none; border-radius: 8px; }
+
+    /* Botón corazón individual */
+    .remove-favorito-btn { position: absolute; top: 15px; right: 15px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; /* Asegura que esté encima */}
     .remove-favorito-btn .material-symbols-outlined { color: #e25e83; font-variation-settings: 'FILL' 1; }
+    
+    /* Contenedor Vacío */
     .empty-favorites-container { text-align: center; padding: 4rem 1rem; }
     .empty-favorites-container h2 { font-size: 1.8rem; color: #555; margin-bottom: 1rem; }
     .empty-favorites-container p { font-size: 1.2rem; color: #777; margin-bottom: 2rem; }
     .empty-favorites-container .explore-button { display: inline-block; padding: 1rem 2.5rem; background-color: #ff8fab; color: white; text-decoration: none; font-weight: bold; border-radius: 50px; transition: background-color 0.3s; }
     .empty-favorites-container .explore-button:hover { background-color: #f87aa0; }
+
+    /* Estilos del Modal (Reutilizados) */
+    .modal-confirmacion-eliminar { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+    .modal-contenido { background-color: #fefefe; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 450px; width: 90%; text-align: center; position: relative; animation: fadeIn 0.3s ease-out; }
+    .modal-cerrar-eliminar { color: #aaa; position: absolute; top: 15px; right: 25px; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+    .modal-cerrar-eliminar:hover, .modal-cerrar-eliminar:focus { color: #8B8B8B; text-decoration: none; }
+    .modal-titulo-eliminar { color: #d67a7a; font-size: 1.8rem; margin-bottom: 20px; }
+    .modal-mensaje-eliminar { font-size: 1.1rem; margin-bottom: 30px; color: #555; line-height: 1.5; }
+    .modal-botones-eliminar { display: flex; justify-content: center; gap: 15px; }
+    .btn-modal-accion { padding: 12px 25px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; border: 2px solid transparent; }
+    .btn-modal-confirmar { background-color: #d67a7a; color: white; }
+    .btn-modal-confirmar:hover { background-color: #c06969; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .btn-modal-cancelar { background-color: #f0f0f0; color: #555; border-color: #ddd; }
+    .btn-modal-cancelar:hover { background-color: #e0e0e0; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
 </style>
 
 <div class="page-container">
-    <h1 class="page-title">Mis Favoritos</h1>
+    @Html.AntiForgeryToken() 
 
     @{
-        var hasAnyFavorites = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any();
-        var searchString = Context.Request.Query["searchString"];
-        var hasSearchResults = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any();
+        var hasAnyFavorites = Model.LugaresFavoritos.Any() || Model.GuarderiasFavoritas.Any() || Model.NoticiasFavoritas.Any();
+        var searchString = Context.Request.Query["searchString"]; 
     }
+
+    <h1 class="page-title">Mis Favoritos</h1>
 
     @if (hasAnyFavorites || !string.IsNullOrEmpty(searchString))
     {
@@ -53,6 +83,34 @@
 
     @if (hasAnyFavorites)
     {
+        @if (Model.NoticiasFavoritas.Any())
+        {
+            <section class="service-section">
+                <h2>Noticias</h2>
+                <div class="favorites-grid">
+                    @foreach (var noticia in Model.NoticiasFavoritas)
+                    {
+                        <div class="item-card" id="favorito-noticia-@noticia.Id">
+                             <button class="remove-favorito-btn" data-type="noticia" data-id="@noticia.Id" title="Quitar de favoritos">
+                                 <span class="material-symbols-outlined">favorite</span>
+                             </button>
+                            
+                            <img src="@noticia.UrlImagen" alt="Imagen de @noticia.Titulo" class="item-imagen" />
+                            <div class="item-contenido">
+                                <h3 class="item-nombre">@noticia.Titulo</h3>
+                                @{
+                                    string contenidoLimpio = Regex.Replace(noticia.Contenido ?? string.Empty, "<.*?>", String.Empty);
+                                    string resumen = contenidoLimpio.Length > 100 ? contenidoLimpio.Substring(0, 100) + "..." : contenidoLimpio;
+                                }
+                                <p>@resumen</p>
+                                <a asp-controller="Noticias" asp-action="Detalle" asp-route-id="@noticia.Id" class="btn-ver-mas">Ver más detalles</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
         @if (Model.LugaresFavoritos.Any())
         {
             <section class="service-section">
@@ -60,16 +118,15 @@
                 <div class="favorites-grid">
                     @foreach (var lugar in Model.LugaresFavoritos)
                     {
-                        <!-- CAMBIO 1: ID único y genérico para la tarjeta -->
                         <div class="item-card" id="favorito-lugar-@lugar.Id">
-                            <!-- CAMBIO 2: Atributo 'data-type' para saber qué es -->
-                            <button class="remove-favorito-btn" data-type="lugar" data-id="@lugar.Id" title="Quitar de favoritos">
-                                <span class="material-symbols-outlined">favorite</span>
-                            </button>
+                             <button class="remove-favorito-btn" data-type="lugar" data-id="@lugar.Id" title="Quitar de favoritos">
+                                 <span class="material-symbols-outlined">favorite</span>
+                             </button>
+                            
                             <img src="@lugar.UrlImagenPrincipal" alt="Imagen de @lugar.Nombre" class="item-imagen" />
                             <div class="item-contenido">
                                 <h3 class="item-nombre">@lugar.Nombre</h3>
-                                <p>@lugar.Ubicacion</p>
+                                <p class="item-ubicacion">@lugar.Ubicacion</p> 
                                 <a asp-controller="Lugares" asp-action="Detalle" asp-route-id="@lugar.Id" class="btn-ver-mas">Ver más detalles</a>
                             </div>
                         </div>
@@ -85,16 +142,15 @@
                 <div class="favorites-grid">
                     @foreach (var guarderia in Model.GuarderiasFavoritas)
                     {
-                        <!-- CAMBIO 1: ID único y genérico para la tarjeta -->
                         <div class="item-card" id="favorito-guarderia-@guarderia.Id">
-                            <!-- CAMBIO 2: Atributo 'data-type' para saber qué es -->
-                            <button class="remove-favorito-btn" data-type="guarderia" data-id="@guarderia.Id" title="Quitar de favoritos">
-                                <span class="material-symbols-outlined">favorite</span>
-                            </button>
+                             <button class="remove-favorito-btn" data-type="guarderia" data-id="@guarderia.Id" title="Quitar de favoritos">
+                                 <span class="material-symbols-outlined">favorite</span>
+                             </button>
+
                             <img src="@guarderia.UrlImagenPrincipal" alt="Imagen de @guarderia.Nombre" class="item-imagen" />
                             <div class="item-contenido">
                                 <h3 class="item-nombre">@guarderia.Nombre</h3>
-                                <p>@guarderia.Ubicacion</p>
+                                <p class="item-ubicacion">@guarderia.Ubicacion</p>
                                 <a asp-controller="Guarderias" asp-action="Detalle" asp-route-id="@guarderia.Id" class="btn-ver-mas">Ver más detalles</a>
                             </div>
                         </div>
@@ -102,87 +158,168 @@
                 </div>
             </section>
         }
-
-        @if (!hasSearchResults && !string.IsNullOrEmpty(searchString))
+        
+        @if (!Model.LugaresFavoritos.Any() && !Model.GuarderiasFavoritas.Any() && !Model.NoticiasFavoritas.Any() && !string.IsNullOrEmpty(searchString))
         {
-            <p style="text-align: center;">No tienes favoritos guardados que coincidan con tu búsqueda.</p>
+            <p style="text-align: center; font-size: 1.2rem; color: #555; margin-top: 2rem;">
+                No se encontraron favoritos que coincidan con "@searchString".
+            </p>
         }
     }
     else
     {
         <div class="empty-favorites-container">
             <h2>Tu lista de favoritos está vacía</h2>
-            <p>¡Guarda los mejores lugares y servicios para tenerlos siempre a la mano!</p>
+            <p>¡Guarda los mejores lugares, noticias y servicios para tenerlos siempre a la mano!</p>
             <a asp-controller="Home" asp-action="Index" class="explore-button">Explorar Servicios</a>
         </div>
     }
 </div>
 
-@Html.AntiForgeryToken()
+<div id="modal-confirmar-uno" class="modal-confirmacion-eliminar" style="display: none;">
+    <div class="modal-contenido">
+        <span class="modal-cerrar-eliminar" id="btn-cerrar-modal-uno">&times;</span>
+        <h3 class="modal-titulo-eliminar">Confirmar Acción</h3>
+        <p class="modal-mensaje-eliminar">¿Estás seguro de que deseas quitar "<span id="nombre-item-uno" style="font-weight: bold;">este item</span>" de tus favoritos?</p>
+        <div class="modal-botones-eliminar">
+            <button id="btn-confirmar-uno" class="btn-modal-accion btn-modal-confirmar">Quitar</button>
+            <button id="btn-cancelar-uno" class="btn-modal-accion btn-modal-cancelar">Cancelar</button>
+        </div>
+    </div>
+</div>
 
-<!-- ======================================================= -->
-<!-- CAMBIO 3: LÓGICA DEL SCRIPT TOTALMENTE ACTUALIZADA      -->
-<!-- ======================================================= -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const removeButtons = document.querySelectorAll('.remove-favorito-btn');
+    
+    // Variables para el modal de ELIMINAR UNO
+    const modalConfirmarUno = document.getElementById('modal-confirmar-uno');
+    const btnCerrarModalUno = document.getElementById('btn-cerrar-modal-uno');
+    const btnConfirmarUno = document.getElementById('btn-confirmar-uno');
+    const btnCancelarUno = document.getElementById('btn-cancelar-uno');
+    const nombreItemUnoSpan = document.getElementById('nombre-item-uno');
+    let itemParaEliminar = null; // Guardará { id, type, cardElement, nombre }
 
-    removeButtons.forEach(btn => {
-        btn.addEventListener('click', async function() {
-            // Leemos los datos del botón
-            const id = this.dataset.id;
-            const type = this.dataset.type; // <-- Esto nos dirá si es 'lugar' o 'guarderia'
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    const removeButtons = document.querySelectorAll('.remove-favorito-btn'); 
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+
+    function mostrarModalConfirmarUno(id, type, cardElement, nombre) {
+        itemParaEliminar = { id, type, cardElement, nombre }; 
+        if (nombreItemUnoSpan) {
+            nombreItemUnoSpan.textContent = nombre || "este item"; 
+        }
+        if (modalConfirmarUno) modalConfirmarUno.style.display = 'flex';
+        if (btnConfirmarUno) btnConfirmarUno.disabled = false;
+    }
+
+    function ocultarModalConfirmarUno() {
+        if (modalConfirmarUno) modalConfirmarUno.style.display = 'none';
+        itemParaEliminar = null; 
+        if (btnConfirmarUno) btnConfirmarUno.disabled = false;
+    }
+
+    if (btnCerrarModalUno) btnCerrarModalUno.addEventListener('click', ocultarModalConfirmarUno);
+    if (btnCancelarUno) btnCancelarUno.addEventListener('click', ocultarModalConfirmarUno);
+    window.addEventListener('click', function(event) { 
+        if (event.target == modalConfirmarUno) {
+            ocultarModalConfirmarUno();
+        }
+    });
+
+    if (btnConfirmarUno) {
+        btnConfirmarUno.addEventListener('click', async function() {
+            if (!itemParaEliminar) return; 
+
+            btnConfirmarUno.disabled = true; 
+            const { id, type, cardElement } = itemParaEliminar;
+            const token = tokenInput ? tokenInput.value : null;
+
+            if (!token) {
+                console.error('AntiForgeryToken no encontrado.');
+                alert('Error de seguridad. Recarga la página.');
+                ocultarModalConfirmarUno();
+                return;
+            }
             
-            // Construimos la URL y el cuerpo de la petición dinámicamente
             let url = '';
-            let body = '';
+            // 1. CREAMOS EL OBJETO DEL BODY
+            let bodyObject = {}; 
 
             if (type === 'lugar') {
                 url = '/Lugares/ToggleFavorito';
-                body = `lugarId=${id}`;
+                bodyObject = { lugarId: id }; // <-- Objeto JSON
             } else if (type === 'guarderia') {
                 url = '/Guarderias/ToggleFavorito';
-                body = `guarderiaId=${id}`;
+                bodyObject = { guarderiaId: id }; // <-- Objeto JSON
+            } else if (type === 'noticia') {
+                url = '/Noticias/ToggleFavorito';
+                bodyObject = { noticiaId: id }; // <-- Objeto JSON
             } else {
-                console.error('Tipo de favorito desconocido:', type);
-                return; // Si no es ni lugar ni guardería, no hacemos nada
+                console.error('Tipo desconocido:', type);
+                ocultarModalConfirmarUno();
+                return; 
             }
 
-            // El resto de la lógica es la misma
-            if (confirm('¿Estás seguro de que quieres quitar este favorito?')) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'RequestVerificationToken': token
-                        },
-                        body: body
-                    });
+            try {
+                // 2. HACEMOS EL FETCH CON JSON
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json', // <-- SIEMPRE JSON
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(bodyObject) // <-- Convertimos el objeto a string
+                });
 
-                    const result = await response.json();
-                    if (result.success && !result.agregado) { // Si fue exitoso y el resultado es "no agregado"
-                        const card = document.getElementById(`favorito-${type}-${id}`);
-                        if(card) {
-                            card.style.transition = 'opacity 0.5s, transform 0.5s';
-                            card.style.opacity = '0';
-                            card.style.transform = 'scale(0.9)';
-                            setTimeout(() => {
-                                card.remove();
-                                // Si ya no quedan tarjetas de ningún tipo, recargamos para mostrar el mensaje de "vacío"
-                                if(document.querySelectorAll('.item-card').length === 0) {
-                                    window.location.reload();
-                                }
-                            }, 500);
-                        }
-                    } else {
-                        alert("Hubo un error al intentar quitar el favorito.");
-                    }
-                } catch (error) {
-                    console.error('Error al quitar favorito:', error);
+                ocultarModalConfirmarUno(); 
+
+                if (!response.ok) { 
+                    // Si la respuesta es 415, 400, 500, etc., lanzará un error
+                    throw new Error(`HTTP error! status: ${response.status}`); 
                 }
+                
+                const result = await response.json();
+                
+                // (result.esFavorito === false) es de NoticiasController
+                // (result.agregado === false) es lo que tus otros controllers DEBERÍAN devolver
+                const seQuito = result.success && (result.agregado === false || result.esFavorito === false); 
+
+                if (seQuito) { 
+                    if(cardElement) { 
+                        cardElement.style.transition = 'opacity 0.5s, transform 0.5s';
+                        cardElement.style.opacity = '0';
+                        cardElement.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            cardElement.remove();
+                            // Si ya no quedan tarjetas, recargamos para mostrar el mensaje de "vacío"
+                            if(document.querySelectorAll('.item-card').length === 0) {
+                                window.location.reload(); 
+                            }
+                        }, 500);
+                    }
+                } else {
+                    alert("Hubo un error al quitar el favorito (Respuesta: " + JSON.stringify(result) + ")"); 
+                }
+            } catch (error) {
+                ocultarModalConfirmarUno();
+                console.error('Error al quitar favorito:', error);
+                // Este es el error que te salía
+                alert('Error de conexión al quitar el favorito. Revisa la consola (F12).'); 
+            } finally {
+                if (btnConfirmarUno) btnConfirmarUno.disabled = false; // Re-habilitar siempre
             }
+        });
+    }
+
+    removeButtons.forEach(btn => {
+        btn.addEventListener('click', function(event) { 
+            event.preventDefault(); 
+            const id = this.dataset.id;
+            const type = this.dataset.type; 
+            const cardElement = this.closest('.item-card'); 
+            const nombreElement = cardElement ? cardElement.querySelector('.item-nombre') : null;
+            const nombre = nombreElement ? nombreElement.textContent.trim() : null; 
+
+            mostrarModalConfirmarUno(id, type, cardElement, nombre); 
         });
     });
 });

@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function mostrarModalConfirmarUno(id, type, cardElement, nombre) {
         itemParaEliminar = { id, type, cardElement, nombre }; 
         if (nombreItemUnoSpan) {
-             nombreItemUnoSpan.textContent = nombre || "este item"; 
+            nombreItemUnoSpan.textContent = nombre || "este item"; 
         }
         if (modalConfirmarUno) modalConfirmarUno.style.display = 'flex';
         if (btnConfirmarUno) btnConfirmarUno.disabled = false;
@@ -234,31 +234,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const token = tokenInput ? tokenInput.value : null;
 
             if (!token) {
-                 console.error('AntiForgeryToken no encontrado.');
-                 alert('Error de seguridad. Recarga la página.');
-                 ocultarModalConfirmarUno();
-                 return;
+                console.error('AntiForgeryToken no encontrado.');
+                alert('Error de seguridad. Recarga la página.');
+                ocultarModalConfirmarUno();
+                return;
             }
             
             let url = '';
-            let contentType = 'application/json'; // Por defecto
-            let bodyContent = ''; 
+            // 1. CREAMOS EL OBJETO DEL BODY
+            let bodyObject = {}; 
 
             if (type === 'lugar') {
-                url = '/Lugares/ToggleFavorito'; 
-                // Asumiendo que LugaresController espera [FromForm] lugarId=X
-                contentType = 'application/x-www-form-urlencoded'; 
-                bodyContent = `lugarId=${id}`; 
+                url = '/Lugares/ToggleFavorito';
+                bodyObject = { lugarId: id }; // <-- Objeto JSON
             } else if (type === 'guarderia') {
-                url = '/Guarderias/ToggleFavorito'; 
-                // Asumiendo que GuarderiasController espera [FromForm] guarderiaId=X
-                contentType = 'application/x-www-form-urlencoded'; 
-                bodyContent = `guarderiaId=${id}`; 
+                url = '/Guarderias/ToggleFavorito';
+                bodyObject = { guarderiaId: id }; // <-- Objeto JSON
             } else if (type === 'noticia') {
                 url = '/Noticias/ToggleFavorito';
-                 // NoticiasController fue ajustado para [FromForm] noticiaId=X
-                 contentType = 'application/x-www-form-urlencoded';
-                 bodyContent = `noticiaId=${id}`;
+                bodyObject = { noticiaId: id }; // <-- Objeto JSON
             } else {
                 console.error('Tipo desconocido:', type);
                 ocultarModalConfirmarUno();
@@ -266,22 +260,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
+                // 2. HACEMOS EL FETCH CON JSON
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': contentType, // <-- Usamos el ContentType correcto
+                        'Content-Type': 'application/json', // <-- SIEMPRE JSON
                         'RequestVerificationToken': token
                     },
-                    body: bodyContent // <-- Usamos el body correcto
+                    body: JSON.stringify(bodyObject) // <-- Convertimos el objeto a string
                 });
 
                 ocultarModalConfirmarUno(); 
 
-                if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                if (!response.ok) { 
+                    // Si la respuesta es 415, 400, 500, etc., lanzará un error
+                    throw new Error(`HTTP error! status: ${response.status}`); 
+                }
                 
                 const result = await response.json();
                 
-                // Ahora todos deberían devolver 'agregado' (o 'esFavorito' para noticias si no lo cambiaste)
+                // (result.esFavorito === false) es de NoticiasController
+                // (result.agregado === false) es lo que tus otros controllers DEBERÍAN devolver
                 const seQuito = result.success && (result.agregado === false || result.esFavorito === false); 
 
                 if (seQuito) { 
@@ -291,20 +290,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         cardElement.style.transform = 'scale(0.9)';
                         setTimeout(() => {
                             cardElement.remove();
+                            // Si ya no quedan tarjetas, recargamos para mostrar el mensaje de "vacío"
                             if(document.querySelectorAll('.item-card').length === 0) {
                                 window.location.reload(); 
                             }
                         }, 500);
                     }
                 } else {
-                    alert("Hubo un error al quitar el favorito."); 
+                    alert("Hubo un error al quitar el favorito (Respuesta: " + JSON.stringify(result) + ")"); 
                 }
             } catch (error) {
                 ocultarModalConfirmarUno();
                 console.error('Error al quitar favorito:', error);
-                alert('Error de conexión al quitar el favorito.'); 
+                // Este es el error que te salía
+                alert('Error de conexión al quitar el favorito. Revisa la consola (F12).'); 
             } finally {
-                 if (btnConfirmarUno) btnConfirmarUno.disabled = false; // Re-habilitar siempre
+                if (btnConfirmarUno) btnConfirmarUno.disabled = false; // Re-habilitar siempre
             }
         });
     }
@@ -321,7 +322,5 @@ document.addEventListener('DOMContentLoaded', function() {
             mostrarModalConfirmarUno(id, type, cardElement, nombre); 
         });
     });
-
-
 });
 </script>

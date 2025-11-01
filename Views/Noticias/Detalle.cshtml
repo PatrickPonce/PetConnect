@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         textoComentarioInput.addEventListener('click', function(event) {
             event.preventDefault(); 
-            mostrarModal();    
+            mostrarModal();     
         });
     }
     if (!estaAutenticadoServer) {
@@ -472,18 +472,26 @@ document.addEventListener('DOMContentLoaded', function() {
  
     function manejarClicFavoritoDetalle() {
         if (estaAutenticadoServer) {
-            const noticiaId = favoritoBtn.dataset.id;
+            const noticiaId = parseInt(favoritoBtn.dataset.id, 10); // <-- Es buena práctica usar parseInt aquí
             const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
             if (!tokenInput) { console.error('No se encontró AntiForgeryToken.'); alert('Error seguridad. Recarga.'); return; }
             const token = tokenInput.value;
             fetch('/Noticias/ToggleFavorito', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
-                body: JSON.stringify(parseInt(noticiaId)) 
+                
+                // ---
+                // --- A QU Í   E S T Á   L A   C O R R E C C I Ó N ---
+                // ---
+                body: JSON.stringify({ noticiaId: noticiaId }) 
+                // ---
+                // ---
+                // ---
+
             })
             .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); })
             .then(data => {
-                 if (data.success) {
+                if (data.success) {
                     favoritoBtn.classList.toggle('activo', data.esFavorito);
                     const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
                     if (iconSpan) { iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border'; }
@@ -499,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
         const esFavoritoInicial = favoritoBtn.classList.contains('activo');
         if (iconSpan) { iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border'; }
-     }
+    }
 
     if (formComentario && estaAutenticadoServer) {
         formComentario.addEventListener('submit', async function(event) {
@@ -628,6 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
         listaComentariosDiv.addEventListener('click', async function(event) {
             
             
+            
             const deleteButton = event.target.closest('.btn-eliminar-comentario');
             if (deleteButton) {
                 event.preventDefault();
@@ -637,6 +646,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mostrarModalConfirmacionComentario(comentarioId);
             }
 
+            
             
             const editButton = event.target.closest('.btn-editar-comentario');
             if (editButton) {
@@ -666,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 textoElement.insertAdjacentHTML('afterend', formEdicionHtml);
             }
 
-           
+            
             const cancelButton = event.target.closest('.btn-cancelar-edicion');
             if (cancelButton) {
                 event.preventDefault();
@@ -676,6 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 comentarioDiv.classList.remove('modo-edicion'); 
             }
 
+            
             
             const saveButton = event.target.closest('.btn-guardar-edicion');
             if (saveButton) {
@@ -703,8 +714,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const contentType = response.headers.get("content-type");
                     if (contentType && contentType.includes("application/json")) {
-                         const data = await response.json();
-                         if (data.success) {
+                        const data = await response.json();
+                        if (data.success) {
                             
                             const textoElement = comentarioDiv.querySelector('.comentario-texto');
                             textoElement.textContent = data.texto; // Actualiza el texto
@@ -717,10 +728,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                             formEdicion.remove(); 
                             comentarioDiv.classList.remove('modo-edicion'); 
-                         } else {
+                        } else {
                             alert('Error al editar: ' + (data.message || 'Error desconocido'));
                             saveButton.disabled = false; 
-                         }
+                        }
                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EditarComentario):', errorText); alert('Error servidor al editar.'); saveButton.disabled = false; }
                 } catch (error) {
                     console.error('Error al editar comentario:', error);
@@ -735,53 +746,53 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (btnConfirmarEliminarComentario) {
         if (!btnConfirmarEliminarComentario.dataset.listenerAdded) {
-             btnConfirmarEliminarComentario.addEventListener('click', async function() {
-                 if (!comentarioIdParaEliminar) return;
-                 btnConfirmarEliminarComentario.disabled = true;
-                 const comentarioId = comentarioIdParaEliminar;
-                 const comentarioDiv = listaComentariosDiv.querySelector(`.comentario[data-comentario-id="${comentarioId}"]`);
-                 const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-                 if (!tokenInput) { alert('Error seguridad. Recarga.'); btnConfirmarEliminarComentario.disabled = false; return; }
-                 const token = tokenInput.value;
-                 try {
-                     const response = await fetch('/Noticias/EliminarComentario', {
-                         method: 'POST',
-                         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                         body: `comentarioId=${encodeURIComponent(comentarioId)}`
-                     });
-                     ocultarModalConfirmacionComentario();
-                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                     const contentType = response.headers.get("content-type");
-                     if (contentType && contentType.includes("application/json")) {
-                         const data = await response.json();
-                         if (data.success) {
-                             if (comentarioDiv) {
-                                 comentarioDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                                 comentarioDiv.style.opacity = '0';
-                                 comentarioDiv.style.transform = 'translateX(-50px)';
-                                 setTimeout(() => {
-                                     comentarioDiv.remove();
-                                     if (!listaComentariosDiv.querySelector('.comentario')) {
-                                          if(sinComentariosMsg) sinComentariosMsg.style.display = 'block';
-                                     }
-                                 }, 500);
-                             }
-                         } else { alert('Error al eliminar: ' + (data.message || 'Error desconocido')); }
-                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EliminarComentario):', errorText); alert('Error servidor al eliminar.'); }
-                 } catch (error) {
+            btnConfirmarEliminarComentario.addEventListener('click', async function() {
+                if (!comentarioIdParaEliminar) return;
+                btnConfirmarEliminarComentario.disabled = true;
+                const comentarioId = comentarioIdParaEliminar;
+                const comentarioDiv = listaComentariosDiv.querySelector(`.comentario[data-comentario-id="${comentarioId}"]`);
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (!tokenInput) { alert('Error seguridad. Recarga.'); btnConfirmarEliminarComentario.disabled = false; return; }
+                const token = tokenInput.value;
+                try {
+                    const response = await fetch('/Noticias/EliminarComentario', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                        body: `comentarioId=${encodeURIComponent(comentarioId)}`
+                    });
+                    ocultarModalConfirmacionComentario();
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        const data = await response.json();
+                        if (data.success) {
+                            if (comentarioDiv) {
+                                comentarioDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                comentarioDiv.style.opacity = '0';
+                                comentarioDiv.style.transform = 'translateX(-50px)';
+                                setTimeout(() => {
+                                    comentarioDiv.remove();
+                                    if (!listaComentariosDiv.querySelector('.comentario')) {
+                                        if(sinComentariosMsg) sinComentariosMsg.style.display = 'block';
+                                    }
+                                }, 500);
+                            }
+                        } else { alert('Error al eliminar: ' + (data.message || 'Error desconocido')); }
+                    } else { const errorText = await response.text(); console.error('Respuesta no JSON (EliminarComentario):', errorText); alert('Error servidor al eliminar.'); }
+                } catch (error) {
                     ocultarModalConfirmacionComentario();
                     console.error('Error al eliminar comentario:', error);
                     alert('Error conexión al intentar eliminar.');
-                 }
-             });
-             btnConfirmarEliminarComentario.dataset.listenerAdded = 'true';
+                }
+            });
+            btnConfirmarEliminarComentario.dataset.listenerAdded = 'true';
         }
     }
 
-     
-     if (comentarBtnSubmit && !estaAutenticadoServer) {
-         comentarBtnSubmit.addEventListener('click', function(e){ e.preventDefault(); mostrarModal(); });
-     }
+    
+    if (comentarBtnSubmit && !estaAutenticadoServer) {
+        comentarBtnSubmit.addEventListener('click', function(e){ e.preventDefault(); mostrarModal(); });
+    }
 
     
     document.querySelectorAll('#lista-comentarios .comentario-fecha span[data-utcdate]').forEach(formatDateElement);

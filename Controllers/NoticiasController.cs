@@ -127,7 +127,8 @@ public class NoticiasController : Controller
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> ToggleFavorito([FromForm] int noticiaId)
+    // Cambia el parámetro para que acepte un objeto
+    public async Task<IActionResult> ToggleFavorito([FromBody] ToggleFavoritoRequest request) 
     {
         var userId = _userManager.GetUserId(User);
         if (userId == null)
@@ -135,8 +136,9 @@ public class NoticiasController : Controller
             return Unauthorized(new { success = false, message = "Usuario no autorizado." });
         }
 
+        // Usa request.NoticiaId en lugar de noticiaId
         var favoritoExistente = await _context.Favoritos
-            .FirstOrDefaultAsync(f => f.NoticiaId == noticiaId && f.UsuarioId == userId);
+            .FirstOrDefaultAsync(f => f.NoticiaId == request.NoticiaId && f.UsuarioId == userId);
 
         bool esFavoritoAhora;
 
@@ -149,7 +151,7 @@ public class NoticiasController : Controller
         {
             var nuevoFavorito = new Favorito
             {
-                NoticiaId = noticiaId,
+                NoticiaId = request.NoticiaId, // <-- Usa request.NoticiaId
                 UsuarioId = userId,
                 FechaAgregado = DateTime.UtcNow
             };
@@ -164,7 +166,7 @@ public class NoticiasController : Controller
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> EliminarFavoritos([FromForm] List<int> noticiaIds)
+    public async Task<IActionResult> EliminarFavoritos([FromBody] List<int> noticiaIds)
     {
         if (noticiaIds == null || !noticiaIds.Any())
         {
@@ -502,5 +504,9 @@ public class NoticiasController : Controller
         // inyectar el 'ConfiguracionSitioService' para obtener los colores)
 
         return View(noticia); // Devuelve la nueva vista 'DetalleAdmin.cshtml'
+    }
+        public class ToggleFavoritoRequest
+    {
+        public int NoticiaId { get; set; }
     }
 }

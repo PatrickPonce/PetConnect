@@ -318,106 +318,103 @@
     </div>
 </div>
 
+@section Scripts {
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('modal-alerta');
-        const cerrarBtn = modal ? modal.querySelector('.modal-alerta-cerrar') : null;
-
-        const usuarioEstaLogueado = @estaLogueado.ToString().ToLower();
-        function mostrarModal() {
-            if (modal) modal.style.display = 'flex';
-        }
-        function ocultarModal() {
-            if (modal) modal.style.display = 'none';
-        }
-
-        if (cerrarBtn) cerrarBtn.addEventListener('click', ocultarModal);
-        window.onclick = function(event) {
-            if (event.target == modal) ocultarModal();
-        }
-
         
-        function manejarClicFavorito(event) {
-            event.preventDefault(); 
-            if (!usuarioEstaLogueado) {
-                
-                mostrarModal(); 
-                
-                return; 
-            }
-            
-            const botonActual = this; 
-            
-            const noticiaId = botonActual.dataset.id;
-            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        // Convertimos la variable de Razor a una variable de JS
+        const estaLogueado = @estaLogueado.ToString().ToLower();
 
-            if (!token) {
-                console.error('Error: No se encontró el AntiForgeryToken.');
-                return; 
-            }
+        // Obtenemos los elementos del DOM
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const favoriteButtons = document.querySelectorAll('.favorito-btn');
+        const loginModal = document.getElementById('login-alerta-modal');
+        const closeModalBtn = document.getElementById('modal-alerta-cerrar-btn');
 
-           
-            fetch('/Noticias/ToggleFavorito', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': token
-                },
+        // --- Lógica para el Modal ---
+
+        function mostrarLoginModal() {
+            if (loginModal) loginModal.style.display = 'flex';
+        }
+
+        function ocultarLoginModal() {
+            if (loginModal) loginModal.style.display = 'none';
+        }
+
+        // Cierra el modal al hacer clic en la 'x'
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', ocultarLoginModal);
+        }
+
+        // Cierra el modal al hacer clic fuera de él
+        window.addEventListener('click', function(event) {
+            if (event.target == loginModal) {
+                ocultarLoginModal();
+            }
+        });
+
+        // --- Lógica para los Botones de Favorito ---
+
+        favoriteButtons.forEach(btn => {
+            btn.addEventListener('click', async function() {
                 
-                body: JSON.stringify(parseInt(noticiaId)) 
-            })
-            .then(response => {
-              
-                if (response.status === 401) {
-                    mostrarModal();
-                   
-                    return Promise.reject('Usuario no autenticado'); 
+                // 1. Si no está logueado, muestra el modal y detiene la ejecución
+                if (!estaLogueado) {
+                    mostrarLoginModal();
+                    return;
                 }
-                
-                if (!response.ok) {
-                    
-                    throw new Error(`Error HTTP! status: ${response.status}`);
-                }
-                
-                return response.json(); 
-            })
-            .then(data => {
-                if (data.success) {
-                   
-                    botonActual.classList.toggle('activo', data.esFavorito);
-                    const iconSpan = botonActual.querySelector('.material-symbols-outlined');
-                    if (iconSpan) {
-                        iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border';
+
+                // 2. Si está logueado, continúa
+                const button = this;
+                const noticiaId = parseInt(button.dataset.id);
+                const icon = button.querySelector('.material-symbols-outlined');
+
+                // Deshabilita el botón temporalmente para evitar doble clic
+                button.disabled = true;
+
+                try {
+                    // 3. Llama al endpoint 'ToggleFavorito' que creamos
+                    const response = await fetch('/Noticias/ToggleFavorito', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        // Enviamos el JSON en el formato correcto
+                        body: JSON.stringify({ noticiaId: noticiaId }) 
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
                     }
-                } else {
-                    console.error('Error al cambiar el estado de favorito:', data.message);
-                }
-            })
-            .catch(error => {
-                
-                if (error !== 'Usuario no autenticado') {
-                    console.error('Error en la llamada fetch:', error);
+
+                    const data = await response.json();
+
+                    // 4. Actualiza la UI (el corazón) dinámicamente
+                    if (data.success) {
+                        if (data.esFavorito) {
+                            // Añadido a favoritos
+                            button.classList.add('activo');
+                            icon.textContent = 'favorite'; // Ícono lleno
+                        } else {
+                            // Quitado de favoritos
+                            button.classList.remove('activo');
+                            icon.textContent = 'favorite_border'; // Ícono borde
+                        }
+                    } else {
+                        alert(data.message || 'Error al procesar la solicitud.');
+                    }
+
+                } catch (error) {
+                    console.error('Error en fetch:', error);
+                    alert('Error de conexión. Inténtalo de nuevo.');
+                } finally {
+                    // Vuelve a habilitar el botón
+                    button.disabled = false;
                 }
             });
-        }
-
-        document.addEventListener('click', function(event) {
-           
-            const boton = event.target.closest('.favorito-btn'); 
-            if (boton) {
-               
-                manejarClicFavorito.call(boton, event);
-            }
         });
 
-       
-        document.querySelectorAll('.favorito-btn').forEach(boton => {
-            const iconSpan = boton.querySelector('.material-symbols-outlined');
-            const esFavoritoInicial = boton.classList.contains('activo');
-            if (iconSpan) {
-                iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border';
-            }
-        });
-
-    }); 
+    });
 </script>
+}

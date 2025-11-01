@@ -15,22 +15,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// 2. Línea de depuración para ver la cadena original
 Console.WriteLine($"--- DEBUG: Cadena de conexión ORIGINAL obtenida: '{connectionString}' ---");
 
-// 3. Verifica si la cadena está en formato de URL (como en Render)
+// 2. Verifica si la cadena está en formato de URL y la traduce
 if (Uri.TryCreate(connectionString, UriKind.Absolute, out var uri))
 {
-    // Si es una URL, la "traducimos" al formato estándar
     var userInfo = uri.UserInfo.Split(':');
     var dbHost = uri.Host;
     var dbPort = uri.Port;
     var dbUser = userInfo[0];
     var dbPass = userInfo[1];
     var dbName = uri.LocalPath.TrimStart('/');
+    
+    // --- LÓGICA DE CORRECCIÓN PARA EL PUERTO ---
+    var portString = dbPort > 0 ? $"Port={dbPort};" : "";
 
-    // Construimos la nueva cadena de conexión en el formato que Npgsql espera
-    connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPass};SSL Mode=Require;Trust Server Certificate=true;";
+    // Construimos la nueva cadena de conexión, ahora sin el puerto inválido
+    connectionString = $"Host={dbHost};{portString}Database={dbName};Username={dbUser};Password={dbPass};SSL Mode=Require;Trust Server Certificate=true;";
     
     Console.WriteLine($"--- DEBUG: Cadena de conexión TRADUCIDA para Npgsql: '{connectionString}' ---");
 }
@@ -39,7 +40,7 @@ else if (string.IsNullOrEmpty(connectionString))
     Console.WriteLine("--- DEBUG: ¡¡ERROR!! La cadena de conexión está VACÍA o NULA.");
 }
 
-// 4. Usa la cadena de conexión (ya sea la original o la traducida) para configurar el DbContext
+// 3. Usa la cadena de conexión final para configurar el DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 

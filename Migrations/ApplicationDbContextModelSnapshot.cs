@@ -17,7 +17,7 @@ namespace PetConnect.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -41,25 +41,6 @@ namespace PetConnect.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ConfiguracionesSitio");
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FriendlyName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Xml")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -309,15 +290,6 @@ namespace PetConnect.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("AutorFotoUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AutorId")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<DateTime>("FechaComentario")
                         .HasColumnType("timestamp with time zone");
 
@@ -326,7 +298,8 @@ namespace PetConnect.Migrations
 
                     b.Property<string>("Texto")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
 
@@ -577,9 +550,6 @@ namespace PetConnect.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("EsFijada")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("FechaPublicacion")
                         .HasColumnType("timestamp with time zone");
 
@@ -590,9 +560,6 @@ namespace PetConnect.Migrations
                     b.Property<string>("UrlImagen")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Vistas")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

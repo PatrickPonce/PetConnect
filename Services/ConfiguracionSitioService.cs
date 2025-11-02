@@ -30,25 +30,5 @@ namespace PetConnect.Services
             await CargarConfiguracionesAsync();
             return _configuracionesCache.GetValueOrDefault(clave, valorPorDefecto);
         }
-
-        public async Task GuardarValorAsync(string clave, string valor)
-        {
-            var config = await _context.ConfiguracionesSitio
-                                .FirstOrDefaultAsync(c => c.Clave == clave);
-
-            if (config != null)
-            {
-                // Si la clave ya existe, actualiza su valor
-                config.Valor = valor;
-                _context.ConfiguracionesSitio.Update(config);
-            }
-            else
-            {
-                // Si la clave no existe, la crea
-                config = new ConfiguracionSitio { Clave = clave, Valor = valor };
-                _context.ConfiguracionesSitio.Add(config);
-            }
-            await _context.SaveChangesAsync();
-        }
     }
 }

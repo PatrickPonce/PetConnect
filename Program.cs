@@ -62,10 +62,14 @@ builder.Services.AddAuthentication()
 // Otros servicios
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddScoped<ConfiguracionSitioService>();
 builder.Services.AddScoped<AnimalApiService>();
 
-// Configuración de Google Maps API Key
+// Tu cambio (para la API de ProxyCheck)
+builder.Services.AddHttpClient(); 
+
+// El cambio de 'main' (para Google Maps)
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
 

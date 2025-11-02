@@ -66,18 +66,18 @@ public class LugaresController : Controller
                 });
             }
         }
-
+        
         var paginatedViewModel = new PaginatedList<LugarViewModel>(
-            lugarViewModels,
-            await lugaresQuery.CountAsync(),
-            currentPage,
+            lugarViewModels, 
+            await lugaresQuery.CountAsync(), 
+            currentPage, 
             pageSize
         );
 
         ViewData["CurrentFilter"] = searchString;
         return View(paginatedViewModel);
     }
-
+    
     public async Task<IActionResult> Detalle(int? id)
     {
         if (id == null)
@@ -122,8 +122,7 @@ public class LugaresController : Controller
         _context.ComentariosLugar.Add(comentario);
         await _context.SaveChangesAsync();
 
-        return Json(new
-        {
+        return Json(new {
             success = true,
             message = "Comentario añadido.",
             autor = usuario.UserName,
@@ -159,72 +158,30 @@ public class LugaresController : Controller
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    // 1. CAMBIA LA FIRMA para que acepte el objeto [FromBody]
-    public async Task<IActionResult> ToggleFavorito([FromBody] ToggleLugarRequest request)
+    public async Task<IActionResult> ToggleFavorito(int lugarId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
-        // 2. USA request.LugarId en lugar de solo lugarId
         var favoritoExistente = await _context.FavoritosLugar
-            .FirstOrDefaultAsync(f => f.LugarPetFriendlyId == request.LugarId && f.UsuarioId == userId);
+            .FirstOrDefaultAsync(f => f.LugarPetFriendlyId == lugarId && f.UsuarioId == userId);
 
         bool agregado;
         if (favoritoExistente != null)
         {
             _context.FavoritosLugar.Remove(favoritoExistente);
-            agregado = false; // Se quitó
+            agregado = false;
         }
         else
         {
             var nuevoFavorito = new FavoritoLugar
             {
-                // 3. USA request.LugarId aquí también
-                LugarPetFriendlyId = request.LugarId,
+                LugarPetFriendlyId = lugarId,
                 UsuarioId = userId
             };
             _context.FavoritosLugar.Add(nuevoFavorito);
-            agregado = true; // Se añadió
+            agregado = true;
         }
 
         await _context.SaveChangesAsync();
-        
-        // El JS espera 'agregado = false' para saber que se quitó
         return Json(new { success = true, agregado = agregado });
     }
-    [HttpPost]
-    [Authorize]
-    [ValidateAntiForgeryToken] // ¡Importante para seguridad!
-    public async Task<IActionResult> EliminarFavoritos([FromBody] List<int> lugarIds)
-    {
-        if (lugarIds == null || !lugarIds.Any())
-        {
-            return Json(new { success = false, message = "No se seleccionaron lugares." });
-        }
-
-        // Usar FindFirstValue es más directo que UserManager si solo necesitas el ID
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized(new { success = false, message = "Usuario no autorizado." });
-        }
-
-        // Busca en la tabla 'FavoritosLugar' (o como se llame tu tabla join)
-        var favoritosAEliminar = await _context.FavoritosLugar
-            .Where(f => f.UsuarioId == userId && lugarIds.Contains(f.LugarPetFriendlyId)) // <-- Ajusta 'LugarPetFriendlyId' al nombre real de tu FK
-            .ToListAsync();
-
-        if (favoritosAEliminar.Any())
-        {
-            _context.FavoritosLugar.RemoveRange(favoritosAEliminar);
-            await _context.SaveChangesAsync();
-        }
-
-        // Devuelve siempre success = true, incluso si no se encontró nada que borrar
-        return Json(new { success = true });
-    }
-}
-// Pega esto FUERA de la clase LugaresController, al final del archivo
-public class ToggleLugarRequest
-{
-    public int LugarId { get; set; }
 }

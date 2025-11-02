@@ -134,6 +134,7 @@ else
 //app.UseHttpsRedirection();
 // app.MapStaticAssets(); // MapStaticAssets es de una librería externa. Si no la usas, usa app.UseStaticFiles();
 app.UseStaticFiles(); 
+app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
 

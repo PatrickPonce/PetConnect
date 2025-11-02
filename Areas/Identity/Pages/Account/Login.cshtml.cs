@@ -115,13 +115,13 @@ namespace PetConnect.Areas.Identity.Pages.Account
 
                 // 2. Usamos el USERNAME encontrado (que es su nombre) para el PasswordSignInAsync
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                
+
                 // --- FIN DE LA CORRECCIÓN ---
 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("Usuario conectado.");
-                    
+
                     // Esta lógica de redirección ya estaba bien
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
@@ -130,6 +130,15 @@ namespace PetConnect.Areas.Identity.Pages.Account
 
                     return LocalRedirect("~/Home/Guest");
                 }
+                // --- INICIO DE LA CORRECCIÓN ---
+                // 3. Comprobamos SI EL FALLO FUE POR BLOQUEO
+                else if (result.IsLockedOut)
+                {
+                    _logger.LogWarning($"Se intentó iniciar sesión con la cuenta bloqueada: {user.Email}");
+                    // Este es el mensaje específico que querías
+                    ModelState.AddModelError(string.Empty, "Esta cuenta ha sido bloqueada por un administrador.");
+                }
+                // --- FIN DE LA CORRECCIÓN ---
                 else
                 {
                     // Si el UserName era correcto pero la contraseña no

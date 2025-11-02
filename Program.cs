@@ -62,8 +62,6 @@ builder.Services.AddAuthentication()
 // Otros servicios
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<ConfiguracionSitioService>();
-builder.Services.AddScoped<AnimalApiService>();
 
 builder.Services.AddScoped<ConfiguracionSitioService>();
 builder.Services.AddScoped<AnimalApiService>();

@@ -49,26 +49,20 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<ApplicationDbContext>();
     
 // Configuración de Identity
-
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => 
-    {
-        options.SignIn.RequireConfirmedAccount = true;
-    })
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultUI()
     .AddDefaultTokenProviders();
 
-// 2. Llama a AddAuthentication() para AÑADIR proveedores externos a la configuración existente.
+// Configuración de Autenticación Externa (GitHub)
 builder.Services.AddAuthentication()
     .AddGitHub(options =>
     {
         options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
+        options.Scope.Add("user:email");
         options.CallbackPath = "/signin-github";
     });
-
-// Esto es necesario para las páginas de Identity (Login, Register, etc.)
-builder.Services.AddRazorPages();
-
 
 // Otros servicios
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -142,11 +136,10 @@ else
 }
 
 // 4. Middlewares estándar
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 // app.MapStaticAssets(); // MapStaticAssets es de una librería externa. Si no la usas, usa app.UseStaticFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(); 
 app.UseRouting();
-app.UseAuthentication();
 app.UseAuthorization();
 
 // 5. Mapeo de Endpoints

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -11,9 +12,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251101212714_AddDataProtectionKeys")]
+    partial class AddDataProtectionKeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -309,15 +312,6 @@ namespace PetConnect.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("AutorFotoUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AutorId")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<DateTime>("FechaComentario")
                         .HasColumnType("timestamp with time zone");
 
@@ -326,7 +320,8 @@ namespace PetConnect.Migrations
 
                     b.Property<string>("Texto")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
 
@@ -577,9 +572,6 @@ namespace PetConnect.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("EsFijada")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("FechaPublicacion")
                         .HasColumnType("timestamp with time zone");
 
@@ -590,9 +582,6 @@ namespace PetConnect.Migrations
                     b.Property<string>("UrlImagen")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Vistas")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

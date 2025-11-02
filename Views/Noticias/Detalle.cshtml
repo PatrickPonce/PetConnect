@@ -82,7 +82,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgb(0, 0, 0); 
+        background-color: rgba(0, 0, 0, 0.6);
         display: none;
         justify-content: center;
         align-items: center;
@@ -204,6 +204,28 @@
         background-color: #f0f0f0; 
         color: #555;
     }
+
+    .comentario-header {
+        display: flex;
+        align-items: center; /* Alinea verticalmente la foto y el nombre */
+        margin-bottom: 0.5rem;
+        gap: 10px; /* Espacio entre la foto y el nombre */
+    }
+
+    .comentario-foto-perfil {
+        width: 40px;  /* Tamaño de la foto */
+        height: 40px;
+        border-radius: 50%; /* La hace redonda */
+        object-fit: cover;  /* Evita que la imagen se deforme */
+        flex-shrink: 0;     /* Evita que la imagen se encoja */
+    }
+
+    .comentario-autor {
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 0;
+        flex-grow: 1; /* Esto empuja las 'acciones' a la derecha */
+    }
     
     @@keyframes fadeIn {
         from { opacity: 0; transform: translateY(-20px); }
@@ -254,9 +276,10 @@
             {
                 bool puedeEditar = false;
                 bool authorMatch = false;
-                bool canEditTime = false;  
+                bool canEditTime = false;   
                 TimeSpan difference = TimeSpan.Zero;
                 string currentUsername = "No Logueado";
+
                 if (SignInManager.IsSignedIn(User))
                 {
                     currentUsername = User.Identity?.Name ?? string.Empty;
@@ -264,10 +287,25 @@
                     {
                         currentUsername = currentUsername.Split('@')[0];
                     }
+                    
                     authorMatch = currentUsername == comentario.Autor;
+                    
                     if (authorMatch)
                     {
-                        difference = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime();
+                        // --- INICIO DE LA CORRECCIÓN RAZOR ---
+                        // Asumimos que la fecha del comentario se guardó en UTC.
+                        var fechaComentarioUtc = comentario.FechaComentario;
+                        
+                        // Si EF no especificó el Kind, lo forzamos a UTC.
+                        if (fechaComentarioUtc.Kind == DateTimeKind.Unspecified)
+                        {
+                            fechaComentarioUtc = DateTime.SpecifyKind(fechaComentarioUtc, DateTimeKind.Utc);
+                        }
+
+                        // Ahora calculamos la diferencia con seguridad
+                        difference = DateTime.UtcNow - fechaComentarioUtc; 
+                        // --- FIN DE LA CORRECCIÓN RAZOR ---
+
                         canEditTime = difference.TotalMinutes < 15 && difference.TotalMinutes >= 0;
                         puedeEditar = canEditTime;
                     }
@@ -275,7 +313,13 @@
 
                 <div class="comentario" data-comentario-id="@comentario.Id">
                     <div class="comentario-header">
+
+                        <img class="comentario-foto-perfil" 
+                            src="@(comentario.AutorFotoUrl ?? "/images/avatars/default.png")" 
+                            alt="@comentario.Autor" />
+
                         <p class="comentario-autor">@comentario.Autor</p>
+                        
                         <div class="comentario-acciones">
                             @if (puedeEditar)
                             {
@@ -283,7 +327,8 @@
                                     <span class="material-symbols-outlined">edit</span>
                                 </button>
                             }
-                            @if (SignInManager.IsSignedIn(User) && currentUsername == comentario.Autor)
+
+                            @if (authorMatch) 
                             {
                                 <button class="btn-accion-comentario btn-eliminar-comentario" title="Eliminar comentario">
                                     <span class="material-symbols-outlined">delete</span>
@@ -305,17 +350,27 @@
     </div>
 
     <form id="form-agregar-comentario" class="form-comentario">
-        @Html.AntiForgeryToken() <input type="hidden" name="NoticiaId" value="@Model.Id" /> <label for="textoComentario">Deja un comentario</label>
-        <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" placeholder="Escribe tu comentario... "></textarea>
+        @Html.AntiForgeryToken() 
+        <input type="hidden" name="NoticiaId" value="@Model.Id" /> 
+        <label for="textoComentario">Deja un comentario</label>
 
         @if (SignInManager.IsSignedIn(User))
         {
-            <button type="submit" class="btn-comentar">Comentar</button> }
+            <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" 
+                    placeholder="Escribe tu comentario... "></textarea>
+        }
         else
         {
-            <p style="margin-top: 1rem;">
-                <a href="/Identity/Account/Login?ReturnUrl=@Context.Request.Path">Inicia sesión</a> para comentar.
-            </p>
+            <textarea id="textoComentario" name="TextoComentario" 
+                    placeholder="Inicia sesión para dejar un comentario..." disabled></textarea>
+        }
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <button type="submit" class="btn-comentar">Comentar</button> 
+        }
+        else
+        {
+            <button type="button" class="btn-comentar" id="btn-abrir-login-modal" style="margin-top: 1rem;">Inicia sesión para comentar</button>
         }
     </form>
     </section>
@@ -335,7 +390,7 @@
 </div>
 
 <div id="login-modal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-contenido">
         <span class="close-button">&times;</span>
         <div class="modal-body">
              <h3>Acceso Requerido</h3>
@@ -380,6 +435,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true';
 
     function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; }
+    if (!estaAutenticadoServer && textoComentarioInput) {
+
+        textoComentarioInput.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            mostrarModal();     
+        });
+    }
+    if (!estaAutenticadoServer) {
+        const btnAbrirLogin = document.getElementById('btn-abrir-login-modal');
+        if (btnAbrirLogin) {
+            btnAbrirLogin.addEventListener('click', function() {
+                mostrarModal();
+            });
+        }
+    }
     function ocultarModal() { if (loginModal) loginModal.style.display = 'none'; }
     function mostrarModalConfirmacionComentario(id) {
         comentarioIdParaEliminar = id;
@@ -402,18 +472,26 @@ document.addEventListener('DOMContentLoaded', function() {
  
     function manejarClicFavoritoDetalle() {
         if (estaAutenticadoServer) {
-            const noticiaId = favoritoBtn.dataset.id;
+            const noticiaId = parseInt(favoritoBtn.dataset.id, 10); // <-- Es buena práctica usar parseInt aquí
             const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
             if (!tokenInput) { console.error('No se encontró AntiForgeryToken.'); alert('Error seguridad. Recarga.'); return; }
             const token = tokenInput.value;
             fetch('/Noticias/ToggleFavorito', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
-                body: JSON.stringify(parseInt(noticiaId)) 
+                
+                // ---
+                // --- A QU Í   E S T Á   L A   C O R R E C C I Ó N ---
+                // ---
+                body: JSON.stringify({ noticiaId: noticiaId }) 
+                // ---
+                // ---
+                // ---
+
             })
             .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); })
             .then(data => {
-                 if (data.success) {
+                if (data.success) {
                     favoritoBtn.classList.toggle('activo', data.esFavorito);
                     const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
                     if (iconSpan) { iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border'; }
@@ -429,62 +507,134 @@ document.addEventListener('DOMContentLoaded', function() {
         const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
         const esFavoritoInicial = favoritoBtn.classList.contains('activo');
         if (iconSpan) { iconSpan.textContent = esFavoritoInicial ? 'favorite' : 'favorite_border'; }
-     }
+    }
 
     if (formComentario && estaAutenticadoServer) {
         formComentario.addEventListener('submit', async function(event) {
-             event.preventDefault();
-             const noticiaId = this.querySelector('input[name="NoticiaId"]').value;
-             const texto = textoComentarioInput.value.trim();
-             const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
-             if (!texto || texto.length < 3 || texto.length > 500) { alert('El comentario debe tener entre 3 y 500 caracteres.'); return; }
-             const submitButton = this.querySelector('button[type="submit"]');
-             if(submitButton) submitButton.disabled = true;
-             try {
-                 const response = await fetch('/Noticias/AgregarComentario', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                     body: `noticiaId=${encodeURIComponent(noticiaId)}&textoComentario=${encodeURIComponent(texto)}`
-                 });
-                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                 const contentType = response.headers.get("content-type");
-                 if (contentType && contentType.includes("application/json")) {
-                     const data = await response.json();
-                     if (data.success) {
-                         textoComentarioInput.value = '';
-                         const nuevoComentarioDiv = document.createElement('div');
-                         nuevoComentarioDiv.className = 'comentario';
-                         nuevoComentarioDiv.style.opacity = 0; nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
+            event.preventDefault();
+            const noticiaId = this.querySelector('input[name="NoticiaId"]').value;
+            const texto = textoComentarioInput.value.trim();
+            const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            if (!texto || texto.length < 3 || texto.length > 500) { 
+                alert('El comentario debe tener entre 3 y 500 caracteres.'); 
+                return; 
+            }
 
+            const submitButton = this.querySelector('button[type="submit"]');
+            if(submitButton) submitButton.disabled = true;
 
-                         const comentarioHeaderDiv = document.createElement('div'); comentarioHeaderDiv.className = 'comentario-header';
-                         const autorP = document.createElement('p'); autorP.className = 'comentario-autor'; autorP.textContent = data.autor; comentarioHeaderDiv.appendChild(autorP);
-                         const accionesDiv = document.createElement('div'); accionesDiv.className = 'comentario-acciones';
-                         const editButton = document.createElement('button'); editButton.className = 'btn-accion-comentario btn-editar-comentario'; editButton.title = 'Editar comentario'; editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>'; accionesDiv.appendChild(editButton);
-                         const deleteButton = document.createElement('button'); deleteButton.className = 'btn-accion-comentario btn-eliminar-comentario'; deleteButton.title = 'Eliminar comentario'; deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>'; accionesDiv.appendChild(deleteButton);
-                         comentarioHeaderDiv.appendChild(accionesDiv); nuevoComentarioDiv.appendChild(comentarioHeaderDiv);
+            try {
+                const response = await fetch('/Noticias/AgregarComentario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                    body: `noticiaId=${encodeURIComponent(noticiaId)}&textoComentario=${encodeURIComponent(texto)}`
+                });
 
-                         const textoP = document.createElement('p'); textoP.className = 'comentario-texto'; textoP.textContent = data.texto; nuevoComentarioDiv.appendChild(textoP);
-                         const fechaP = document.createElement('p'); fechaP.className = 'comentario-fecha';
-                         const fechaSpan = document.createElement('span');
-                         
-                         fechaSpan.dataset.utcdate = data.fechaISO; 
-                         fechaSpan.textContent = "formateando..."; fechaP.appendChild(fechaSpan); nuevoComentarioDiv.appendChild(fechaP);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        textoComentarioInput.value = '';
+                        const nuevoComentarioDiv = document.createElement('div');
+                        nuevoComentarioDiv.className = 'comentario';
+                        nuevoComentarioDiv.dataset.comentarioId = data.id; // <-- Importante para editar/borrar
+                        nuevoComentarioDiv.style.opacity = 0; 
+                        nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
 
-                         listaComentariosDiv.prepend(nuevoComentarioDiv);
-                         formatDateElement(fechaSpan); 
-                         requestAnimationFrame(() => { const el = listaComentariosDiv.firstChild; if(el) el.style.opacity = 1; });
-                         if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
-                     } else { alert('Error al comentar: ' + (data.message || 'Error desconocido')); }
-                 } else { const errorText = await response.text(); console.error('Respuesta no JSON (AgregarComentario):', errorText); alert('Error servidor al comentar.'); }
-             } catch (error) { console.error('Error al enviar comentario:', error); alert('Error conexión al comentar.'); }
-             finally { if(submitButton) submitButton.disabled = false; }
-         });
+                        // --- INICIO DE LA CORRECCIÓN ---
+                        
+                        const comentarioHeaderDiv = document.createElement('div'); 
+                        comentarioHeaderDiv.className = 'comentario-header';
+
+                        // 1. Obtenemos la URL de la foto del JSON (que ya devuelve tu controller)
+                        const fotoUrl = data.fotoUrl || '/images/avatars/default.png'; // <-- Tu ruta por defecto
+
+                        // 2. Creamos el elemento <img>
+                        const imgPerfil = document.createElement('img');
+                        imgPerfil.className = 'comentario-foto-perfil'; // <-- Esta clase debe estar en tu CSS
+                        imgPerfil.src = fotoUrl;
+                        imgPerfil.alt = data.autor; 
+                        
+                        // 3. Lo añadimos AL INICIO del header
+                        comentarioHeaderDiv.appendChild(imgPerfil); 
+                        
+                        // --- FIN DE LA CORRECCIÓN ---
+
+                        // 4. Añadimos el autor (como antes)
+                        const autorP = document.createElement('p'); 
+                        autorP.className = 'comentario-autor'; 
+                        autorP.textContent = data.autor; 
+                        comentarioHeaderDiv.appendChild(autorP);
+
+                        // 5. Añadimos las acciones (como antes)
+                        const accionesDiv = document.createElement('div'); 
+                        accionesDiv.className = 'comentario-acciones';
+                        
+                        const editButton = document.createElement('button'); 
+                        editButton.className = 'btn-accion-comentario btn-editar-comentario'; 
+                        editButton.title = 'Editar comentario'; 
+                        editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>'; 
+                        accionesDiv.appendChild(editButton);
+                        
+                        const deleteButton = document.createElement('button'); 
+                        deleteButton.className = 'btn-accion-comentario btn-eliminar-comentario'; 
+                        deleteButton.title = 'Eliminar comentario'; 
+                        deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>'; 
+                        accionesDiv.appendChild(deleteButton);
+                        
+                        comentarioHeaderDiv.appendChild(accionesDiv); 
+                        nuevoComentarioDiv.appendChild(comentarioHeaderDiv);
+
+                        // 6. Añadimos el texto y la fecha (como antes)
+                        const textoP = document.createElement('p'); 
+                        textoP.className = 'comentario-texto'; 
+                        textoP.textContent = data.texto; 
+                        nuevoComentarioDiv.appendChild(textoP);
+                        
+                        const fechaP = document.createElement('p'); 
+                        fechaP.className = 'comentario-fecha';
+                        const fechaSpan = document.createElement('span');
+                        fechaSpan.dataset.utcdate = data.fechaISO; 
+                        fechaSpan.textContent = "formateando..."; 
+                        fechaP.appendChild(fechaSpan); 
+                        nuevoComentarioDiv.appendChild(fechaP);
+
+                        // 7. Añadimos el nuevo comentario a la lista
+                        listaComentariosDiv.prepend(nuevoComentarioDiv);
+                        formatDateElement(fechaSpan); 
+                        requestAnimationFrame(() => { 
+                            const el = listaComentariosDiv.firstChild; 
+                            if(el) el.style.opacity = 1; 
+                        });
+                        
+                        if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
+
+                    } else { 
+                        alert('Error al comentar: ' + (data.message || 'Error desconocido')); 
+                    }
+                } else { 
+                    const errorText = await response.text(); 
+                    console.error('Respuesta no JSON (AgregarComentario):', errorText); 
+                    alert('Error servidor al comentar.'); 
+                }
+            } catch (error) { 
+                console.error('Error al enviar comentario:', error); 
+                alert('Error conexión al comentar.'); 
+            }
+            finally { 
+                if(submitButton) submitButton.disabled = false; 
+            }
+        });
     }
 
     
     if (listaComentariosDiv) {
         listaComentariosDiv.addEventListener('click', async function(event) {
+            
             
             
             const deleteButton = event.target.closest('.btn-eliminar-comentario');
@@ -496,6 +646,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mostrarModalConfirmacionComentario(comentarioId);
             }
 
+            
             
             const editButton = event.target.closest('.btn-editar-comentario');
             if (editButton) {
@@ -525,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 textoElement.insertAdjacentHTML('afterend', formEdicionHtml);
             }
 
-           
+            
             const cancelButton = event.target.closest('.btn-cancelar-edicion');
             if (cancelButton) {
                 event.preventDefault();
@@ -535,6 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 comentarioDiv.classList.remove('modo-edicion'); 
             }
 
+            
             
             const saveButton = event.target.closest('.btn-guardar-edicion');
             if (saveButton) {
@@ -562,8 +714,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const contentType = response.headers.get("content-type");
                     if (contentType && contentType.includes("application/json")) {
-                         const data = await response.json();
-                         if (data.success) {
+                        const data = await response.json();
+                        if (data.success) {
                             
                             const textoElement = comentarioDiv.querySelector('.comentario-texto');
                             textoElement.textContent = data.texto; // Actualiza el texto
@@ -576,10 +728,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                             formEdicion.remove(); 
                             comentarioDiv.classList.remove('modo-edicion'); 
-                         } else {
+                        } else {
                             alert('Error al editar: ' + (data.message || 'Error desconocido'));
                             saveButton.disabled = false; 
-                         }
+                        }
                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EditarComentario):', errorText); alert('Error servidor al editar.'); saveButton.disabled = false; }
                 } catch (error) {
                     console.error('Error al editar comentario:', error);
@@ -594,53 +746,53 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (btnConfirmarEliminarComentario) {
         if (!btnConfirmarEliminarComentario.dataset.listenerAdded) {
-             btnConfirmarEliminarComentario.addEventListener('click', async function() {
-                 if (!comentarioIdParaEliminar) return;
-                 btnConfirmarEliminarComentario.disabled = true;
-                 const comentarioId = comentarioIdParaEliminar;
-                 const comentarioDiv = listaComentariosDiv.querySelector(`.comentario[data-comentario-id="${comentarioId}"]`);
-                 const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-                 if (!tokenInput) { alert('Error seguridad. Recarga.'); btnConfirmarEliminarComentario.disabled = false; return; }
-                 const token = tokenInput.value;
-                 try {
-                     const response = await fetch('/Noticias/EliminarComentario', {
-                         method: 'POST',
-                         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                         body: `comentarioId=${encodeURIComponent(comentarioId)}`
-                     });
-                     ocultarModalConfirmacionComentario();
-                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                     const contentType = response.headers.get("content-type");
-                     if (contentType && contentType.includes("application/json")) {
-                         const data = await response.json();
-                         if (data.success) {
-                             if (comentarioDiv) {
-                                 comentarioDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                                 comentarioDiv.style.opacity = '0';
-                                 comentarioDiv.style.transform = 'translateX(-50px)';
-                                 setTimeout(() => {
-                                     comentarioDiv.remove();
-                                     if (!listaComentariosDiv.querySelector('.comentario')) {
-                                          if(sinComentariosMsg) sinComentariosMsg.style.display = 'block';
-                                     }
-                                 }, 500);
-                             }
-                         } else { alert('Error al eliminar: ' + (data.message || 'Error desconocido')); }
-                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EliminarComentario):', errorText); alert('Error servidor al eliminar.'); }
-                 } catch (error) {
+            btnConfirmarEliminarComentario.addEventListener('click', async function() {
+                if (!comentarioIdParaEliminar) return;
+                btnConfirmarEliminarComentario.disabled = true;
+                const comentarioId = comentarioIdParaEliminar;
+                const comentarioDiv = listaComentariosDiv.querySelector(`.comentario[data-comentario-id="${comentarioId}"]`);
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (!tokenInput) { alert('Error seguridad. Recarga.'); btnConfirmarEliminarComentario.disabled = false; return; }
+                const token = tokenInput.value;
+                try {
+                    const response = await fetch('/Noticias/EliminarComentario', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                        body: `comentarioId=${encodeURIComponent(comentarioId)}`
+                    });
+                    ocultarModalConfirmacionComentario();
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        const data = await response.json();
+                        if (data.success) {
+                            if (comentarioDiv) {
+                                comentarioDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                comentarioDiv.style.opacity = '0';
+                                comentarioDiv.style.transform = 'translateX(-50px)';
+                                setTimeout(() => {
+                                    comentarioDiv.remove();
+                                    if (!listaComentariosDiv.querySelector('.comentario')) {
+                                        if(sinComentariosMsg) sinComentariosMsg.style.display = 'block';
+                                    }
+                                }, 500);
+                            }
+                        } else { alert('Error al eliminar: ' + (data.message || 'Error desconocido')); }
+                    } else { const errorText = await response.text(); console.error('Respuesta no JSON (EliminarComentario):', errorText); alert('Error servidor al eliminar.'); }
+                } catch (error) {
                     ocultarModalConfirmacionComentario();
                     console.error('Error al eliminar comentario:', error);
                     alert('Error conexión al intentar eliminar.');
-                 }
-             });
-             btnConfirmarEliminarComentario.dataset.listenerAdded = 'true';
+                }
+            });
+            btnConfirmarEliminarComentario.dataset.listenerAdded = 'true';
         }
     }
 
-     
-     if (comentarBtnSubmit && !estaAutenticadoServer) {
-         comentarBtnSubmit.addEventListener('click', function(e){ e.preventDefault(); mostrarModal(); });
-     }
+    
+    if (comentarBtnSubmit && !estaAutenticadoServer) {
+        comentarBtnSubmit.addEventListener('click', function(e){ e.preventDefault(); mostrarModal(); });
+    }
 
     
     document.querySelectorAll('#lista-comentarios .comentario-fecha span[data-utcdate]').forEach(formatDateElement);

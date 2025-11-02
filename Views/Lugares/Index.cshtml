@@ -126,39 +126,59 @@
 
 @Html.AntiForgeryToken()
 
+@Html.AntiForgeryToken()
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const botonesFavoritos = document.querySelectorAll('.favorito-btn');
     const modal = document.getElementById('modal-alerta');
     const cerrarBtn = modal.querySelector('.modal-alerta-cerrar');
     const usuarioHaIniciadoSesion = @(User.Identity.IsAuthenticated ? "true" : "false");
+    
+    // Mover la lectura del token aquí
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
 
     botonesFavoritos.forEach(btn => {
         btn.addEventListener('click', async function() {
             if (!usuarioHaIniciadoSesion) {
                 modal.style.display = 'flex';
             } else {
-                const lugarId = this.dataset.id;
-                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                // Aseguramos que el ID es un número
+                const lugarId = parseInt(this.dataset.id, 10); 
+                
+                if (!tokenInput || !tokenInput.value) {
+                    alert('Error de seguridad. Recarga la página.');
+                    return;
+                }
+                const token = tokenInput.value;
 
                 try {
                     const response = await fetch('/Lugares/ToggleFavorito', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
+                            // --- CAMBIO 1: El Content-Type debe ser JSON ---
+                            'Content-Type': 'application/json',
                             'RequestVerificationToken': token
                         },
-                        body: `lugarId=${lugarId}`
+                        // --- CAMBIO 2: El body debe ser un objeto JSON stringify ---
+                        body: JSON.stringify({ lugarId: lugarId }) 
                     });
+
+                    // Añadimos un chequeo por si la respuesta no es OK (ej. 404, 500)
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
 
                     const result = await response.json();
                     if (result.success) {
-                        this.classList.toggle('activo', result.agregado);
+                        // 'agregado' es el booleano que devuelve el controller
+                        this.classList.toggle('activo', result.agregado); 
                     } else {
                         alert('Hubo un error al procesar tu solicitud.');
                     }
                 } catch (error) {
                     console.error('Error en la solicitud de favoritos:', error);
+                    alert('Error de conexión. Revisa la consola (F12).');
                 }
             }
         });

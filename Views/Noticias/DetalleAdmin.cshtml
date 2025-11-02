@@ -1,0 +1,183 @@
+@model PetConnect.Models.Noticia
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject PetConnect.Services.ConfiguracionSitioService configService
+
+@{
+    ViewData["Title"] = "Detalles de Noticia";
+    Layout = "_AdminLayout"; // Usa tu layout de admin
+
+    // Recuperar colores actuales para el formulario
+    var colorPrincipal = await configService.ObtenerValorAsync("AdminColorPrincipal", "#72626e");
+    var colorSecundario = await configService.ObtenerValorAsync("AdminColorSecundario", "#d67a7a");
+}
+
+<style>
+    /* Contenedor principal del dashboard */
+    .detalle-admin-container {
+        padding: 2rem;
+        max-width: 1000px;
+        margin: 2rem auto;
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+    }
+
+    /* Cabecera con título y botón editar */
+    .detalle-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .detalle-header h2 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+    }
+    .btn-editar-noticia {
+        background-color: @colorPrincipal; /* Color dinámico */
+        color: white;
+        padding: 0.8rem 1.5rem;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s;
+    }
+    .btn-editar-noticia:hover {
+        opacity: 0.8;
+    }
+
+    /* Sección de Métricas */
+    .metricas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .metrica-card {
+        background-color: #fcfcff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .metrica-card .valor {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: @colorSecundario; /* Color dinámico */
+        margin: 0;
+    }
+    .metrica-card .titulo {
+        font-size: 1rem;
+        font-weight: 600;
+        color: @colorPrincipal; /* Color dinámico */
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    /* Gráfico */
+    .grafico-container {
+        margin-bottom: 3rem;
+    }
+
+    /* Sección para cambiar colores */
+    
+    .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
+    .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+</style>
+
+<div class="detalle-admin-container">
+
+    <div class="detalle-header">
+        <div>
+            <h2 title="ID: @Model.Id">@Model.Titulo</h2>
+            <p style="color: #666; margin: 0;">Publicada el: @Model.FechaPublicacion.ToLocalTime().ToString("dd/MM/yyyy")</p>
+        </div>
+        <a asp-action="Editar" asp-route-id="@Model.Id" class="btn-editar-noticia">Editar Noticia</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <h3>Métricas</h3>
+    <div class="metricas-grid">
+        <div class="metrica-card">
+            <p class="valor">@Model.Vistas</p>
+            <p class="titulo">Vistas</p>
+        </div>
+        <div class="metrica-card">
+            <p class="valor">@Model.Comentarios.Count</p>
+            <p class="titulo">Comentarios</p>
+        </div>
+        <div class="metrica-card">
+            <p class="valor">@Model.Favoritos.Count</p>
+            <p class="titulo">Favoritos</p>
+        </div>
+    </div>
+
+    <div class="grafico-container">
+        <h3>Gráfico de Interacción</h3>
+        <canvas id="noticiaMétricasChart" width="400" height="150"></canvas>
+    </div>
+
+    
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('noticiaMétricasChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar', // Tipo de gráfico: 'bar', 'pie', 'doughnut'
+                data: {
+                    labels: ['Vistas', 'Comentarios', 'Favoritos'],
+                    datasets: [{
+                        label: 'Métricas de la Noticia',
+                        // Obtiene los datos del Modelo C#
+                        data: [@Model.Vistas, @Model.Comentarios.Count, @Model.Favoritos.Count],
+                        backgroundColor: [
+                            '@colorPrincipal' + '99', // Color principal con 60% opacidad
+                            '@colorSecundario' + '99', // Color secundario con 60% opacidad
+                            'rgba(255, 206, 86, 0.6)'  // Amarillo
+                        ],
+                        borderColor: [
+                            '@colorPrincipal',
+                            '@colorSecundario',
+                            'rgba(255, 206, 86, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                // Asegura que solo se muestren números enteros en el eje Y
+                                precision: 0 
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false // Oculta la leyenda
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

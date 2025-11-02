@@ -2,10 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace PetConnect.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>, IDataProtectionKeyContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -28,6 +29,8 @@ namespace PetConnect.Data
         public DbSet<FavoritoGuarderia> FavoritosGuarderia { get; set; }
         public DbSet<Favorito> Favoritos { get; set; }
         public object Configuration { get; internal set; }
+
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

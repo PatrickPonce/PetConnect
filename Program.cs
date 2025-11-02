@@ -33,6 +33,8 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddScoped<PetConnect.Services.ConfiguracionSitioService>();
 
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];

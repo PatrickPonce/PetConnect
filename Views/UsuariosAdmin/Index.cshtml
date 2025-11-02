@@ -172,6 +172,26 @@
     .btn-modal-accion.btn-modal-confirm-delete { background-color: #dc3545; color: white; }
     .btn-modal-accion.btn-modal-confirm-delete:hover { background-color: #c82333; }
 
+    /* Estilo para el enlace de IP en la tarjeta */
+    .btn-ip-lookup {
+        display: inline-block; /* Importante para padding */
+        background-color: #e0f0ff; /* Fondo azul claro */
+        color: #0056b3; /* Texto azul oscuro */
+        padding: 4px 10px; /* Relleno para hacerlo tipo "badge" */
+        border-radius: 6px; /* Bordes redondeados */
+        border: 1px solid #cce4ff; /* Borde sutil */
+        font-weight: 600; /* Texto en negrita */
+        font-size: 0.85rem; /* Tamaño de fuente ligeramente más pequeño */
+        text-decoration: none; /* Quitar el subrayado feo */
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-ip-lookup:hover {
+        background-color: #cce4ff;
+        color: #003d7a;
+        transform: translateY(-1px); /* Efecto sutil al pasar el mouse */
+    }
+
 
     @@keyframes fadeInModal {
         from { opacity: 0; transform: scale(0.9); }
@@ -236,6 +256,21 @@
                         <span><span class="material-symbols-outlined">call</span> @(user.NumeroTelefono ?? "No especificado")</span>
                         <span><span class="material-symbols-outlined">mail</span> @(user.Email ?? "No especificado")</span>
                         <span><span class="material-symbols-outlined icon-facebook">facebook</span> Facebook (Placeholder)</span>
+                        <span>
+                            <span class="material-symbols-outlined">public</span>
+                            <div> 
+                                @if (!string.IsNullOrEmpty(user.RegistrationIp))
+                                {
+                                    <a href="#" class="btn-ip-lookup" data-ip="@user.RegistrationIp">
+                                        Ver Ubicación
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color: #999;">IP no registrada</span>
+                                }
+                            </div>
+                        </span>
                     </div>
                 </div>
 
@@ -289,11 +324,33 @@
     </div>
 </div>
 
+<div id="ip-info-modal" class="admin-modal-overlay">
+    <div class="admin-modal-content">
+        <h3 id="modal-title-ip">Información de Seguridad de IP</h3>
+        <div id="modal-body-ip" style="text-align: left; line-height: 2;">
+            
+            <p id="ip-loading-text">Consultando API de seguridad...</p>
+            
+            <ul id="ip-results-list" style="display:none; list-style: none; padding: 0;">
+                <li><strong>IP:</strong> <span id="ip-address"></span></li>
+                <li><strong>País:</strong> <span id="ip-country"></span></li>
+                <li><strong>Ciudad:</strong> <span id="ip-city"></span></li>
+                <li style="font-weight: bold;"><strong>Es Proxy/VPN:</strong> <span id="ip-proxy-status"></span></li>
+                <li><strong>Tipo:</strong> <span id="ip-proxy-type"></span></li>
+            </ul>
+            <p id="ip-error-text" style="color: #dc3545; display:none;"></p>
+        </div>
+        <div class="admin-modal-buttons">
+            <button id="modal-close-ip-btn" class="btn-modal-cancel">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- LÓGICA DEL MODAL DE CONFIRMACIÓN ---
+        // --- LÓGICA DEL MODAL DE CONFIRMACIÓN (Tu código) ---
         const modalEl = document.getElementById('admin-confirm-modal');
         const modalTitleEl = document.getElementById('modal-title-admin');
         const modalTextEl = document.getElementById('modal-text-admin');
@@ -302,7 +359,7 @@
         
         let formToSubmit = null; // Variable para guardar el formulario
 
-        // 1. Abrir el modal
+        // 1. Abrir el modal de confirmación
         document.querySelectorAll('.btn-confirm-action').forEach(button => {
             button.addEventListener('click', function(event) {
                 // Previene que el formulario se envíe automáticamente
@@ -336,21 +393,124 @@
             }
         });
 
-        // 3. Cancelar la acción
-        function closeModal() {
+        // 3. Cancelar la acción (con nombre de función único)
+        function closeConfirmModal() {
             modalEl.style.display = 'none';
             formToSubmit = null; // Limpia la variable
         }
 
-        cancelBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeConfirmModal);
         
         // Cierra el modal si se hace clic en el fondo
         modalEl.addEventListener('click', function(event) {
             if (event.target === modalEl) {
-                closeModal();
+                closeConfirmModal();
             }
         });
 
-    });
+        // --- FIN LÓGICA MODAL CONFIRMACIÓN ---
+
+
+        // --- INICIO: LÓGICA DEL MODAL DE INFO DE IP (ACTUALIZADO) ---
+        const ipModalEl = document.getElementById('ip-info-modal');
+        const ipModalCloseBtn = document.getElementById('modal-close-ip-btn');
+        const ipLoadingText = document.getElementById('ip-loading-text');
+        const ipErrorText = document.getElementById('ip-error-text');
+        const ipResultsList = document.getElementById('ip-results-list');
+        
+        // Referencias a los NUEVOS <span> de resultados
+        const ipSpans = {
+            address: document.getElementById('ip-address'),
+            country: document.getElementById('ip-country'),
+            city: document.getElementById('ip-city'),
+            proxyStatus: document.getElementById('ip-proxy-status'), // <-- Nuevo
+            proxyType: document.getElementById('ip-proxy-type')   // <-- Nuevo
+        };
+
+        function showIpModal() {
+            // Resetea el modal
+            ipLoadingText.style.display = 'block';
+            ipResultsList.style.display = 'none';
+            ipErrorText.style.display = 'none';
+            ipModalEl.style.display = 'flex';
+        }
+
+        function closeIpModal() {
+            ipModalEl.style.display = 'none';
+        }
+
+        // Clic en los botones "Ver Ubicación"
+        document.querySelectorAll('.btn-ip-lookup').forEach(button => {
+            button.addEventListener('click', async function(event) {
+                event.preventDefault();
+                const ip = this.dataset.ip;
+                
+                // (La validación de localhost la movimos al servidor, pero podemos dejarla aquí también)
+                if (ip === '127.0.0.1' || ip === '::1') {
+                    showIpModal();
+                    ipLoadingText.style.display = 'none';
+                    ipErrorText.textContent = 'No se puede geolocalizar una IP local (localhost).';
+                    ipErrorText.style.display = 'block';
+                    return;
+                }
+
+                showIpModal();
+
+                try {
+                    // --- CAMBIO CLAVE: Llamamos a nuestro propio controlador ---
+                    const response = await fetch(`/UsuariosAdmin/ObtenerInfoCompletaIP?ip=${ip}`);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Error ${response.status}`);
+                    }
+
+                    const data = await response.json(); // Nuestro controlador ya devuelve los datos limpios
+
+                    if (data.status === 'ok') {
+                        // Rellena los datos
+                        ipSpans.address.textContent = ip;
+                        ipSpans.country.textContent = data.pais || "Desconocido";
+                        ipSpans.city.textContent = data.ciudad || "Desconocido";
+                        ipSpans.proxyType.textContent = data.tipo || "N/A";
+                        
+                        // Resaltar si es proxy/vpn
+                        if (data.esProxy === 'yes') {
+                            ipSpans.proxyStatus.textContent = "¡SÍ!";
+                            ipSpans.proxyStatus.style.color = "#dc3545"; // Rojo
+                        } else {
+                            ipSpans.proxyStatus.textContent = "No";
+                            ipSpans.proxyStatus.style.color = "#28a745"; // Verde
+                        }
+                        
+                        // Muestra los resultados
+                        ipLoadingText.style.display = 'none';
+                        ipResultsList.style.display = 'block';
+                    } else {
+                        // Errores de la API (ej. "bad ip")
+                        ipLoadingText.style.display = 'none';
+                        ipErrorText.textContent = `Error al consultar la IP: ${data.message || 'Respuesta desconocida'}`;
+                        ipErrorText.style.display = 'block';
+                    }
+
+                } catch (error) {
+                    console.error('Error al llamar a la API de IP:', error);
+                    ipLoadingText.style.display = 'none';
+                    ipErrorText.textContent = error.message || 'Error de red al consultar la API.';
+                    ipErrorText.style.display = 'block';
+                }
+            });
+        });
+
+        // Cierres del modal de IP (sin cambios)
+        ipModalCloseBtn.addEventListener('click', closeIpModal);
+        ipModalEl.addEventListener('click', function(event) {
+            if (event.target === ipModalEl) {
+                closeIpModal();
+            }
+        });
+        // --- FIN LÓGICA MODAL IP ---
+
+    }); // <-- Cierre del 'DOMContentLoaded'
     </script>
 }

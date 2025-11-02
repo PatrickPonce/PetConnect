@@ -9,60 +9,79 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.Configuration; // Para leer la API Key
+using System.Net.Http; // Para HttpClient
+using System.Text.Json; // Para deserializar
+using PetConnect.Models.Api; // Para el modelo de respuesta que creamos 
 
 [Authorize(Roles = "Admin")]
 public class UsuariosAdminController : Controller
 {
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IConfiguration _configuration; // 2. Inyecta IConfiguration
+    private readonly IHttpClientFactory _httpClientFactory; // 3. (Opcional pero recomendado) Inyecta IHttpClientFactory
 
-    public UsuariosAdminController(UserManager<IdentityUser> userManager)
+    public UsuariosAdminController(UserManager<IdentityUser> userManager, IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
         _userManager = userManager;
+        _configuration = configuration;
+        _httpClientFactory = httpClientFactory;
     }
 
     // --- ACCIÓN INDEX ACTUALIZADA CON FILTROS ---
     public async Task<IActionResult> Index(string searchString, string statusFilter)
     {
-        ViewData["CurrentNameFilter"] = searchString; // Para mantener el valor en la vista
-        ViewData["CurrentStatusFilter"] = statusFilter; // Para mantener el valor en la vista
+        ViewData["CurrentNameFilter"] = searchString;
+        ViewData["CurrentStatusFilter"] = statusFilter;
 
         var currentAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         
-        // Empezamos con la consulta base (excluyendo al admin)
         var usersQuery = _userManager.Users.Where(u => u.Id != currentAdminId);
 
-        // 1. Aplicar filtro por Nombre (si existe)
         if (!string.IsNullOrEmpty(searchString))
         {
             usersQuery = usersQuery.Where(u => u.UserName.Contains(searchString) || (u.Email != null && u.Email.Contains(searchString)));
         }
 
-        // 2. Aplicar filtro por Estado (si existe y es válido)
         if (!string.IsNullOrEmpty(statusFilter))
         {
             if (statusFilter == "bloqueado")
             {
-                // Bloqueado = LockoutEnd está en el futuro
                 usersQuery = usersQuery.Where(u => u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow);
             }
             else if (statusFilter == "activo")
             {
-                // Activo = LockoutEnd es nulo o está en el pasado
                 usersQuery = usersQuery.Where(u => u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow);
             }
-            // Si es "todos", no se aplica filtro de estado
         }
         
-        // Ejecutamos la consulta filtrada
         var users = await usersQuery.ToListAsync();
 
         var userViewModels = new List<UsuarioViewModel>();
         foreach (var user in users)
         {
+            // 1. Obtiene el claim de la foto de perfil (sin cambios)
             var claims = await _userManager.GetClaimsAsync(user);
             var profilePicUrl = claims.FirstOrDefault(c => c.Type == PetConnectClaimTypes.ProfilePictureUrl)?.Value;
-            
-            // Calculamos si está bloqueado
+
+            // --- INICIO DE LA LÓGICA GRAVATAR ---
+            // 2. Si NO hay foto de perfil (profilePicUrl está vacío) Y SÍ hay un email
+            if (string.IsNullOrEmpty(profilePicUrl) && !string.IsNullOrEmpty(user.Email))
+            {
+                // 3. Genera la URL de Gravatar
+                var emailHash = CreateGravatarHash(user.Email);
+                // "d=mp" es el parámetro que le dice a Gravatar que muestre un ícono genérico si no encuentra un avatar
+                profilePicUrl = $"https://www.gravatar.com/avatar/{emailHash}?d=mp";
+            }
+            // --- FIN DE LA LÓGICA GRAVATAR ---
+
+
+            // --- INICIO: AÑADIR LECTURA DE CLAIM IP ---
+            var regIpClaim = claims.FirstOrDefault(c => c.Type == PetConnectClaimTypes.RegistrationIpAddress);
+            // --- FIN: LECTURA DE CLAIM IP ---
+
             bool isLockedOut = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow;
 
             userViewModels.Add(new UsuarioViewModel
@@ -71,8 +90,9 @@ public class UsuariosAdminController : Controller
                 NombreUsuario = user.UserName,
                 Email = user.Email,
                 NumeroTelefono = user.PhoneNumber,
-                ProfilePictureUrl = profilePicUrl,
-                IsLockedOut = isLockedOut // <-- Pasamos el estado
+                ProfilePictureUrl = profilePicUrl, // <-- Aquí se asigna la foto personalizada O el Gravatar
+                IsLockedOut = isLockedOut,
+                RegistrationIp = regIpClaim?.Value
             });
         }
 
@@ -129,10 +149,10 @@ public class UsuariosAdminController : Controller
             TempData["ErrorMessage"] = "Usuario no encontrado.";
             return RedirectToAction(nameof(Index));
         }
-        
+
         // --- INICIO DE LA LÓGICA DE ELIMINACIÓN REAL ---
         var result = await _userManager.DeleteAsync(user);
-        
+
         if (result.Succeeded)
         {
             TempData["SuccessMessage"] = $"Usuario '{user.UserName}' eliminado permanentemente.";
@@ -147,7 +167,72 @@ public class UsuariosAdminController : Controller
 
         // Eliminamos el mensaje temporal
         // TempData["SuccessMessage"] = $"Usuario '{user.UserName}' eliminado (funcionalidad pendiente).";
-        
+
         return RedirectToAction(nameof(Index));
     }
+
+    private string CreateGravatarHash(string email)
+    {
+        if (string.IsNullOrEmpty(email))
+        {
+            return string.Empty;
+        }
+
+        // Usar MD5 para hashear el email en minúsculas y sin espacios
+        using (var md5 = MD5.Create())
+        {
+            var inputBytes = Encoding.ASCII.GetBytes(email.Trim().ToLowerInvariant());
+            var hashBytes = md5.ComputeHash(inputBytes);
+
+            // Convertir el byte array a un string hexadecimal
+            return Convert.ToHexString(hashBytes).ToLowerInvariant();
+        }
+    }
+    
+    // 5. --- AÑADE ESTA NUEVA ACCIÓN ---
+    [HttpGet]
+    public async Task<IActionResult> ObtenerInfoCompletaIP(string ip)
+    {
+        if (string.IsNullOrEmpty(ip) || ip == "::1" || ip == "127.0.0.1")
+        {
+            return BadRequest(new { message = "IP no válida o es local." });
+        }
+
+        // Lee la API Key de forma segura (funciona local y en Render)
+        var apiKey = _configuration["ProxyCheck:ApiKey"]; 
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            return StatusCode(500, new { message = "API Key de ProxyCheck no está configurada en el servidor." });
+        }
+
+        var url = $"http://proxycheck.io/v2/{ip}?key={apiKey}&vpn=1&asn=1";
+        
+        try
+        {
+            var client = _httpClientFactory.CreateClient(); // Usa HttpClientFactory
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, new { message = "Error al contactar la API de ProxyCheck." });
+            }
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            
+            // Deserializa la respuesta de proxycheck (ej. {"status":"ok", "proxy":"no", ...})
+            var proxyCheckData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString);
+
+            // También deserializa nuestra clase tipada para obtener los datos principales
+            var typedData = JsonSerializer.Deserialize<ProxyCheckResponse>(jsonString);
+            
+            // Devuelve los datos que la vista necesita
+            return Ok(typedData);
+        }
+        catch (Exception ex)
+        {
+            // Loggear el error real (ex)
+            return StatusCode(500, new { message = "Error interno del servidor al procesar la IP." });
+        }
+    }
+
 }

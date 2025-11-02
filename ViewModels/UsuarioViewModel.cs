@@ -8,5 +8,6 @@ namespace PetConnect.ViewModels
         public string? NumeroTelefono { get; set; }
         public string? ProfilePictureUrl { get; set; }
         public bool IsLockedOut { get; set; }
+        public string? RegistrationIp { get; set; }
     }
 }

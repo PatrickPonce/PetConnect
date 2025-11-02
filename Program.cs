@@ -6,7 +6,6 @@ using PetConnect.Data;
 using PetConnect.Services;
 using Microsoft.AspNetCore.HttpOverrides; 
 using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; // Este 'using' puede no ser estrictamente necesario, pero no hace daño
-using Microsoft.AspNetCore.DataProtection;
 
 // ------------------------------------
 // --- CONFIGURACIÓN DE SERVICIOS ---
@@ -45,9 +44,6 @@ else if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddDataProtection()
-    .PersistKeysToDbContext<ApplicationDbContext>();
-    
 // Configuración de Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -61,7 +57,6 @@ builder.Services.AddAuthentication()
         options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
         options.Scope.Add("user:email");
-        options.CallbackPath = "/signin-github";
     });
 
 // Otros servicios
@@ -89,7 +84,7 @@ var app = builder.Build();
 // 1. Configuración para Proxies Inversos (Render) - DEBE IR PRIMERO
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
 // 2. Tareas de Inicialización (Migración, Roles, Datos Semilla) - Se ejecutan solo una vez al arrancar

@@ -127,11 +127,11 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    //app.UseHsts();
 }
 
 // 4. Middlewares estándar
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 // app.MapStaticAssets(); // MapStaticAssets es de una librería externa. Si no la usas, usa app.UseStaticFiles();
 app.UseStaticFiles(); 
 app.UseRouting();

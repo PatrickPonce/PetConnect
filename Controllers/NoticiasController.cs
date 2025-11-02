@@ -7,8 +7,10 @@ using PetConnect.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions; 
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Security.Claims;
+using PetConnect.Claims;
 
 public class NoticiasController : Controller
 {
@@ -29,7 +31,8 @@ public class NoticiasController : Controller
     public async Task<IActionResult> Index()
     {
         var noticias = await _context.Noticias
-                                      .OrderByDescending(n => n.FechaPublicacion)
+                                      .OrderByDescending(n => n.EsFijada) 
+                                    .ThenByDescending(n => n.FechaPublicacion) 
                                       .ToListAsync();
 
         var favoritosDelUsuario = new HashSet<int>();
@@ -78,6 +81,9 @@ public class NoticiasController : Controller
         {
             return NotFound();
         }
+        noticia.Vistas++;
+        _context.Update(noticia);
+        await _context.SaveChangesAsync();
 
         bool esFavorito = false;
         if (_signInManager.IsSignedIn(User))
@@ -121,7 +127,8 @@ public class NoticiasController : Controller
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> ToggleFavorito([FromBody] int noticiaId)
+    // Cambia el parámetro para que acepte un objeto
+    public async Task<IActionResult> ToggleFavorito([FromBody] ToggleFavoritoRequest request) 
     {
         var userId = _userManager.GetUserId(User);
         if (userId == null)
@@ -129,8 +136,9 @@ public class NoticiasController : Controller
             return Unauthorized(new { success = false, message = "Usuario no autorizado." });
         }
 
+        // Usa request.NoticiaId en lugar de noticiaId
         var favoritoExistente = await _context.Favoritos
-            .FirstOrDefaultAsync(f => f.NoticiaId == noticiaId && f.UsuarioId == userId);
+            .FirstOrDefaultAsync(f => f.NoticiaId == request.NoticiaId && f.UsuarioId == userId);
 
         bool esFavoritoAhora;
 
@@ -143,7 +151,7 @@ public class NoticiasController : Controller
         {
             var nuevoFavorito = new Favorito
             {
-                NoticiaId = noticiaId,
+                NoticiaId = request.NoticiaId, // <-- Usa request.NoticiaId
                 UsuarioId = userId,
                 FechaAgregado = DateTime.UtcNow
             };
@@ -206,51 +214,54 @@ public class NoticiasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AgregarComentario(int noticiaId, string textoComentario)
     {
-
-        var userId = _userManager.GetUserId(User); 
-        var user = await _userManager.FindByIdAsync(userId); 
-
-        
-        string autorNombre = "Usuario Anónimo";
-
-        if (user != null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
         {
-            
-            var nombreClaim = await _userManager.GetClaimsAsync(user);
-            var nombreCompletoClaim = nombreClaim.FirstOrDefault(c => c.Type == "NombreCompleto"); // <-- REVISA ESTE NOMBRE
+            return Json(new { success = false, message = "Usuario no encontrado." });
+        }
 
-            if (nombreCompletoClaim != null && !string.IsNullOrEmpty(nombreCompletoClaim.Value))
-            {
-                autorNombre = nombreCompletoClaim.Value; 
-            }
-            else
-            {
-                
-                autorNombre = user.UserName ?? "Usuario Anónimo";
-                if (autorNombre.Contains("@"))
-                {
-                    autorNombre = autorNombre.Split('@')[0];
-                }
-            }
+        // 1. Obtener la Foto de Perfil (Usando la lógica de Claims)
+        var claims = await _userManager.GetClaimsAsync(user);
+        var fotoClaim = claims.FirstOrDefault(c => c.Type == PetConnectClaimTypes.ProfilePictureUrl);
+        var fotoUrl = fotoClaim?.Value ?? "/images/avatars/default.png"; // <-- Tu ruta por defecto
+
+        // 2. Obtener el Nombre de Usuario
+        var autorNombre = user.UserName ?? "Anónimo";
+        if (autorNombre.Contains("@"))
+        {
+            autorNombre = autorNombre.Split('@')[0];
         }
         
+        // 3. Validar texto
+        if (string.IsNullOrWhiteSpace(textoComentario) || textoComentario.Length < 3 || textoComentario.Length > 500)
+        {
+            return Json(new { success = false, message = "El comentario debe tener entre 3 y 500 caracteres." });
+        }
+
         var nuevoComentario = new Comentario
         {
             NoticiaId = noticiaId,
             Texto = textoComentario,
             Autor = autorNombre, 
-            FechaComentario = DateTime.UtcNow
+            FechaComentario = DateTime.UtcNow,
+            
+            // --- GUARDAR LOS DATOS NUEVOS ---
+            AutorId = user.Id,         // <-- Guardar el ID
+            AutorFotoUrl = fotoUrl     // <-- Guardar la Foto URL
         };
 
         _context.Comentarios.Add(nuevoComentario);
         await _context.SaveChangesAsync();
 
+        // --- DEVOLVER LA FOTO URL EN EL JSON ---
         return Json(new
         {
             success = true,
+            id = nuevoComentario.Id, // <-- Devolver el ID es buena idea
             autor = nuevoComentario.Autor, 
             texto = nuevoComentario.Texto,
-            fechaISO = nuevoComentario.FechaComentario.ToString("o")
+            fechaISO = nuevoComentario.FechaComentario.ToString("o"),
+            fotoUrl = nuevoComentario.AutorFotoUrl // <-- ¡El JS lo necesita!
         });
     }
     [HttpPost]
@@ -263,7 +274,7 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "ID de comentario inválido." });
         }
 
-        var userId = _userManager.GetUserId(User);
+        var userId = _userManager.GetUserId(User); // <-- Obtener el ID del usuario actual
         var comentario = await _context.Comentarios.FindAsync(comentarioId);
 
         if (comentario == null)
@@ -271,38 +282,29 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "Comentario no encontrado." });
         }
 
-    
-        var currentUser = User.Identity?.Name ?? string.Empty;
-        if (currentUser.Contains("@"))
+        // --- COMPROBACIÓN DE PERMISO CORRECTA ---
+        if (comentario.AutorId != userId)
         {
-            currentUser = currentUser.Split('@')[0];
-        }
-
-        
-        if (comentario.Autor != currentUser)
-        {
-            
+            // El usuario actual no es el autor del comentario
             return Json(new { success = false, message = "No tienes permiso para eliminar este comentario." });
         }
-       
-
+        
         _context.Comentarios.Remove(comentario);
         await _context.SaveChangesAsync();
 
         return Json(new { success = true }); 
     }
-   [HttpPost]
+    [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditarComentario(int comentarioId, string nuevoTexto) // <-- ¡SIN [FromForm]!
+    public async Task<IActionResult> EditarComentario(int comentarioId, string nuevoTexto)
     {
-       
         if (comentarioId <= 0 || string.IsNullOrWhiteSpace(nuevoTexto) || nuevoTexto.Length < 3 || nuevoTexto.Length > 500)
         {
             return Json(new { success = false, message = "El comentario no es válido (3-500 caracteres)." });
         }
 
-        var userId = _userManager.GetUserId(User);
+        var userId = _userManager.GetUserId(User); // <-- Obtener el ID del usuario actual
         var comentario = await _context.Comentarios.FindAsync(comentarioId);
 
         if (comentario == null)
@@ -310,27 +312,201 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "Comentario no encontrado." });
         }
 
-        var currentUser = User.Identity?.Name ?? string.Empty;
-        if (currentUser.Contains("@")) { currentUser = currentUser.Split('@')[0]; }
-
-        if (comentario.Autor != currentUser)
+        // --- COMPROBACIÓN DE PERMISO CORRECTA ---
+        if (comentario.AutorId != userId)
         {
             return Json(new { success = false, message = "No tienes permiso para editar este comentario." });
         }
 
-       
         TimeSpan diferencia = DateTime.UtcNow - comentario.FechaComentario.ToUniversalTime();
         if (diferencia.TotalMinutes > 15)
         {
             return Json(new { success = false, message = "Ya no puedes editar este comentario (límite de 15 min)." });
         }
 
+        comentario.Texto = nuevoTexto;
+        comentario.FechaComentario = DateTime.UtcNow; // Actualizar la fecha al editar
 
-        comentario.Texto = nuevoTexto; 
-        comentario.FechaComentario = DateTime.UtcNow;
         _context.Comentarios.Update(comentario);
         await _context.SaveChangesAsync();
 
-        return Json(new { success = true, texto = nuevoTexto,fechaISO = comentario.FechaComentario.ToString("o") });
+        // --- JSON DE RESPUESTA CORREGIDO (SIN EL ERROR) ---
+        return Json(new
+        {
+            success = true,
+            texto = nuevoTexto,
+            fechaISO = comentario.FechaComentario.ToString("o")
+        });
+    }
+    // Añade estos métodos DENTRO de tu clase NoticiasController
+
+// 1. GET: /Noticias/Administrador (Muestra la lista de noticias como en image_3cc995.png)
+    [Authorize(Roles = "Admin")] // ¡Importante! Solo los admins pueden ver esto
+    public async Task<IActionResult> Administrador()
+    {
+        var noticias = await _context.Noticias
+                                    .OrderByDescending(n => n.EsFijada) 
+                                    .ThenByDescending(n => n.FechaPublicacion) 
+                                    .ToListAsync();
+        // Esta acción usará una nueva vista: Views/Noticias/Administrador.cshtml
+        return View(noticias);
+    }
+
+    // 2. GET: /Noticias/Crear (Muestra el formulario para crear una noticia nueva)
+    [Authorize(Roles = "Admin")]
+    public IActionResult Crear()
+    {
+        // Usará la vista: Views/Noticias/Crear.cshtml
+        return View();
+    }
+
+    // 3. POST: /Noticias/Crear (Recibe los datos del formulario y guarda la noticia)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Crear([Bind("Titulo,Contenido,UrlImagen")] Noticia noticia)
+    {
+        if (ModelState.IsValid)
+        {
+            noticia.FechaPublicacion = DateTime.UtcNow; // Pone la fecha actual
+            _context.Add(noticia);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Administrador)); // Vuelve al panel de admin
+        }
+        // Si hay un error, vuelve a mostrar el formulario con los datos
+        return View(noticia);
+    }
+
+    // 4. GET: /Noticias/Editar/5 (Muestra el formulario de edición como en image_3cc977.png)
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Editar(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var noticia = await _context.Noticias.FindAsync(id);
+        if (noticia == null)
+        {
+            return NotFound();
+        }
+        // Usará la vista: Views/Noticias/Editar.cshtml
+        return View(noticia);
+    }
+
+// 5. POST: /Noticias/Editar/5 (Recibe los datos del formulario de edición y guarda los cambios)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Editar(int id, [Bind("Id,Titulo,Contenido,UrlImagen,FechaPublicacion")] Noticia noticia)
+    {
+        if (id != noticia.Id)
+        {
+            return NotFound();
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                noticia.FechaPublicacion = noticia.FechaPublicacion.ToUniversalTime();
+                _context.Update(noticia);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Noticias.Any(e => e.Id == noticia.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Administrador));
+        }
+        return View(noticia);
+    }
+
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Eliminar(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var noticia = await _context.Noticias.FirstOrDefaultAsync(m => m.Id == id);
+        if (noticia == null)
+        {
+            return NotFound();
+        }
+        // Usará la vista: Views/Noticias/Eliminar.cshtml
+        return View(noticia);
+    }
+
+    [HttpPost, ActionName("Eliminar")]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> EliminarConfirmado(int id)
+    {
+        var noticia = await _context.Noticias.FindAsync(id);
+        if (noticia != null)
+        {
+            _context.Noticias.Remove(noticia);
+        }
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Administrador));
+    }
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    // Cambiamos la ruta para que acepte el ID (ej. /Noticias/AlternarFijado/5)
+    [Route("Noticias/AlternarFijado/{id:int}")]
+    public async Task<IActionResult> AlternarFijado(int id)
+    {
+        var noticia = await _context.Noticias.FindAsync(id);
+        if (noticia == null)
+        {
+            return Json(new { success = false, message = "Noticia no encontrada." });
+        }
+
+        // Invierte el estado actual (si era true, lo vuelve false)
+        noticia.EsFijada = !noticia.EsFijada;
+        _context.Update(noticia);
+        await _context.SaveChangesAsync();
+
+        // Devuelve el nuevo estado para que el JavaScript actualice la vista
+        return Json(new { success = true, esFijada = noticia.EsFijada });
+    }
+    // Pega esto dentro de tu clase NoticiasController
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DetalleAdmin(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var noticia = await _context.Noticias
+                                    .Include(n => n.Comentarios) // Incluye los comentarios para contarlos
+                                    .Include(n => n.Favoritos)   // Incluye los favoritos para contarlos
+                                    .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (noticia == null)
+        {
+            return NotFound();
+        }
+
+        // (La vista 'DetalleAdmin.cshtml' se encargará de
+        // inyectar el 'ConfiguracionSitioService' para obtener los colores)
+
+        return View(noticia); // Devuelve la nueva vista 'DetalleAdmin.cshtml'
+    }
+        public class ToggleFavoritoRequest
+    {
+        public int NoticiaId { get; set; }
     }
 }

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
@@ -115,16 +114,6 @@ namespace PetConnect.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("El usuario creó una nueva cuenta con contraseña.");
-
-                    // --- INICIO: AÑADIR LÓGICA DE CAPTURA DE IP ---
-                    var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-                    if (!string.IsNullOrEmpty(ipAddress))
-                    {
-                        // Guardamos la IP como un Claim
-                        await _userManager.AddClaimAsync(user, 
-                            new Claim(PetConnect.Claims.PetConnectClaimTypes.RegistrationIpAddress, ipAddress));
-                    }
-                    // --- FIN: LÓGICA DE CAPTURA DE IP ---
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

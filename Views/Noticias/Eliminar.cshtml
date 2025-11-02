@@ -1,0 +1,25 @@
+@model PetConnect.Models.Noticia
+@{ ViewData["Title"] = "Eliminar Noticia"; 
+    Layout = "_AdminLayout";}
+
+<style>
+    /* (Copia los estilos .admin-container, .btn-confirmar, .btn-cancelar de las otras vistas) */
+    .admin-container { padding: 3rem 1rem; text-align: center; max-width: 800px; margin: 2rem auto; background-color: #FFF6F6; border-radius: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); }
+    .admin-container h2 { font-size: 2.5rem; font-weight: bold; color: #d67a7a; margin-bottom: 2rem; }
+    .button-group { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+    .btn-confirmar-delete { background-color: #d67a7a; color: white; padding: 0.8rem 2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; }
+    .btn-cancelar-back { background-color: #72626e; color: white; padding: 0.8rem 2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; text-decoration: none; }
+</style>
+
+<div class="admin-container">
+    <h2>¿Estás seguro de que quieres eliminar esto?</h2>
+    <h3>@Model.Titulo</h3>
+    <hr />
+    <form asp-action="Eliminar">
+        <input type="hidden" asp-for="Id" />
+        <div class="button-group">
+            <button type="submit" class="btn-confirmar-delete">Sí, Eliminar</button>
+            <a asp-action="Administrador" class="btn-cancelar-back">Cancelar</a>
+        </div>
+    </form>
+</div>

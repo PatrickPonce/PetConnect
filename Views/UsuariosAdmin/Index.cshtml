@@ -1,0 +1,574 @@
+@model List<PetConnect.ViewModels.UsuarioViewModel>
+@{
+    ViewData["Title"] = "Gestión de usuarios";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    // Recuperamos los filtros actuales para los controles del formulario
+    string currentNameFilter = ViewData["CurrentNameFilter"] as string ?? "";
+    string currentStatusFilter = ViewData["CurrentStatusFilter"] as string ?? "todos";
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<style>
+    /* ... (Tus estilos CSS van aquí - SIN CAMBIOS) ... */
+    body { background-color: #fdfaf1; font-family: 'Poppins', sans-serif; }
+    .admin-user-list-container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    .page-title-admin { text-align: center; font-size: 2.5rem; font-weight: bold; color: #ff8fab; margin-bottom: 1.5rem; /* Reducido */ }
+
+    /* --- ESTILOS PARA LOS FILTROS (CORREGIDOS) --- */
+    .filters-container {
+        background-color: #fff; 
+        padding: 20px; 
+        border-radius: 10px; 
+        margin-bottom: 25px; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        display: flex; 
+        flex-wrap: wrap; /* Importante para responsive */
+        align-items: flex-end;
+        gap: 40px; /* Mantiene 20px de espacio entre todos los elementos */
+    }
+    .filter-group { /* "Buscar por Nombre o Email" */
+        flex-grow: 1; /* Permite que crezca */
+        flex-basis: 250px; /* Ancho base */
+        max-width: 300px; /* <-- LÍMITE DE ANCHO MÁXIMO */
+    }
+    .filter-group label { 
+        display: block; 
+        font-weight: 600; 
+        color: #555; 
+        margin-bottom: 5px; 
+        font-size: 0.9rem; 
+    }
+    .filter-input, .filter-select { 
+        width: 100%; 
+        padding: 10px 12px; 
+        border: 1px solid #ddd; 
+        border-radius: 8px; 
+        font-size: 0.95rem; 
+    }
+    .filter-group-select { /* "Filtrar por Estado" */
+        flex-grow: 1; /* Permite que crezca */
+        flex-basis: 180px; /* Ancho base */
+        max-width: 220px; /* <-- LÍMITE DE ANCHO MÁXIMO */
+    }
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        margin-left: auto; /* <-- CLAVE: Empuja los botones a la derecha */
+    }
+    .btn-filter { 
+        padding: 10px 20px; 
+        border-radius: 8px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: background-color 0.3s; 
+        background-color: #ff8fab; 
+        color: white; 
+        border: none; 
+    }
+    .btn-filter:hover { background-color: #f87aa0; }
+    .btn-clear-filter { 
+        padding: 10px 20px; 
+        border-radius: 8px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: background-color 0.3s, color 0.3s; 
+        background-color: #f0f0f0; 
+        color: #555; 
+        border: 1px solid #ddd; 
+        text-decoration: none; 
+    }
+    .btn-clear-filter:hover { background-color: #e0e0e0; }
+    /* --- FIN ESTILOS FILTROS --- */
+
+    .user-card-admin { display: flex; align-items: center; background-color: #EAEAEA; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.07); gap: 30px; }
+    .user-avatar-admin { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 5px solid white; flex-shrink: 0; background-color: #f8f8f8; }
+    .user-info-admin { flex-grow: 1; text-align: left; }
+    .user-name-admin { font-size: 1.8rem; font-weight: bold; color: #333; margin-bottom: 10px; }
+    .user-contact-admin { color: #555; font-size: 0.9rem; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 15px; }
+    .user-contact-admin span { display: contents; }
+    .user-contact-admin .material-symbols-outlined { font-size: 1.1rem; color: #777; justify-self: center; }
+    .user-actions-admin { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+    .btn-admin { padding: 9px 20px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s; min-width: 130px; text-align: center; }
+    .btn-block-admin { background-color: #6c757d; color: white; }
+    .btn-block-admin:hover { background-color: #5a6268; }
+    /* Nuevo estilo para Desbloquear */
+    .btn-unblock-admin { background-color: #28a745; color: white; } 
+    .btn-unblock-admin:hover { background-color: #218838; }
+    .btn-delete-admin { background-color: #dc3545; color: white; }
+    .btn-delete-admin:hover { background-color: #c82333; }
+    .icon-facebook { background-color: #3b5998; color: white; border-radius: 50%; padding: 4px; font-size: 1rem !important; }
+
+    /* --- ESTILOS PARA EL MODAL DE CONFIRMACIÓN --- */
+    .admin-modal-overlay {
+        display: none; /* Oculto por defecto */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .admin-modal-content {
+        background-color: #ffffff;
+        border-radius: 15px;
+        padding: 30px 35px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        width: 90%;
+        max-width: 450px;
+        text-align: center;
+        animation: fadeInModal 0.3s ease-out;
+    }
+
+    .admin-modal-content h3 {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .admin-modal-content p {
+        font-size: 1.05rem;
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+
+    .admin-modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    /* Botones del Modal */
+    .btn-modal-cancel, .btn-modal-accion {
+        padding: 10px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-modal-cancel {
+        background-color: #f0f0f0;
+        color: #555;
+        border: 1px solid #ddd;
+    }
+    .btn-modal-cancel:hover { background-color: #e0e0e0; }
+
+    /* Colores dinámicos para el botón de confirmar */
+    .btn-modal-accion.btn-modal-confirm-block { background-color: #6c757d; color: white; }
+    .btn-modal-accion.btn-modal-confirm-block:hover { background-color: #5a6268; }
+
+    .btn-modal-accion.btn-modal-confirm-unblock { background-color: #28a745; color: white; }
+    .btn-modal-accion.btn-modal-confirm-unblock:hover { background-color: #218838; }
+
+    .btn-modal-accion.btn-modal-confirm-delete { background-color: #dc3545; color: white; }
+    .btn-modal-accion.btn-modal-confirm-delete:hover { background-color: #c82333; }
+
+    /* Estilo para el enlace de IP en la tarjeta (Mejorado) */
+    .btn-ip-lookup {
+        display: inline-block; /* Importante para padding */
+        background-color: #e0f0ff; /* Fondo azul claro */
+        color: #0056b3; /* Texto azul oscuro */
+        padding: 4px 10px; /* Relleno para hacerlo tipo "badge" */
+        border-radius: 6px; /* Bordes redondeados */
+        border: 1px solid #cce4ff; /* Borde sutil */
+        font-weight: 600; /* Texto en negrita */
+        font-size: 0.85rem; /* Tamaño de fuente ligeramente más pequeño */
+        text-decoration: none; /* Quitar el subrayado feo */
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-ip-lookup:hover {
+        background-color: #cce4ff;
+        color: #003d7a;
+        transform: translateY(-1px); /* Efecto sutil al pasar el mouse */
+    }
+
+    /* --- ESTILOS PARA EL BOTÓN SCROLL-TO-TOP --- */
+    #scrollToTopBtn {
+        display: none; /* Oculto por defecto */
+        position: fixed; /* Se queda fijo en la pantalla */
+        bottom: 30px;
+        right: 30px;
+        z-index: 999; /* Se asegura que esté por encima de otros elementos */
+        border: none;
+        outline: none;
+        background-color: #ff8fab; /* Color rosa del título */
+        color: white;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 50%; /* Círculo perfecto */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        transition: opacity 0.3s, transform 0.3s;
+        opacity: 0.8;
+        
+        /* Para centrar el icono */
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem; /* Tamaño del icono */
+        line-height: 1; /* Alineación vertical del icono */
+    }
+
+    #scrollToTopBtn:hover {
+        opacity: 1; /* Totalmente opaco al pasar el mouse */
+        transform: scale(1.05); /* Efecto sutil */
+    }
+
+    /* Clase que usará JS para mostrar el botón */
+    #scrollToTopBtn.show {
+        display: block;
+    }
+
+    @@keyframes fadeInModal {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+</style>
+
+<div class="admin-user-list-container"> 
+
+    <h1 class="page-title-admin">Gestión de usuarios</h1>
+
+    <form asp-action="Index" method="get" class="filters-container">
+        <div class="filter-group">
+            <label for="searchString">Buscar por Nombre o Email</label>
+            <input type="text" id="searchString" name="searchString" class="filter-input" placeholder="Escribe nombre o email..." value="@currentNameFilter" />
+        </div>
+        <div class="filter-group filter-group-select"> <label for="statusFilter">Filtrar por Estado</label>
+            <select id="statusFilter" name="statusFilter" class="filter-select">
+                <option value="todos" selected="@(currentStatusFilter == "todos")">Todos</option>
+                <option value="activo" selected="@(currentStatusFilter == "activo")">Activos</option>
+                <option value="bloqueado" selected="@(currentStatusFilter == "bloqueado")">Bloqueados</option>
+            </select>
+        </div>
+        <div class="filter-buttons">
+            <button type="submit" class="btn-filter">
+                 <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle; margin-right: 5px;">search</span>Buscar
+            </button>
+            <a asp-action="Index" class="btn-clear-filter">Borrar Filtros</a>
+        </div>
+    </form>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+     @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-center mt-4">No se encontraron usuarios que coincidan con los filtros.</p>
+    }
+    else
+    {
+        @foreach (var user in Model)
+        {
+            <div class="user-card-admin">
+                <img src="@(user.ProfilePictureUrl ?? "/images/avatars/default.png")" alt="Avatar" class="user-avatar-admin" />
+                
+                <div class="user-info-admin">
+                    <div class="user-name-admin">@user.NombreUsuario</div>
+                    <div class="user-contact-admin">
+                        <span><span class="material-symbols-outlined">badge</span> Información Personal</span>
+                        <span><span class="material-symbols-outlined">call</span> @(user.NumeroTelefono ?? "No especificado")</span>
+                        <span><span class="material-symbols-outlined">mail</span> @(user.Email ?? "No especificado")</span>
+                        <span><span class="material-symbols-outlined icon-facebook">facebook</span> Facebook (Placeholder)</span>
+                        <span>
+                            <span class="material-symbols-outlined">public</span>
+                            <div> 
+                                @if (!string.IsNullOrEmpty(user.RegistrationIp))
+                                {
+                                    <a href="#" class="btn-ip-lookup" data-ip="@user.RegistrationIp">
+                                        Ver Ubicación
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color: #999;">IP no registrada</span>
+                                }
+                            </div>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="user-actions-admin">
+                    <form asp-action="ToggleBloqueoUsuario" method="post">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        @Html.AntiForgeryToken()
+                        
+                        @if (user.IsLockedOut)
+                        {
+                            <button type="submit" class="btn-admin btn-unblock-admin btn-confirm-action"
+                                    data-message="¿Estás seguro de que quieres desbloquear a @user.NombreUsuario?"
+                                    data-title="Confirmar Desbloqueo"
+                                    data-action-type="unblock">
+                                Desbloquear
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn-admin btn-block-admin btn-confirm-action"
+                                    data-message="¿Estás seguro de que quieres bloquear a @user.NombreUsuario?"
+                                    data-title="Confirmar Bloqueo"
+                                    data-action-type="block">
+                                Bloquear
+                            </button>
+                        }
+                    </form>
+                    <form asp-action="EliminarUsuario" method="post">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-admin btn-delete-admin btn-confirm-action"
+                                data-message="¡ADVERTENCIA! Esta acción no se puede deshacer. ¿Estás seguro de querer ELIMINAR permanentemente a @user.NombreUsuario?"
+                                data-title="Confirmar Eliminación"
+                                data-action-type="delete">
+                            Eliminar cuenta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+</div>
+</div> <button id="scrollToTopBtn" title="Volver arriba">
+    <span class="material-symbols-outlined">arrow_upward</span>
+</button>
+<div id="admin-confirm-modal" class="admin-modal-overlay">
+    <div class="admin-modal-content">
+        <h3 id="modal-title-admin">Confirmar Acción</h3>
+        <p id="modal-text-admin">¿Estás seguro?</p>
+        <div class="admin-modal-buttons">
+            <button id="modal-cancel-btn" class="btn-modal-cancel">Cancelar</button>
+            <button id="modal-confirm-btn" class="btn-modal-accion">Confirmar</button> 
+        </div>
+    </div>
+</div>
+<div id="ip-info-modal" class="admin-modal-overlay">
+    <div class="admin-modal-content">
+        <h3 id="modal-title-ip">Información de Seguridad de IP</h3>
+        <div id="modal-body-ip" style="text-align: left; line-height: 2;">
+            
+            <p id="ip-loading-text">Consultando API de seguridad...</p>
+            
+            <ul id="ip-results-list" style="display:none; list-style: none; padding: 0;">
+                <li><strong>IP:</strong> <span id="ip-address"></span></li>
+                <li><strong>País:</strong> <span id="ip-country"></span></li>
+                <li><strong>Ciudad:</strong> <span id="ip-city"></span></li>
+                <li style="font-weight: bold;"><strong>Es Proxy/VPN:</strong> <span id="ip-proxy-status"></span></li>
+                <li><strong>Tipo:</strong> <span id="ip-proxy-type"></span></li>
+            </ul>
+            <p id="ip-error-text" style="color: #dc3545; display:none;"></p>
+        </div>
+        <div class="admin-modal-buttons">
+            <button id="modal-close-ip-btn" class="btn-modal-cancel">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- LÓGICA DEL MODAL DE CONFIRMACIÓN (Tu código) ---
+        const modalEl = document.getElementById('admin-confirm-modal');
+        const modalTitleEl = document.getElementById('modal-title-admin');
+        const modalTextEl = document.getElementById('modal-text-admin');
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        const cancelBtn = document.getElementById('modal-cancel-btn');
+        
+        let formToSubmit = null; // Variable para guardar el formulario
+
+        // 1. Abrir el modal de confirmación
+        document.querySelectorAll('.btn-confirm-action').forEach(button => {
+            button.addEventListener('click', function(event) {
+                // Previene que el formulario se envíe automáticamente
+                event.preventDefault(); 
+                
+                formToSubmit = this.closest('form'); // Guarda el formulario al que pertenece el botón
+                
+                // Obtiene los datos del botón que fue presionado
+                const message = this.dataset.message;
+                const title = this.dataset.title;
+                const actionType = this.dataset.actionType; // 'block', 'unblock', 'delete'
+
+                // Actualiza el texto del modal
+                modalTitleEl.textContent = title;
+                modalTextEl.textContent = message;
+
+                // Actualiza el estilo del botón de confirmar
+                // Quita clases viejas y añade la nueva
+                confirmBtn.className = 'btn-modal-accion'; 
+                confirmBtn.classList.add('btn-modal-confirm-' + actionType);
+
+                // Muestra el modal
+                modalEl.style.display = 'flex';
+            });
+        });
+
+        // 2. Confirmar la acción
+        confirmBtn.addEventListener('click', function() {
+            if (formToSubmit) {
+                formToSubmit.submit(); // <-- Envía el formulario que guardamos
+            }
+        });
+
+        // 3. Cancelar la acción (con nombre de función único)
+        function closeConfirmModal() {
+            modalEl.style.display = 'none';
+            formToSubmit = null; // Limpia la variable
+        }
+
+        cancelBtn.addEventListener('click', closeConfirmModal);
+        
+        // Cierra el modal si se hace clic en el fondo
+        modalEl.addEventListener('click', function(event) {
+            if (event.target === modalEl) {
+                closeConfirmModal();
+            }
+        });
+
+        // --- FIN LÓGICA MODAL CONFIRMACIÓN ---
+
+
+        // --- INICIO: LÓGICA DEL MODAL DE INFO DE IP (ACTUALIZADO) ---
+        const ipModalEl = document.getElementById('ip-info-modal');
+        const ipModalCloseBtn = document.getElementById('modal-close-ip-btn');
+        const ipLoadingText = document.getElementById('ip-loading-text');
+        const ipErrorText = document.getElementById('ip-error-text');
+        const ipResultsList = document.getElementById('ip-results-list');
+        
+        // Referencias a los NUEVOS <span> de resultados
+        const ipSpans = {
+            address: document.getElementById('ip-address'),
+            country: document.getElementById('ip-country'),
+            city: document.getElementById('ip-city'),
+            proxyStatus: document.getElementById('ip-proxy-status'), // <-- Nuevo
+            proxyType: document.getElementById('ip-proxy-type')   // <-- Nuevo
+        };
+
+        function showIpModal() {
+            // Resetea el modal
+            ipLoadingText.style.display = 'block';
+            ipResultsList.style.display = 'none';
+            ipErrorText.style.display = 'none';
+            ipModalEl.style.display = 'flex';
+        }
+
+        function closeIpModal() {
+            ipModalEl.style.display = 'none';
+        }
+
+        // Clic en los botones "Ver Ubicación"
+        document.querySelectorAll('.btn-ip-lookup').forEach(button => {
+            button.addEventListener('click', async function(event) {
+                event.preventDefault();
+                const ip = this.dataset.ip;
+                
+                // (La validación de localhost la movimos al servidor, pero podemos dejarla aquí también)
+                if (ip === '127.0.0.1' || ip === '::1') {
+                    showIpModal();
+                    ipLoadingText.style.display = 'none';
+                    ipErrorText.textContent = 'No se puede geolocalizar una IP local (localhost).';
+                    ipErrorText.style.display = 'block';
+                    return;
+                }
+
+                showIpModal();
+
+                try {
+                    // --- CAMBIO CLAVE: Llamamos a nuestro propio controlador ---
+                    const response = await fetch(`/UsuariosAdmin/ObtenerInfoCompletaIP?ip=${ip}`);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Error ${response.status}`);
+                    }
+
+                    const data = await response.json(); // Nuestro controlador ya devuelve los datos limpios
+
+                    if (data.status === 'ok') {
+                        // Rellena los datos
+                        ipSpans.address.textContent = ip;
+                        ipSpans.country.textContent = data.pais || "Desconocido";
+                        ipSpans.city.textContent = data.ciudad || "Desconocido";
+                        ipSpans.proxyType.textContent = data.tipo || "N/A";
+                        
+                        // Resaltar si es proxy/vpn
+                        if (data.esProxy === 'yes') {
+                            ipSpans.proxyStatus.textContent = "¡SÍ!";
+                            ipSpans.proxyStatus.style.color = "#dc3545"; // Rojo
+                        } else {
+                            ipSpans.proxyStatus.textContent = "No";
+                            ipSpans.proxyStatus.style.color = "#28a745"; // Verde
+                        }
+                        
+                        // Muestra los resultados
+                        ipLoadingText.style.display = 'none';
+                        ipResultsList.style.display = 'block';
+                    } else {
+                        // Errores de la API (ej. "bad ip")
+                        ipLoadingText.style.display = 'none';
+                        ipErrorText.textContent = `Error al consultar la IP: ${data.message || 'Respuesta desconocida'}`;
+                        ipErrorText.style.display = 'block';
+                    }
+
+                } catch (error) {
+                    console.error('Error al llamar a la API de IP:', error);
+                    ipLoadingText.style.display = 'none';
+                    ipErrorText.textContent = error.message || 'Error de red al consultar la API.';
+                    ipErrorText.style.display = 'block';
+                }
+            });
+        });
+
+        // Cierres del modal de IP (sin cambios)
+        ipModalCloseBtn.addEventListener('click', closeIpModal);
+        ipModalEl.addEventListener('click', function(event) {
+            if (event.target === ipModalEl) {
+                closeIpModal();
+            }
+        });
+        // --- FIN LÓGICA MODAL IP ---
+
+        // --- INICIO: LÓGICA DEL BOTÓN SCROLL-TO-TOP ---
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+        // Muestra u oculta el botón basado en el scroll
+        window.onscroll = function() {
+            // Muestra el botón si el usuario ha bajado 200px
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        };
+
+        // Al hacer clic, vuelve al inicio
+        scrollToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // ¡Scroll suave!
+            });
+        });
+        // --- FIN LÓGICA SCROLL-TO-TOP ---
+
+    }); // <-- Cierre del 'DOMContentLoaded'
+    </script>
+}

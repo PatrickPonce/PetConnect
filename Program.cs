@@ -50,33 +50,25 @@ builder.Services.AddDataProtection()
     
 // Configuración de Identity
 
-// 1. Configura ASP.NET Core Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => 
     {
         options.SignIn.RequireConfirmedAccount = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
-    // No usamos .AddDefaultUI() aquí para tener más control
 
-// 2. Configura los servicios de autenticación por separado
-builder.Services.AddAuthentication(options =>
-    {
-        // Establece el esquema de cookie de Identity como el predeterminado
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddCookie(IdentityConstants.ApplicationScheme) // Añade el handler de cookies para la sesión
-    .AddCookie(IdentityConstants.ExternalScheme)   // Añade el handler para el flujo externo
-    .AddGitHub(options => // Finalmente, añade el proveedor de GitHub
+// 2. Llama a AddAuthentication() para AÑADIR proveedores externos a la configuración existente.
+builder.Services.AddAuthentication()
+    .AddGitHub(options =>
     {
         options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
-        options.CallbackPath = "/signin-github"; // Mantenemos esta línea explícita
+        options.CallbackPath = "/signin-github";
     });
 
-// Esto es necesario porque ya no usamos .AddDefaultUI() en la cadena principal
+// Esto es necesario para las páginas de Identity (Login, Register, etc.)
 builder.Services.AddRazorPages();
+
 
 // Otros servicios
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();

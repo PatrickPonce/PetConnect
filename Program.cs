@@ -84,7 +84,7 @@ var app = builder.Build();
 // 1. Configuración para Proxies Inversos (Render) - DEBE IR PRIMERO
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
 });
 
 // 2. Tareas de Inicialización (Migración, Roles, Datos Semilla) - Se ejecutan solo una vez al arrancar

@@ -72,6 +72,7 @@ builder.Services.AddScoped<AnimalApiService>();
 // Configuración de Google Maps API Key
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
+builder.Services.AddHttpClient<PerspectiveService>();
 
 
 // ------------------------------------

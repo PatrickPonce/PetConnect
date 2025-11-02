@@ -11,20 +11,22 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Security.Claims;
 using PetConnect.Claims;
-
+using PetConnect.Services; 
 public class NoticiasController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager; 
+    private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager; 
+    private readonly PerspectiveService _perspectiveService;
 
     public NoticiasController(ApplicationDbContext context, 
                               UserManager<IdentityUser> userManager, 
-                              SignInManager<IdentityUser> signInManager) 
+                              SignInManager<IdentityUser> signInManager,PerspectiveService perspectiveService) 
     {
         _context = context;
         _userManager = userManager;
-        _signInManager = signInManager; 
+        _signInManager = signInManager;
+        _perspectiveService = perspectiveService; 
     }
 
  
@@ -218,6 +220,12 @@ public class NoticiasController : Controller
         if (user == null)
         {
             return Json(new { success = false, message = "Usuario no encontrado." });
+        }
+        bool esToxico = await _perspectiveService.EsComentarioToxico(textoComentario);
+        if (esToxico)
+        {
+            // Si la IA lo detecta, lo rechaza
+            return Json(new { success = false, message = "Tu comentario infringe las normas de la comunidad y no ha sido publicado." });
         }
 
         // 1. Obtener la Foto de Perfil (Usando la lógica de Claims)

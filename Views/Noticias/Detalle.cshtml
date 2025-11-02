@@ -226,7 +226,89 @@
         margin-bottom: 0;
         flex-grow: 1; /* Esto empuja las 'acciones' a la derecha */
     }
-    
+    /* --- Estilos Mejorados para Modales --- */
+    /* --- ESTILOS MEJORADOS (SOLO PARA EL MODAL DE ALERTA) --- */
+
+/* 1. Ocultar el modal por defecto */
+    #modal-alerta-general {
+        display: none; 
+        /* El resto de estilos (position, z-index, etc.) ya los tienes en .modal-overlay */
+    }
+
+    /* 2. El contenedor blanco */
+    #modal-alerta-general .modal-contenido {
+        background-color: #fefefe;
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        position: relative;
+        max-width: 450px;
+        width: 90%;
+    }
+
+    /* 3. El Título del modal (Rojo para error) */
+    #modal-alerta-general #modal-alerta-titulo {
+        color: #d67a7a; /* Rojo para el error */
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 1rem;
+        background-color: transparent; /* Asegura que no tenga fondo */
+        padding: 0;
+    }
+
+    /* 4. El Mensaje (con tu color de texto) */
+    #modal-alerta-general #modal-alerta-mensaje {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        color: #5a4b56; /* Tu color de texto principal */
+        line-height: 1.5;
+    }
+
+    /* 5. El botón 'X' de cerrar (Gris) */
+    #modal-alerta-general .close-button {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 1.8rem;
+        font-weight: bold;
+        cursor: pointer;
+        color: #aaa; /* Gris */
+        z-index: 10;
+    }
+    #modal-alerta-general .close-button:hover {
+        color: #555;
+    }
+
+    /* 6. El botón "Aceptar" (Verde) */
+    #modal-alerta-general #btn-cerrar-alerta-general {
+        background-color: #748675; /* Tu verde principal */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 12px 30px; /* Controla el tamaño con padding */
+        width: 150px; /* Ancho fijo */
+        height: auto;
+        transition: all 0.3s ease;
+        line-height: 1.5;
+        flex: none; /* Evita que se estire */
+    }
+
+    /* 7. Hover del botón "Aceptar" */
+    #modal-alerta-general #btn-cerrar-alerta-general:hover {
+        background-color: #5E6B5F; /* Verde oscuro */
+        transform: translateY(-2px);
+    }
+        
+    /* 8. Contenedor de botones para centrar el único botón */
+    #modal-alerta-general .modal-botones-eliminar {
+        justify-content: center;
+    }
+
     @@keyframes fadeIn {
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -348,7 +430,7 @@
             <p id="sin-comentarios-msg">No hay comentarios todavía. ¡Sé el primero!</p>
         }
     </div>
-
+    
     <form id="form-agregar-comentario" class="form-comentario">
         @Html.AntiForgeryToken() 
         <input type="hidden" name="NoticiaId" value="@Model.Id" /> 
@@ -402,6 +484,20 @@
         </div>
     </div>
 </div>
+<div id="modal-alerta-general" class="modal-overlay">
+    <div class="modal-contenido">
+        <span id="modal-alerta-cerrar" class="close-button">&times;</span>
+        <div class="modal-body">
+              <h3 id="modal-alerta-titulo">Notificación</h3>
+              <p id="modal-alerta-mensaje">Este es un mensaje de ejemplo.</p>
+              <div class="modal-botones-eliminar">
+                   <button id="btn-cerrar-alerta-general" class="btn-modal-accion">
+                       Aceptar
+                   </button>
+              </div>
+        </div>
+    </div>
+</div>
 
 <script>
     function formatDateElement(spanElement) {
@@ -418,6 +514,7 @@
     }
 
 document.addEventListener('DOMContentLoaded', function() { 
+    
 
     const loginModal = document.getElementById('login-modal');
     const closeButton = loginModal ? loginModal.querySelector('.close-button') : null;
@@ -433,6 +530,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnCancelarEliminarComentario = document.getElementById('btn-cancelar-eliminar-comentario');
     let comentarioIdParaEliminar = null;
     const estaAutenticadoServer = '@User.Identity.IsAuthenticated.ToString().ToLower()' === 'true';
+
+    const modalAlertaGeneral = document.getElementById('modal-alerta-general');
+    const modalAlertaTitulo = document.getElementById('modal-alerta-titulo');
+    const modalAlertaMensaje = document.getElementById('modal-alerta-mensaje');
+    const btnCerrarAlertaGeneral = document.getElementById('btn-cerrar-alerta-general');
+    const modalAlertaCerrarBtn = document.getElementById('modal-alerta-cerrar');
+        function mostrarAlerta(titulo, mensaje) {
+        if (modalAlertaGeneral && modalAlertaTitulo && modalAlertaMensaje) {
+            modalAlertaTitulo.textContent = titulo;
+            modalAlertaMensaje.textContent = mensaje;
+            modalAlertaGeneral.style.display = 'flex'; // Usamos 'flex' como tu modal de login
+        }
+    }
+
+    // 3. Nueva función para OCULTAR la alerta
+    function ocultarAlerta() {
+        if (modalAlertaGeneral) {
+            modalAlertaGeneral.style.display = 'none';
+        }
+    }
+
+    // 4. Nuevos Event Listeners para cerrar el modal
+    if (btnCerrarAlertaGeneral) {
+        btnCerrarAlertaGeneral.addEventListener('click', ocultarAlerta);
+    }
+    if (modalAlertaCerrarBtn) {
+        modalAlertaCerrarBtn.addEventListener('click', ocultarAlerta);
+    }
+    // Opcional: Cerrar si hace clic fuera
+    window.addEventListener('click', (event) => { 
+        if (event.target === modalAlertaGeneral) {
+            ocultarAlerta(); 
+        }
+    });
 
     function mostrarModal() { if (loginModal) loginModal.style.display = 'flex'; }
     if (!estaAutenticadoServer && textoComentarioInput) {
@@ -474,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (estaAutenticadoServer) {
             const noticiaId = parseInt(favoritoBtn.dataset.id, 10); // <-- Es buena práctica usar parseInt aquí
             const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-            if (!tokenInput) { console.error('No se encontró AntiForgeryToken.'); alert('Error seguridad. Recarga.'); return; }
+            if (!tokenInput) { console.error('No se encontró AntiForgeryToken.'); mostrarAlerta('Error seguridad. Recarga.'); return; }
             const token = tokenInput.value;
             fetch('/Noticias/ToggleFavorito', { 
                 method: 'POST', 
@@ -495,9 +626,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     favoritoBtn.classList.toggle('activo', data.esFavorito);
                     const iconSpan = favoritoBtn.querySelector('.material-symbols-outlined');
                     if (iconSpan) { iconSpan.textContent = data.esFavorito ? 'favorite' : 'favorite_border'; }
-                } else { alert('Error del servidor: ' + (data.message || 'Desconocido')); }
+                } else { mostrarAlerta('Error del servidor: ' + (data.message || 'Desconocido')); }
             })
-            .catch(error => { alert('Error de conexión al intentar cambiar favorito.'); });
+            .catch(error => { mostrarAlerta('Error de conexión al intentar cambiar favorito.'); });
         } else {
             mostrarModal();
         }
@@ -517,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
             
             if (!texto || texto.length < 3 || texto.length > 500) { 
-                alert('El comentario debe tener entre 3 y 500 caracteres.'); 
+                mostrarAlerta('El comentario debe tener entre 3 y 500 caracteres.'); 
                 return; 
             }
 
@@ -614,16 +745,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
 
                     } else { 
-                        alert('Error al comentar: ' + (data.message || 'Error desconocido')); 
+                        mostrarAlerta('Error al comentar: ' + (data.message || 'Error desconocido')); 
                     }
                 } else { 
                     const errorText = await response.text(); 
                     console.error('Respuesta no JSON (AgregarComentario):', errorText); 
-                    alert('Error servidor al comentar.'); 
+                    mostrarAlerta('Error servidor al comentar.'); 
                 }
             } catch (error) { 
                 console.error('Error al enviar comentario:', error); 
-                alert('Error conexión al comentar.'); 
+                mostrarAlerta('Error conexión al comentar.'); 
             }
             finally { 
                 if(submitButton) submitButton.disabled = false; 
@@ -698,8 +829,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const nuevoTexto = textarea.value.trim();
                 const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
 
-                if (!tokenInput) { alert('Error seguridad. Recarga.'); return; }
-                if (!nuevoTexto || nuevoTexto.length < 3 || nuevoTexto.length > 500) { alert('El comentario debe tener entre 3 y 500 caracteres.'); return; }
+                if (!tokenInput) { mostrarAlerta('Error seguridad. Recarga.'); return; }
+                if (!nuevoTexto || nuevoTexto.length < 3 || nuevoTexto.length > 500) { mostrarAlerta('El comentario debe tener entre 3 y 500 caracteres.'); return; }
 
                 const token = tokenInput.value;
                 saveButton.disabled = true; 
@@ -729,13 +860,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             formEdicion.remove(); 
                             comentarioDiv.classList.remove('modo-edicion'); 
                         } else {
-                            alert('Error al editar: ' + (data.message || 'Error desconocido'));
+                            mostrarAlerta('Error al editar: ' + (data.message || 'Error desconocido'));
                             saveButton.disabled = false; 
                         }
                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EditarComentario):', errorText); alert('Error servidor al editar.'); saveButton.disabled = false; }
                 } catch (error) {
                     console.error('Error al editar comentario:', error);
-                    alert('Error conexión al intentar editar.');
+                    mostrarAlerta('Error conexión al intentar editar.');
                     saveButton.disabled = false;
                 }
             }
@@ -752,7 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const comentarioId = comentarioIdParaEliminar;
                 const comentarioDiv = listaComentariosDiv.querySelector(`.comentario[data-comentario-id="${comentarioId}"]`);
                 const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-                if (!tokenInput) { alert('Error seguridad. Recarga.'); btnConfirmarEliminarComentario.disabled = false; return; }
+                if (!tokenInput) { mostrarAlerta('Error seguridad. Recarga.'); btnConfirmarEliminarComentario.disabled = false; return; }
                 const token = tokenInput.value;
                 try {
                     const response = await fetch('/Noticias/EliminarComentario', {
@@ -777,12 +908,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                     }
                                 }, 500);
                             }
-                        } else { alert('Error al eliminar: ' + (data.message || 'Error desconocido')); }
+                        } else { mostrarAlerta('Error al eliminar: ' + (data.message || 'Error desconocido')); }
                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EliminarComentario):', errorText); alert('Error servidor al eliminar.'); }
                 } catch (error) {
                     ocultarModalConfirmacionComentario();
                     console.error('Error al eliminar comentario:', error);
-                    alert('Error conexión al intentar eliminar.');
+                    mostrarAlerta('Error conexión al intentar eliminar.');
                 }
             });
             btnConfirmarEliminarComentario.dataset.listenerAdded = 'true';

@@ -74,7 +74,7 @@ var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
 builder.Services.AddHttpClient<PerspectiveService>();
 
-
+builder.Services.AddSignalR(); 
 // ------------------------------------
 // --- CONSTRUCCIÓN DE LA APP ---
 // ------------------------------------
@@ -141,6 +141,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles(); 
 app.UseRouting();
 app.UseAuthorization();
+app.MapHub<PetConnect.Hubs.ComentarioHub>("/comentarioHub");
 
 // 5. Mapeo de Endpoints
 app.MapControllerRoute(

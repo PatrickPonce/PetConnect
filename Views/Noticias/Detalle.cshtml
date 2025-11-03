@@ -498,7 +498,7 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 <script>
     function formatDateElement(spanElement) {
         const utcDateString = spanElement.dataset.utcdate;
@@ -512,10 +512,72 @@
             spanElement.textContent = "Fecha inválida";
         }
     }
+    // ✅ AÑADE ESTA FUNCIÓN COMPLETA A TU SCRIPT
+    function crearComentarioElement(data) {
+        const nuevoComentarioDiv = document.createElement('div');
+        nuevoComentarioDiv.className = 'comentario';
+        nuevoComentarioDiv.dataset.comentarioId = data.id; 
+        nuevoComentarioDiv.style.opacity = 0;
+        nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
+
+        const comentarioHeaderDiv = document.createElement('div');
+        comentarioHeaderDiv.className = 'comentario-header';
+
+        const fotoUrl = data.fotoUrl || '/images/avatars/default.png';
+        const imgPerfil = document.createElement('img');
+        imgPerfil.className = 'comentario-foto-perfil';
+        imgPerfil.src = fotoUrl;
+        imgPerfil.alt = data.autor;
+        comentarioHeaderDiv.appendChild(imgPerfil);
+
+        const autorP = document.createElement('p');
+        autorP.className = 'comentario-autor';
+        autorP.textContent = data.autor;
+        comentarioHeaderDiv.appendChild(autorP);
+
+        const accionesDiv = document.createElement('div'); 
+        accionesDiv.className = 'comentario-acciones';
+        
+        // Creamos los botones pero los ocultamos por defecto.
+        // Solo se mostrarán si el autor del comentario es el usuario actual.
+        const editButton = document.createElement('button'); 
+        editButton.className = 'btn-accion-comentario btn-editar-comentario'; 
+        editButton.title = 'Editar comentario'; 
+        editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>'; 
+        editButton.style.display = 'none'; // Oculto por defecto
+        accionesDiv.appendChild(editButton);
+        
+        const deleteButton = document.createElement('button'); 
+        deleteButton.className = 'btn-accion-comentario btn-eliminar-comentario'; 
+        deleteButton.title = 'Eliminar comentario'; 
+        deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>'; 
+        deleteButton.style.display = 'none'; // Oculto por defecto
+        accionesDiv.appendChild(deleteButton);
+        
+        comentarioHeaderDiv.appendChild(accionesDiv); 
+        nuevoComentarioDiv.appendChild(comentarioHeaderDiv);
+
+        const textoP = document.createElement('p');
+        textoP.className = 'comentario-texto';
+        textoP.textContent = data.texto;
+        nuevoComentarioDiv.appendChild(textoP);
+
+        const fechaP = document.createElement('p');
+        fechaP.className = 'comentario-fecha';
+        const fechaSpan = document.createElement('span');
+        fechaSpan.dataset.utcdate = data.fechaISO;
+        fechaSpan.textContent = "formateando...";
+        fechaP.appendChild(fechaSpan);
+        nuevoComentarioDiv.appendChild(fechaP);
+        
+        formatDateElement(fechaSpan); // Formateamos la fecha
+        return nuevoComentarioDiv;
+    }
 
 document.addEventListener('DOMContentLoaded', function() { 
+    const noticiaId = @Model.Id;
+    const nombreUsuarioActual = "@(User.Identity.IsAuthenticated ? (User.Identity.Name.Contains("@") ? User.Identity.Name.Split('@')[0] : User.Identity.Name) : "")";
     
-
     const loginModal = document.getElementById('login-modal');
     const closeButton = loginModal ? loginModal.querySelector('.close-button') : null;
     const favoritoBtn = document.getElementById('favorito-btn');
@@ -670,79 +732,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     if (data.success) {
                         textoComentarioInput.value = '';
-                        const nuevoComentarioDiv = document.createElement('div');
-                        nuevoComentarioDiv.className = 'comentario';
-                        nuevoComentarioDiv.dataset.comentarioId = data.id; // <-- Importante para editar/borrar
-                        nuevoComentarioDiv.style.opacity = 0; 
-                        nuevoComentarioDiv.style.transition = 'opacity 0.5s ease';
-
-                        // --- INICIO DE LA CORRECCIÓN ---
-                        
-                        const comentarioHeaderDiv = document.createElement('div'); 
-                        comentarioHeaderDiv.className = 'comentario-header';
-
-                        // 1. Obtenemos la URL de la foto del JSON (que ya devuelve tu controller)
-                        const fotoUrl = data.fotoUrl || '/images/avatars/default.png'; // <-- Tu ruta por defecto
-
-                        // 2. Creamos el elemento <img>
-                        const imgPerfil = document.createElement('img');
-                        imgPerfil.className = 'comentario-foto-perfil'; // <-- Esta clase debe estar en tu CSS
-                        imgPerfil.src = fotoUrl;
-                        imgPerfil.alt = data.autor; 
-                        
-                        // 3. Lo añadimos AL INICIO del header
-                        comentarioHeaderDiv.appendChild(imgPerfil); 
-                        
-                        // --- FIN DE LA CORRECCIÓN ---
-
-                        // 4. Añadimos el autor (como antes)
-                        const autorP = document.createElement('p'); 
-                        autorP.className = 'comentario-autor'; 
-                        autorP.textContent = data.autor; 
-                        comentarioHeaderDiv.appendChild(autorP);
-
-                        // 5. Añadimos las acciones (como antes)
-                        const accionesDiv = document.createElement('div'); 
-                        accionesDiv.className = 'comentario-acciones';
-                        
-                        const editButton = document.createElement('button'); 
-                        editButton.className = 'btn-accion-comentario btn-editar-comentario'; 
-                        editButton.title = 'Editar comentario'; 
-                        editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>'; 
-                        accionesDiv.appendChild(editButton);
-                        
-                        const deleteButton = document.createElement('button'); 
-                        deleteButton.className = 'btn-accion-comentario btn-eliminar-comentario'; 
-                        deleteButton.title = 'Eliminar comentario'; 
-                        deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>'; 
-                        accionesDiv.appendChild(deleteButton);
-                        
-                        comentarioHeaderDiv.appendChild(accionesDiv); 
-                        nuevoComentarioDiv.appendChild(comentarioHeaderDiv);
-
-                        // 6. Añadimos el texto y la fecha (como antes)
-                        const textoP = document.createElement('p'); 
-                        textoP.className = 'comentario-texto'; 
-                        textoP.textContent = data.texto; 
-                        nuevoComentarioDiv.appendChild(textoP);
-                        
-                        const fechaP = document.createElement('p'); 
-                        fechaP.className = 'comentario-fecha';
-                        const fechaSpan = document.createElement('span');
-                        fechaSpan.dataset.utcdate = data.fechaISO; 
-                        fechaSpan.textContent = "formateando..."; 
-                        fechaP.appendChild(fechaSpan); 
-                        nuevoComentarioDiv.appendChild(fechaP);
-
-                        // 7. Añadimos el nuevo comentario a la lista
-                        listaComentariosDiv.prepend(nuevoComentarioDiv);
-                        formatDateElement(fechaSpan); 
-                        requestAnimationFrame(() => { 
-                            const el = listaComentariosDiv.firstChild; 
-                            if(el) el.style.opacity = 1; 
-                        });
-                        
-                        if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
 
                     } else { 
                         mostrarAlerta('Error al comentar: ' + (data.message || 'Error desconocido')); 
@@ -927,6 +916,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     document.querySelectorAll('#lista-comentarios .comentario-fecha span[data-utcdate]').forEach(formatDateElement);
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/comentarioHub") // La URL que definiste en Program.cs
+        .build();
 
+    // 2. Definir qué hacer cuando se recibe un comentario
+    // ✅ REEMPLAZA TU connection.on (Línea 820) CON ESTE
+    connection.on("RecibirComentario", function (data) {
+        if (data.success) {
+            const nuevoComentarioElement = crearComentarioElement(data); // Usa la función
+
+            // Comprueba si el autor del comentario es el usuario actual
+            if (data.autor === nombreUsuarioActual) {
+                // Hacemos visibles los botones para el autor
+                const editBtn = nuevoComentarioElement.querySelector('.btn-editar-comentario');
+                const deleteBtn = nuevoComentarioElement.querySelector('.btn-eliminar-comentario');
+                if(editBtn) editBtn.style.display = 'inline-block';
+                if(deleteBtn) deleteBtn.style.display = 'inline-block';
+            }
+            
+            listaComentariosDiv.prepend(nuevoComentarioElement);
+            
+            // Anima la aparición
+            requestAnimationFrame(() => { 
+                const el = listaComentariosDiv.firstChild; 
+                if(el) el.style.opacity = 1; 
+            });
+            
+            if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
+        }
+    });
+
+    // 3. Iniciar la conexión y unirse al grupo de esta noticia
+    async function startSignalR() {
+        try {
+            await connection.start();
+            console.log("SignalR Conectado.");
+            // Una vez conectado, unirse al grupo de esta noticia
+            if (noticiaId) {
+                await connection.invoke("UnirseAGrupo", `noticia-${noticiaId}`);
+                console.log(`Unido al grupo noticia-${noticiaId}`);
+            }
+        } catch (err) {
+            console.error("Error al conectar con SignalR:", err);
+            setTimeout(startSignalR, 5000); // Reintentar en 5 seg
+        }
+    }
+
+    startSignalR(); // Inicia la conexión
 }); 
 </script>

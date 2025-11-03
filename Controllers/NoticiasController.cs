@@ -11,22 +11,27 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Security.Claims;
 using PetConnect.Claims;
-using PetConnect.Services; 
+using PetConnect.Services;
+using Microsoft.AspNetCore.SignalR;
+using PetConnect.Hubs;
 public class NoticiasController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager; 
+    private readonly SignInManager<IdentityUser> _signInManager;
     private readonly PerspectiveService _perspectiveService;
+    private readonly IHubContext<ComentarioHub> _hubContext;
 
     public NoticiasController(ApplicationDbContext context, 
                               UserManager<IdentityUser> userManager, 
-                              SignInManager<IdentityUser> signInManager,PerspectiveService perspectiveService) 
+                              SignInManager<IdentityUser> signInManager,PerspectiveService perspectiveService,
+                              IHubContext<ComentarioHub> hubContext) 
     {
         _context = context;
         _userManager = userManager;
         _signInManager = signInManager;
-        _perspectiveService = perspectiveService; 
+        _perspectiveService = perspectiveService;
+        _hubContext = hubContext;
     }
 
  
@@ -252,25 +257,36 @@ public class NoticiasController : Controller
             Texto = textoComentario,
             Autor = autorNombre, 
             FechaComentario = DateTime.UtcNow,
-            
-            // --- GUARDAR LOS DATOS NUEVOS ---
-            AutorId = user.Id,         // <-- Guardar el ID
-            AutorFotoUrl = fotoUrl     // <-- Guardar la Foto URL
+            AutorId = user.Id,
+            AutorFotoUrl = fotoUrl
         };
 
         _context.Comentarios.Add(nuevoComentario);
         await _context.SaveChangesAsync();
 
-        // --- DEVOLVER LA FOTO URL EN EL JSON ---
-        return Json(new
+        // --- INICIO DE LA MODIFICACIÓN DE SIGNALR ---
+
+        // 1. Prepara los datos que se enviarán (deben coincidir con el JSON de retorno)
+        var dataParaCliente = new
         {
             success = true,
-            id = nuevoComentario.Id, // <-- Devolver el ID es buena idea
-            autor = nuevoComentario.Autor, 
+            id = nuevoComentario.Id,
+            autor = nuevoComentario.Autor,
             texto = nuevoComentario.Texto,
             fechaISO = nuevoComentario.FechaComentario.ToString("o"),
-            fotoUrl = nuevoComentario.AutorFotoUrl // <-- ¡El JS lo necesita!
-        });
+            fotoUrl = nuevoComentario.AutorFotoUrl 
+        };
+
+        // 2. Define el nombre del grupo para esta noticia
+        string grupoNoticia = $"noticia-{noticiaId}";
+
+        // 3. Envía el mensaje "RecibirComentario" a todos en ese grupo
+        await _hubContext.Clients.Group(grupoNoticia).SendAsync("RecibirComentario", dataParaCliente);
+        
+        // --- FIN DE LA MODIFICACIÓN DE SIGNALR ---
+
+        // 4. Devuelve la respuesta solo al cliente que envió el comentario
+        return Json(dataParaCliente);
     }
     [HttpPost]
     [Authorize] 

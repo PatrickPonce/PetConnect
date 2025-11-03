@@ -21,17 +21,21 @@ public class NoticiasController : Controller
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly PerspectiveService _perspectiveService;
     private readonly IHubContext<ComentarioHub> _hubContext;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
 
     public NoticiasController(ApplicationDbContext context, 
                               UserManager<IdentityUser> userManager, 
                               SignInManager<IdentityUser> signInManager,PerspectiveService perspectiveService,
-                              IHubContext<ComentarioHub> hubContext) 
+                              IHubContext<ComentarioHub> hubContext,IHttpClientFactory httpClientFactory,IConfiguration configuration) 
     {
         _context = context;
         _userManager = userManager;
         _signInManager = signInManager;
         _perspectiveService = perspectiveService;
         _hubContext = hubContext;
+        _httpClientFactory = httpClientFactory; 
+        _configuration = configuration;
     }
 
  
@@ -395,28 +399,22 @@ public class NoticiasController : Controller
     }
 
     // 2. GET: /Noticias/Crear (Muestra el formulario para crear una noticia nueva)
-    [Authorize(Roles = "Admin")]
-    public IActionResult Crear()
-    {
-        // Usará la vista: Views/Noticias/Crear.cshtml
-        return View();
-    }
 
-    // 3. POST: /Noticias/Crear (Recibe los datos del formulario y guarda la noticia)
-    [HttpPost]
-    [ValidateAntiForgeryToken]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Crear([Bind("Titulo,Contenido,UrlImagen")] Noticia noticia)
+    public IActionResult Crear(string titulo, string urlImagen, string contenido) // <-- AÑADE ESTOS PARÁMETROS
     {
-        if (ModelState.IsValid)
+        // 1. Crea un modelo "borrador" con los datos de la URL
+        var model = new Noticia
         {
-            noticia.FechaPublicacion = DateTime.UtcNow; // Pone la fecha actual
-            _context.Add(noticia);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Administrador)); // Vuelve al panel de admin
-        }
-        // Si hay un error, vuelve a mostrar el formulario con los datos
-        return View(noticia);
+            Titulo = titulo,
+            UrlImagen = urlImagen,
+            Contenido = contenido
+        };
+
+        // 2. Pasa el borrador a la vista
+        // Los campos (Titulo, UrlImagen, Contenido) en tu
+        // formulario .cshtml se auto-rellenarán mágicamente.
+        return View(model);
     }
 
     // 4. GET: /Noticias/Editar/5 (Muestra el formulario de edición como en image_3cc977.png)
@@ -547,8 +545,58 @@ public class NoticiasController : Controller
 
         return View(noticia); // Devuelve la nueva vista 'DetalleAdmin.cshtml'
     }
-        public class ToggleFavoritoRequest
+    public class ToggleFavoritoRequest
     {
         public int NoticiaId { get; set; }
     }
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> BuscarNoticiasGNews(string q)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return BadRequest(new { message = "El término de búsqueda no puede estar vacío." });
+        }
+
+        // 1. Obtiene la clave de API de appsettings.json
+        string apiKey = _configuration["GNews:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            return StatusCode(500, new { message = "Clave de API de GNews no configurada en el servidor." });
+        }
+
+        // 2. Prepara la llamada a la API
+        string url = $"https://gnews.io/api/v4/search?q={Uri.EscapeDataString(q)}&lang=es&max=10&token={apiKey}";
+        var cliente = _httpClientFactory.CreateClient();
+
+        try
+        {
+            // 3. Llama a la API y deserializa el JSON
+            var respuesta = await cliente.GetFromJsonAsync<GNewsResponse>(url);
+
+            if (respuesta == null || respuesta.Articles == null)
+            {
+                return NotFound(new { message = "No se encontraron artículos." });
+            }
+
+            // 4. Devuelve los artículos como JSON
+            return Json(respuesta.Articles);
+        }
+        catch (HttpRequestException ex)
+        {
+            // Captura errores si GNews falla (ej. clave incorrecta, límite excedido)
+            return StatusCode(502, new { message = $"Error al llamar a la API de GNews: {ex.Message}" });
+        }
+    }
+    // Pega este método dentro de tu clase NoticiasController
+
+    [Authorize(Roles = "Admin")] // Asegura que solo los Admins puedan ver esta página
+    [HttpGet]
+    public IActionResult Importar()
+    {
+        // Esta simple línea busca el archivo "Importar.cshtml" 
+        // en la carpeta "Views/Noticias/" y lo muestra como una página.
+        return View();
+    }
+        
 }

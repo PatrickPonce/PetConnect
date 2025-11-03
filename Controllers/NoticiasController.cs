@@ -313,10 +313,17 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "No tienes permiso para eliminar este comentario." });
         }
         
+        int noticiaId = comentario.NoticiaId; 
+
         _context.Comentarios.Remove(comentario);
         await _context.SaveChangesAsync();
 
-        return Json(new { success = true }); 
+        string grupoNoticia = $"noticia-{noticiaId}";
+        string eventoSignalR = "ComentarioEliminado";
+
+        await _hubContext.Clients.Group(grupoNoticia).SendAsync(eventoSignalR, comentarioId);
+
+        return Json(new { success = true });
     }
     [HttpPost]
     [Authorize]

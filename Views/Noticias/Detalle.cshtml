@@ -886,17 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (contentType && contentType.includes("application/json")) {
                         const data = await response.json();
                         if (data.success) {
-                            if (comentarioDiv) {
-                                comentarioDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                                comentarioDiv.style.opacity = '0';
-                                comentarioDiv.style.transform = 'translateX(-50px)';
-                                setTimeout(() => {
-                                    comentarioDiv.remove();
-                                    if (!listaComentariosDiv.querySelector('.comentario')) {
-                                        if(sinComentariosMsg) sinComentariosMsg.style.display = 'block';
-                                    }
-                                }, 500);
-                            }
+                           
                         } else { mostrarAlerta('Error al eliminar: ' + (data.message || 'Error desconocido')); }
                     } else { const errorText = await response.text(); console.error('Respuesta no JSON (EliminarComentario):', errorText); alert('Error servidor al eliminar.'); }
                 } catch (error) {
@@ -944,6 +934,27 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (sinComentariosMsg) sinComentariosMsg.style.display = 'none';
+        }
+    });
+    // Pega esto en tu script, cerca del otro connection.on
+    connection.on("ComentarioEliminado", function (comentarioId) {
+        // 1. Busca el div del comentario usando el ID
+        const comentarioDiv = document.querySelector(`.comentario[data-comentario-id="${comentarioId}"]`);
+
+        // 2. Si el comentario existe en la página, lo elimina con la animación
+        if (comentarioDiv) {
+            comentarioDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            comentarioDiv.style.opacity = '0';
+            comentarioDiv.style.transform = 'translateX(-50px)';
+            
+            setTimeout(() => {
+                comentarioDiv.remove();
+                
+                // 3. Revisa si ya no quedan comentarios para mostrar el mensaje
+                if (!listaComentariosDiv.querySelector('.comentario')) {
+                    if(sinComentariosMsg) sinComentariosMsg.style.display = 'block';
+                }
+            }, 500); // 500ms (igual que tu animación)
         }
     });
 

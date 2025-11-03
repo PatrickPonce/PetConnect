@@ -837,17 +837,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const data = await response.json();
                         if (data.success) {
                             
-                            const textoElement = comentarioDiv.querySelector('.comentario-texto');
-                            textoElement.textContent = data.texto; // Actualiza el texto
-                            const fechaSpan = comentarioDiv.querySelector('.comentario-fecha span[data-utcdate]');
-                            if (fechaSpan) {
-                                
-                                fechaSpan.dataset.utcdate = data.fechaISO; 
-                                
-                                formatDateElement(fechaSpan);
-                            }
-                            formEdicion.remove(); 
-                            comentarioDiv.classList.remove('modo-edicion'); 
+        
                         } else {
                             mostrarAlerta('Error al editar: ' + (data.message || 'Error desconocido'));
                             saveButton.disabled = false; 
@@ -956,6 +946,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 500); // 500ms (igual que tu animación)
         }
+    });
+    // ✅ Pega esto en tu <script>
+    connection.on("ComentarioEditado", function (data) {
+        if (!data.success) return; // Si algo falló, no hace nada
+
+        // 1. Busca el div del comentario que fue editado
+        const comentarioDiv = document.querySelector(`.comentario[data-comentario-id="${data.id}"]`);
+        if (!comentarioDiv) return; // Si no lo encuentra, no hace nada
+
+        // 2. Busca los elementos de texto y fecha dentro de ese div
+        const textoElement = comentarioDiv.querySelector('.comentario-texto');
+        const fechaSpan = comentarioDiv.querySelector('.comentario-fecha span[data-utcdate]');
+
+        // 3. Actualiza el contenido
+        if (textoElement) {
+            textoElement.textContent = data.texto;
+        }
+        if (fechaSpan) {
+            fechaSpan.dataset.utcdate = data.fechaISO;
+            formatDateElement(fechaSpan); // Re-formatea la fecha con la nueva hora
+        }
+
+        // 4. (MUY IMPORTANTE) Cierra el modo de edición
+        // Esto asegura que el formulario de edición desaparezca para todos
+        const formEdicion = comentarioDiv.querySelector('.form-editar-comentario');
+        if (formEdicion) {
+            formEdicion.remove();
+        }
+        comentarioDiv.classList.remove('modo-edicion');
     });
 
     // 3. Iniciar la conexión y unirse al grupo de esta noticia

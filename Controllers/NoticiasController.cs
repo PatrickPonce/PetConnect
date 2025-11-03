@@ -362,12 +362,23 @@ public class NoticiasController : Controller
         await _context.SaveChangesAsync();
 
         // --- JSON DE RESPUESTA CORREGIDO (SIN EL ERROR) ---
-        return Json(new
+        var dataParaCliente = new
         {
             success = true,
-            texto = nuevoTexto,
+            id = comentario.Id, // El ID es crucial para que el JS sepa qué comentario actualizar
+            texto = comentario.Texto,
             fechaISO = comentario.FechaComentario.ToString("o")
-        });
+        };
+
+        // 2. Define el grupo y el nombre del evento
+        string grupoNoticia = $"noticia-{comentario.NoticiaId}";
+        string eventoSignalR = "ComentarioEditado";
+
+        // 3. Envía el mensaje a todos en el grupo
+        await _hubContext.Clients.Group(grupoNoticia).SendAsync(eventoSignalR, dataParaCliente);
+
+        // 4. Devuelve la respuesta al cliente que hizo la edición
+        return Json(dataParaCliente);
     }
     // Añade estos métodos DENTRO de tu clase NoticiasController
 

@@ -3,16 +3,64 @@
   Layout = "_AdminLayout";}
 
 <style>
-    /* (Copia los mismos estilos .admin-container, .form-group, etc. de Crear.cshtml) */
-    .admin-container { padding: 3rem 1rem; text-align: center; max-width: 800px; margin: 2rem auto; background-color: #FFF6F6; border-radius: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); }
+    .admin-container { padding: 3rem 1rem; text-align: center; max-width: 1200px; margin: 2rem auto; background-color: #FFF6F6; border-radius: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); }
     .admin-container h2 { font-size: 2.5rem; font-weight: bold; color: #d67a7a; margin-bottom: 2rem; }
     .form-group label { display: block; text-align: left; margin-bottom: 0.5rem; color: #5a4b56; font-weight: 600; font-size: 1.1rem; }
-    .form-control { width: 100%; padding: 0.8rem; margin-bottom: 1.5rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-    textarea.form-control { min-height: 150px; resize: vertical; }
+    .form-control { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+    textarea.form-control { min-height: 250px; resize: vertical; }
     .button-group { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
     .btn-confirmar { background-color: #72626e; color: white; padding: 0.8rem 2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; }
     .btn-cancelar { background-color: #d67a7a; color: white; padding: 0.8rem 2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; text-decoration: none; }
-    .text-danger { color: #d67a7a; font-size: 0.9rem; text-align: left; display: block; margin-top: -1rem; margin-bottom: 1rem; }
+    .text-danger { color: #d67a7a; font-size: 0.9rem; text-align: left; display: block; margin-top: 0.25rem; margin-bottom: 1rem; }
+
+    /* --- ESTILOS PARA EL BOTÓN DE BÚSQUEDA --- */
+    .input-group-imagen {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1.5rem; /* Añadido para espaciado */
+    }
+    .input-group-imagen input {
+        flex-grow: 1; 
+        margin-bottom: 0; /* Anula el margen de .form-control */
+    }
+    .btn-buscar-imagen {
+        background-color: #72626e;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 0.8rem 1rem;
+        box-sizing: border-box;
+    }
+    .btn-buscar-imagen:hover {
+        background-color: #5a4b56;
+    }
+    .form-control {
+        margin-bottom: 0; /* Ajuste para que funcione bien dentro y fuera del grupo */
+    }
+    .form-group {
+        margin-bottom: 1.5rem; /* Mover el margen al contenedor */
+    }
+
+
+    /* --- ESTILOS PARA EL MODAL DE UNSPLASH --- */
+    .modal-unsplash-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+    .modal-unsplash-content { background-color: #fefefe; border-radius: 12px; padding: 2rem; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .modal-unsplash-close { color: #aaa; position: absolute; top: 15px; right: 25px; font-size: 28px; font-weight: bold; cursor: pointer; }
+    .modal-unsplash-search { display: flex; gap: 10px; margin: 1rem 0; }
+    .modal-unsplash-search input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    .modal-unsplash-search button { background-color: #748675; color: white; border: none; border-radius: 8px; padding: 0 1.5rem; cursor: pointer; }
+    .modal-unsplash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .foto-unsplash { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .foto-unsplash:hover { transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .spinner-unsplash { display: none; padding: 2rem; text-align: center; }
+    .spinner-loader { border: 4px solid #f3f3f3; border-top: 4px solid #748675; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto; }
+    @@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 
 <div class="admin-container">
@@ -26,8 +74,13 @@
             <span asp-validation-for="Titulo" class="text-danger"></span>
         </div>
         <div class="form-group">
-            <label asp-for="UrlImagen" class="control-label">URL de Imagen</label>
-            <input asp-for="UrlImagen" class="form-control" />
+            <label asp-for="UrlImagen" class="control-label"></label>
+            <div class="input-group-imagen">
+                <input asp-for="UrlImagen" class="form-control" placeholder="Introduce una URL o busca..." />
+                <button type="button" id="btn-abrir-modal-unsplash" class="btn-buscar-imagen">
+                    <span class="material-symbols-outlined">search</span> Buscar
+                </button>
+            </div>
             <span asp-validation-for="UrlImagen" class="text-danger"></span>
         </div>
         <div class="form-group">
@@ -40,6 +93,21 @@
             <a asp-action="Administrador" class="btn-cancelar">Cancelar</a>
         </div>
     </form>
+    <div id="modal-unsplash" class="modal-unsplash-overlay">
+    <div class="modal-unsplash-content">
+            <span class="modal-unsplash-close" id="btn-cerrar-modal-unsplash">&times;</span>
+            <h3>Buscar Imagen en Unsplash</h3>
+            <div class="modal-unsplash-search">
+                <input type="text" id="input-busqueda-unsplash" placeholder="Buscar fotos (ej: perro, gato)...">
+                <button type="button" id="btn-buscar-unsplash">Buscar</button>
+            </div>
+            <div id="spinner-unsplash" class="spinner-unsplash" style="display: none;">
+                <div class="spinner-loader"></div>
+            </div>
+            <div id="grid-resultados-unsplash" class="modal-unsplash-grid">
+                </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -48,15 +116,111 @@
     <script src="https://cdn.tiny.cloud/1/us4xrxsoq6f33ntv9173pd2xkhoxj9kl21t4o6owwrw4kqs3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 
     <script>
+        // --- INICIALIZACIÓN DE TINYMCE ---
         tinymce.init({
-            selector: 'textarea#Contenido', // <-- Apunta a tu <textarea asp-for="Contenido">
+            selector: 'textarea#Contenido',
             plugins: 'code table lists image link media',
             toolbar: 'undo redo | formatselect | bold italic backcolor | \
                       alignleft aligncenter alignright alignjustify | \
                       bullist numlist outdent indent | removeformat | \
                       image link media | code',
             menubar: false,
-            language: 'es_MX' // O 'es'
+            language: 'es_MX'
+        });
+
+        // --- CÓDIGO DEL MODAL DE UNSPLASH ---
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- CÓDGO DEL MODAL ---
+            const modal = document.getElementById('modal-unsplash');
+            const btnAbrirModal = document.getElementById('btn-abrir-modal-unsplash');
+            const btnCerrarModal = document.getElementById('btn-cerrar-modal-unsplash');
+            const btnBuscarUnsplash = document.getElementById('btn-buscar-unsplash');
+            const inputBusquedaUnsplash = document.getElementById('input-busqueda-unsplash');
+            const gridResultados = document.getElementById('grid-resultados-unsplash');
+            const spinner = document.getElementById('spinner-unsplash');
+            const urlImagenInputPrincipal = document.getElementById('UrlImagen'); // ID generado por asp-for
+
+            function abrirModal() {
+                if(modal) modal.style.display = 'flex';
+            }
+            function cerrarModal() {
+                if(modal) modal.style.display = 'none';
+            }
+
+            if(btnAbrirModal) btnAbrirModal.addEventListener('click', abrirModal);
+            if(btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModal);
+
+            if(modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        cerrarModal();
+                    }
+                });
+            }
+
+            async function realizarBusqueda() {
+                const query = inputBusquedaUnsplash.value.trim();
+                if (!query) {
+                    alert('Escribe algo para buscar');
+                    return;
+                }
+                spinner.style.display = 'block';
+                gridResultados.innerHTML = '';
+                try {
+                    // Llama a tu API interna (NoticiasController)
+                    const response = await fetch(`/Noticias/BuscarFotosUnsplash?q=${encodeURIComponent(query)}`);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Error: ${response.status}`);
+                    }
+                    const fotos = await response.json();
+                    if (fotos.length === 0) {
+                        gridResultados.innerHTML = '<p>No se encontraron fotos.</p>';
+                    }
+                    fotos.forEach(foto => {
+                        const img = document.createElement('img');
+                        img.src = foto.urlPequena;
+                        img.alt = `Foto por ${foto.autor}`;
+                        img.className = 'foto-unsplash';
+                        img.dataset.urlRegular = foto.urlRegular; 
+
+                        img.addEventListener('click', function() {
+                            if(urlImagenInputPrincipal) {
+                                // Pega la URL en el campo principal
+                                urlImagenInputPrincipal.value = this.dataset.urlRegular;
+                            }
+                            cerrarModal();
+                        });
+                        gridResultados.appendChild(img);
+                    });
+                } catch (error) {
+                    gridResultados.innerHTML = `<p style="color: red;">${error.message}</p>`;
+                    console.error('Error al buscar fotos:', error);
+                } finally {
+                    spinner.style.display = 'none';
+                }
+            }
+
+            if(btnBuscarUnsplash) btnBuscarUnsplash.addEventListener('click', realizarBusqueda);
+            
+            if(inputBusquedaUnsplash) {
+                inputBusquedaUnsplash.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        realizarBusqueda();
+                    }
+                });
+            }
+
+            // --- FIX PARA TINYMCE Y VALIDACIÓN ---
+            const form = document.querySelector('form[asp-action="Editar"]');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    // Fuerza a TinyMCE a guardar su contenido en el <textarea>
+                    // oculto antes de que el formulario se envíe.
+                    tinymce.triggerSave();
+                });
+            }
         });
     </script>
 }

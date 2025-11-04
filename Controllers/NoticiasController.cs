@@ -416,6 +416,37 @@ public class NoticiasController : Controller
         // formulario .cshtml se auto-rellenarán mágicamente.
         return View(model);
     }
+    // EN: NoticiasController.cs
+
+// 3. POST: /Noticias/Crear (Recibe los datos del formulario y guarda la noticia)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    // Usamos [Bind] por seguridad, para que solo acepte los campos del formulario
+    public async Task<IActionResult> Crear([Bind("Titulo,UrlImagen,Contenido")] Noticia noticia)
+    {
+        // Verifica si el Título y Contenido (requeridos) están presentes
+        if (ModelState.IsValid)
+        {
+            // Si todo es válido:
+            // 1. Pone la fecha actual
+            noticia.FechaPublicacion = DateTime.UtcNow; 
+            
+            // 2. Lo añade a la base de datos
+            _context.Add(noticia);
+            
+            // 3. Guarda los cambios
+            await _context.SaveChangesAsync();
+            
+            // 4. Te redirige a la página de "Administrador"
+            return RedirectToAction(nameof(Administrador)); 
+        }
+        
+        // Si algo falló (ej. el Contenido estaba vacío),
+        // vuelve a mostrar la página "Crear" con los datos que el usuario escribió
+        // y mostrará los mensajes de error.
+        return View(noticia);
+    }
 
     // 4. GET: /Noticias/Editar/5 (Muestra el formulario de edición como en image_3cc977.png)
     [Authorize(Roles = "Admin")]
@@ -597,6 +628,60 @@ public class NoticiasController : Controller
         // Esta simple línea busca el archivo "Importar.cshtml" 
         // en la carpeta "Views/Noticias/" y lo muestra como una página.
         return View();
+    }
+    // EN: NoticiasController.cs
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> BuscarFotosUnsplash(string q)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return BadRequest(new { message = "El término de búsqueda no puede estar vacío." });
+        }
+
+        // 1. Obtiene la clave de Unsplash
+        string accessKey = _configuration["Unsplash:AccessKey"];
+        if (string.IsNullOrEmpty(accessKey))
+        {
+            return StatusCode(500, new { message = "Clave de API de Unsplash no configurada." });
+        }
+
+        // 2. Prepara la llamada
+        // orientation=landscape (solo fotos horizontales)
+        // per_page=12 (trae 12 fotos)
+        string url = $"https://api.unsplash.com/search/photos?query={Uri.EscapeDataString(q)}&orientation=landscape&per_page=12";
+        
+        var cliente = _httpClientFactory.CreateClient();
+        
+        // 3. Unsplash REQUIERE que te identifiques en la cabecera (Header)
+        cliente.DefaultRequestHeaders.Authorization = 
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Client-ID", accessKey);
+
+        try
+        {
+            // 4. Llama a la API
+            var respuesta = await cliente.GetFromJsonAsync<UnsplashSearchResponse>(url);
+
+            if (respuesta == null || respuesta.Results == null)
+            {
+                return NotFound(new { message = "No se encontraron fotos." });
+            }
+
+            // 5. Devuelve solo los datos que necesitamos (para no enviar tanta info)
+            var fotosSimples = respuesta.Results.Select(foto => new {
+                id = foto.Id,
+                urlPequena = foto.Urls.Small, // Para la miniatura
+                urlRegular = foto.Urls.Regular, // Para la noticia
+                autor = foto.User.Name
+            }).ToList();
+
+            return Json(fotosSimples);
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(502, new { message = $"Error al llamar a la API de Unsplash: {ex.Message}" });
+        }
     }
         
 }

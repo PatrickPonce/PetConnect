@@ -9,7 +9,15 @@
     .admin-container { padding: 3rem 1rem; text-align: center; max-width: 1200px; /* <-- Más ancho para 2 columnas */ margin: 2rem auto; background-color: #FFF6F6; border-radius: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); }
     .admin-container h2 { font-size: 2.5rem; font-weight: bold; color: #d67a7a; margin-bottom: 2rem; }
     .form-group label { display: block; text-align: left; margin-bottom: 0.5rem; color: #5a4b56; font-weight: 600; font-size: 1.1rem; }
-    .form-control { width: 100%; padding: 0.8rem; margin-bottom: 1.5rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+    .form-control { 
+    width: 100%; 
+    padding: 0.8rem; 
+    /* margin-bottom: 1.5rem;  <-- QUITAMOS ESTO DE AQUÍ */
+    border: 1px solid #ccc; 
+    border-radius: 8px; 
+    box-sizing: border-box; /* <-- Esto está bien */
+    font-size: 1rem; 
+    }
     textarea.form-control { min-height: 250px; /* <-- Aumentado */ resize: vertical; }
     .button-group { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
     .btn-confirmar { background-color: #72626e; color: white; padding: 0.8rem 2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600; }
@@ -62,6 +70,197 @@
     }
     #preview-contenido h2 { font-size: 1.5rem; margin-top: 1.5rem; }
     #preview-contenido p { margin-bottom: 1rem; }
+    .input-group-imagen {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    }
+    .btn-buscar-imagen {
+    background-color: #72626e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0.8rem 1rem;    
+    box-sizing: border-box;  
+    }
+    .input-group-imagen input {
+    flex-grow: 1; /* El input toma el espacio */
+    /* El input ya tiene la clase .form-control, que le da la altura */
+    }
+    
+    .btn-buscar-imagen:hover {
+    background-color: #5a4b56;
+    }
+
+    /* Estilos del Modal (Overlay) */
+    .modal-unsplash-overlay {
+        display: none; /* Oculto por defecto */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        align-items: center;
+        justify-content: center;
+    }
+    /* Estilos del Modal (Contenido) */
+    .modal-unsplash-content {
+        background-color: #fefefe;
+        border-radius: 12px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .modal-unsplash-close {
+        color: #aaa;
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .modal-unsplash-search {
+        display: flex;
+        gap: 10px;
+        margin: 1rem 0;
+    }
+    .modal-unsplash-search input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+    .modal-unsplash-search button {
+        background-color: #748675;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0 1.5rem;
+        cursor: pointer;
+    }
+    /* Estilos de la Grilla de Fotos */
+    .modal-unsplash-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .foto-unsplash {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .foto-unsplash:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    /* Spinner */
+    .spinner-unsplash {
+        display: none;
+        padding: 2rem;
+        text-align: center;
+    }
+    .spinner-loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #748675;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+    }
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    /* --- ESTILOS PARA EL BOTÓN DE IA --- */
+    /* --- ESTILOS PARA EL CONTENEDOR DEL EDITOR Y EL BOTÓN DE IA --- */
+    .editor-ai-container {
+        display: flex; /* Permite que los elementos se coloquen en línea */
+        justify-content: space-between; /* Distribuye el espacio entre elementos */
+        align-items: center; /* Centra verticalmente */
+        margin-bottom: 0.5rem; /* Espacio antes del editor */
+        gap: 1rem; /* Espacio entre el label y el botón */
+    }
+
+    /* --- ESTILOS PARA EL BOTÓN DE IA --- */
+    #btn-generar-ia {
+        background-color: #f0f0f0; /* Un gris claro, como el botón "Cancelar" de tu modal */
+        color: #5a4b56; /* Texto oscuro, como tus labels */
+        border: 1px solid #ccc;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex; /* Para alinear el ícono y el texto */
+        align-items: center;
+        gap: 8px; /* Espacio entre ícono y texto */
+        white-space: nowrap; /* Evita que el texto se rompa */
+        
+        /* Eliminamos las propiedades de posicionamiento flotante/absoluto */
+        /* float: right; */ 
+        /* margin-bottom: 5px; */
+        /* position: relative; */ 
+        /* z-index: 100; */
+    }
+
+    #btn-generar-ia:hover {
+        background-color: #e0e0e0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+    }
+
+    /* Estilo para el ícono dentro del botón */
+    #btn-generar-ia .material-symbols-outlined {
+        font-size: 1.2rem;
+        vertical-align: middle;
+    }
+
+    /* Estilo cuando está cargando (deshabilitado) */
+    #btn-generar-ia:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Ajustar el margin-bottom para el form-group del contenido */
+    /* Asegúrate de que no haya un margin-bottom en .form-control que interfiera */
+    .form-group {
+        margin-bottom: 1.5rem; /* Mantén esto */
+    }
+    .form-group label {
+        margin-bottom: 0.5rem; /* Esto está bien */
+    }
+
+    .etiqueta-pill {
+        background-color: #e9e5e3;
+        color: #5a4b56;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: 1px solid #dcd8d6;
+    }
 </style>
 
 <div class="admin-container">
@@ -79,23 +278,73 @@
                     <span asp-validation-for="Titulo" class="text-danger"></span>
                 </div>
 
-                <div class="form-group">
-                    <label asp-for="UrlImagen" class="control-label">URL de Imagen</label>
-                    <input asp-for="UrlImagen" class="form-control" placeholder="https://ejemplo.com/imagen.png" />
+               <div class="form-group">
+                    <label asp-for="UrlImagen" class="control-label"></label>
+                    <div class="input-group-imagen">
+                        <input asp-for="UrlImagen" class="form-control" placeholder="Introduce una URL o busca..." />
+                        
+                        <button type="button" id="btn-abrir-modal-unsplash" class="btn-buscar-imagen">
+                            <span class="material-symbols-outlined">search</span> Buscar
+                        </button>
+                    </div>
                     <span asp-validation-for="UrlImagen" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Contenido" class="control-label"></label>
+                    <div class="editor-ai-container">
+                        <label asp-for="Contenido" class="control-label" style="margin-bottom: 0;"></label>
+                        
+                        <button type="button" id="btn-generar-ia">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                            Sugerir borrador con IA
+                        </button>
+                    </div>
+                    
                     <textarea asp-for="Contenido" class="form-control"></textarea>
+                    
                     <span asp-validation-for="Contenido" class="text-danger"></span>
                 </div>
 
+                <div class="form-group">
+                    <label class="control-label">Etiquetas Sugeridas</label>
+                    <button type="button" id="btn-sugerir-etiquetas" class="btn-buscar-imagen" style="background-color: #748675; margin-bottom: 1rem;">
+                        <span class="material-symbols-outlined">label</span>
+                        Sugerir Etiquetas (IA)
+                    </button>
+                    <div id="contenedor-etiquetas-sugeridas" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Tags" class="control-label">Etiquetas (separadas por coma)</label>
+                    <input asp-for="Tags" class="form-control" id="tags-input-field" />
+                    <span asp-validation-for="Tags" class="text-danger"></span>
+                </div>
+                                
                 <div class="button-group">
                     <button type="submit" class="btn-confirmar">Confirmar</button>
                     <a asp-action="Administrador" class="btn-cancelar">Cancelar</a>
                 </div>
             </form>
+            <div id="modal-unsplash" class="modal-unsplash-overlay">
+                <div class="modal-unsplash-content">
+                    <span class="modal-unsplash-close" id="btn-cerrar-modal-unsplash">&times;</span>
+                    
+                    <h3>Buscar Imagen en Unsplash</h3>
+                    
+                    <div class="modal-unsplash-search">
+                        <input type="text" id="input-busqueda-unsplash" placeholder="Buscar fotos (ej: perro, gato)...">
+                        <button type="button" id="btn-buscar-unsplash">Buscar</button>
+                    </div>
+                    
+                    <div id="spinner-unsplash" class="spinner-unsplash" style="display: none;">
+                        <div class="spinner-loader"></div>
+                    </div>
+
+                    <div id="grid-resultados-unsplash" class="modal-unsplash-grid">
+                        </div>
+                </div>
+            </div>
         </div>
 
         <div class="preview-columna">
@@ -119,37 +368,33 @@
     <script src="https://cdn.tiny.cloud/1/us4xrxsoq6f33ntv9173pd2xkhoxj9kl21t4o6owwrw4kqs3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 
     <script>
-        // Declaramos la función de actualización
+        
         function updatePreview() {
-            // 1. Obtener valores de los inputs
             var titulo = document.getElementById('Titulo').value;
-            var urlImagen = document.getElementById('UrlImagen').value;
-            
-            // 2. Obtener contenido de TinyMCE (manera segura)
+            var urlImagen = document.getElementById('UrlImagen').value; 
             var contenido = '';
+            
             if (tinymce.get('Contenido')) {
+
+                tinymce.get('Contenido').save(); 
+                
                 contenido = tinymce.get('Contenido').getContent();
             }
 
-            // 3. Actualizar elementos de previsualización
             document.getElementById('preview-titulo').textContent = titulo || 'Tu título aparecerá aquí...';
             document.getElementById('preview-contenido').innerHTML = contenido || '<p>Tu contenido aparecerá aquí...</p>';
             
-            // 4. Lógica para la imagen (con fallback)
             const previewImg = document.getElementById('preview-imagen');
             const placeholderImg = 'https://via.placeholder.com/600x200?text=Previsualización';
             
             if (urlImagen && urlImagen.startsWith('http')) {
                 previewImg.src = urlImagen;
-                previewImg.onerror = function() { // Si la URL es mala, vuelve al placeholder
-                    this.src = placeholderImg; 
-                };
+                previewImg.onerror = function() { this.src = placeholderImg; };
             } else {
                 previewImg.src = placeholderImg;
             }
         }
 
-        // 3. Inicializa TinyMCE
         tinymce.init({
             selector: 'textarea#Contenido',
             plugins: 'code table lists image link media',
@@ -158,21 +403,95 @@
                       bullist numlist outdent indent | removeformat | \
                       image link media | code',
             menubar: false,
-            language: 'es_MX',
-            
-            // Conecta TinyMCE a la función de previsualización
+            language: 'es',
             setup: function(editor) {
                 editor.on('keyup change input', function() {
+                    // Ahora, cada vez que escribes, actualizas la preview Y
+                    // guardas el contenido en el <textarea> para el validador.
                     updatePreview();
                 });
             }
         });
 
-        // 4. Conecta los otros inputs (Titulo y UrlImagen) a la previsualización
         document.addEventListener('DOMContentLoaded', function() {
-            // Asegúrate de que los IDs coincidan con los generados por asp-for
+            
+            // --- 1. CÓDIGO DE PREVISUALIZACIÓN ---
             const inputTitulo = document.getElementById('Titulo');
-            const inputUrlImagen = document.getElementById('UrlImagen');
+            const btnGenerar = document.getElementById('btn-generar-ia');
+            const inputUrlImagen = document.getElementById('UrlImagen'); 
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const btnSugerirEtiquetas = document.getElementById('btn-sugerir-etiquetas');
+
+            const contenedorEtiquetas = document.getElementById('contenedor-etiquetas-sugeridas');
+    
+         
+            if (btnSugerirEtiquetas) {
+                btnSugerirEtiquetas.addEventListener('click', async function() {
+                    
+                    const titulo = inputTitulo.value;
+                    const contenido = tinymce.get('Contenido').getContent(); // Obtenemos el HTML
+
+                    if (!titulo || !contenido) {
+                        alert('Por favor, escribe un título y algo de contenido primero.');
+                        return;
+                    }
+
+                    // 1. Mostrar estado de carga
+                    this.disabled = true;
+                    this.innerHTML = "Analizando...";
+                    contenedorEtiquetas.innerHTML = ''; // Limpiar resultados anteriores
+
+                    // 2. Preparar datos (Usamos FormData porque el contenido puede ser largo)
+                    const formData = new FormData();
+                    formData.append('titulo', titulo);
+                    formData.append('contenido', contenido);
+
+                    try {
+                        const response = await fetch('/Noticias/SugerirEtiquetas', {
+                            method: 'POST',
+                            headers: {
+                                // NO 'Content-Type', fetch lo pone solo con FormData
+                                'RequestVerificationToken': token
+                            },
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Éxito: data.etiquetas es "Perros, Salud, Comida"
+                            document.getElementById('tags-input-field').value = data.etiquetas;
+                            const etiquetasArray = data.etiquetas.split(',');
+                            
+                            if (etiquetasArray.length > 0) {
+                                // Creamos las "píldoras"
+                                etiquetasArray.forEach(tag => {
+                                    const tagLimpio = tag.trim(); // Quitar espacios
+                                    if (tagLimpio) {
+                                        const pill = document.createElement('span');
+                                        pill.className = 'etiqueta-pill';
+                                        pill.textContent = tagLimpio;
+                                        contenedorEtiquetas.appendChild(pill);
+                                    }
+                                });
+                            } else {
+                                contenedorEtiquetas.innerHTML = '<p>No se sugirieron etiquetas.</p>';
+                            }
+                        } else {
+                            // Error devuelto por el controlador
+                            alert('Error: ' + data.message);
+                        }
+
+                    } catch (error) {
+                        console.error('Error al sugerir etiquetas:', error);
+                        alert('Error de conexión al sugerir etiquetas.');
+                    } finally {
+                        // 3. Restaurar botón
+                        this.disabled = false;
+                        this.innerHTML = '<span class="material-symbols-outlined">label</span> Sugerir Etiquetas (IA)';
+                    }
+                });
+            }
 
             if (inputTitulo) {
                 inputTitulo.addEventListener('input', updatePreview);
@@ -180,9 +499,140 @@
             if (inputUrlImagen) {
                 inputUrlImagen.addEventListener('input', updatePreview);
             }
+            if (btnGenerar) {
+                btnGenerar.addEventListener('click', async function() {
+                    const titulo = inputTitulo.value;
+                    if (!titulo) {
+                        alert('Por favor, escribe un título primero.');
+                        return;
+                    }
+
+                    // Muestra que está cargando
+                    this.disabled = true;
+                    this.innerHTML = "Generando...";
+
+                    try {
+                        const response = await fetch('/Noticias/GenerarBorrador', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'RequestVerificationToken': token
+                            },
+                            body: `titulo=${encodeURIComponent(titulo)}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Pega el texto generado por la IA en el editor TinyMCE
+                            tinymce.get('Contenido').setContent(data.borrador);
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error al generar borrador:', error);
+                        alert('Error de conexión con el servicio de IA.');
+                    } finally {
+                        // Vuelve a habilitar el botón
+                        this.disabled = false;
+                        this.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: middle; margin-right: 5px;">auto_awesome</span> Sugerir borrador con IA';
+                    }
+                });
+            }
             
-            // Llama una vez al cargar (después de un breve retraso para que TinyMCE cargue)
             setTimeout(updatePreview, 500); 
+
+            
+            // --- 2. CÓDIGO DEL MODAL DE UNSPLASH ---
+            const modal = document.getElementById('modal-unsplash');
+            const btnAbrirModal = document.getElementById('btn-abrir-modal-unsplash');
+            const btnCerrarModal = document.getElementById('btn-cerrar-modal-unsplash');
+            const btnBuscarUnsplash = document.getElementById('btn-buscar-unsplash');
+            const inputBusquedaUnsplash = document.getElementById('input-busqueda-unsplash');
+            const gridResultados = document.getElementById('grid-resultados-unsplash');
+            const spinner = document.getElementById('spinner-unsplash');
+            const urlImagenInputPrincipal = document.getElementById('UrlImagen');
+
+            function abrirModal() {
+                if(modal) modal.style.display = 'flex';
+            }
+            function cerrarModal() {
+                if(modal) modal.style.display = 'none';
+            }
+
+            if(btnAbrirModal) btnAbrirModal.addEventListener('click', abrirModal);
+            if(btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModal);
+
+            if(modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        cerrarModal();
+                    }
+                });
+            }
+
+            async function realizarBusqueda() {
+                const query = inputBusquedaUnsplash.value.trim();
+                if (!query) {
+                    alert('Escribe algo para buscar');
+                    return;
+                }
+                spinner.style.display = 'block';
+                gridResultados.innerHTML = '';
+                try {
+                    const response = await fetch(`/Noticias/BuscarFotosUnsplash?q=${encodeURIComponent(query)}`);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Error: ${response.status}`);
+                    }
+                    const fotos = await response.json();
+                    if (fotos.length === 0) {
+                        gridResultados.innerHTML = '<p>No se encontraron fotos.</p>';
+                    }
+                    fotos.forEach(foto => {
+                        const img = document.createElement('img');
+                        img.src = foto.urlPequena;
+                        img.alt = `Foto por ${foto.autor}`;
+                        img.className = 'foto-unsplash';
+                        img.dataset.urlRegular = foto.urlRegular; 
+                        img.addEventListener('click', function() {
+                            if(urlImagenInputPrincipal) {
+                                urlImagenInputPrincipal.value = this.dataset.urlRegular;
+                                urlImagenInputPrincipal.dispatchEvent(new Event('input'));
+                            }
+                            cerrarModal();
+                        });
+                        gridResultados.appendChild(img);
+                    });
+                } catch (error) {
+                    gridResultados.innerHTML = `<p style="color: red;">${error.message}</p>`;
+                    console.error('Error al buscar fotos:', error);
+                } finally {
+                    spinner.style.display = 'none';
+                }
+            }
+
+            if(btnBuscarUnsplash) btnBuscarUnsplash.addEventListener('click', realizarBusqueda);
+            
+            if(inputBusquedaUnsplash) {
+                inputBusquedaUnsplash.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        realizarBusqueda();
+                    }
+                });
+            }
+
+            // ✅ ¡AQUÍ ESTÁ LA LÍNEA MÁGICA! (Parte 2)
+            // Esto es un seguro extra. Justo antes de que el formulario
+            // intente enviarse (al hacer clic en confirmar),
+            // fuerza un último guardado de TinyMCE.
+            const form = document.querySelector('form[asp-action="Crear"]');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    tinymce.triggerSave();
+                });
+            }
         });
     </script>
+    
 }

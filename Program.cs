@@ -69,12 +69,15 @@ builder.Services.AddScoped<AnimalApiService>();
 // Configuración de Google Maps API Key
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
+builder.Services.AddHttpClient<PerspectiveService>();
 
-
+builder.Services.AddSignalR();
+builder.Services.AddScoped<GeminiService>();
 // ------------------------------------
 // --- CONSTRUCCIÓN DE LA APP ---
 // ------------------------------------
 
+builder.Services.AddHttpClient();
 var app = builder.Build();
 
 
@@ -138,6 +141,7 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
+app.MapHub<PetConnect.Hubs.ComentarioHub>("/comentarioHub");
 
 // 5. Mapeo de Endpoints
 app.MapControllerRoute(

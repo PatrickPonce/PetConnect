@@ -10,8 +10,29 @@
 
 <style>
     .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .admin-header h1 { color: #ff8fab; }
+    .admin-header h1 { color: #F7E6E3; }
+    
+    /* */
+    .admin-header-actions {
+        display: flex;
+        gap: 1rem; /* Espacio entre los botones */
+    }
+
     .btn-crear { background-color: #72626e; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold; }
+    
+    /* */
+    .btn-importar {
+        background-color: #748675; 
+        color: white; 
+        padding: 0.8rem 1.5rem; 
+        text-decoration: none; 
+        border-radius: 8px; 
+        font-weight: bold;
+    }
+    .btn-importar:hover {
+        background-color: #5E6B5F;
+    }
+
     .news-cards-wrapper { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; }
     .noticia-card { background-color: #FFE2E2; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 300px; }
     .noticia-imagen { width: 100%; height: 200px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px; }
@@ -23,26 +44,24 @@
     .btn-leer-mas-admin { background-color: #a0a0a0; }
     .btn-editar-admin { background-color: #8B8B8B; }
     .btn-eliminar-admin { background-color: #d67a7a; }
-    /* Estilo para la tarjeta cuando está fijada */
     .noticia-card.fijada {
-        border: 3px solid #ff8fab; /* Borde rosa para destacar */
-        background-color: #fffafb; /* Fondo ligeramente rosado */
+        border: 3px solid #ff8fab; 
+        background-color: #fffafb; 
     }
-
-    /* Estilo para el nuevo botón */
     .btn-fijar-admin {
-        background-color: #6c757d; /* Gris */
+        background-color: #6c757d; 
     }
-
-    /* Estilo del botón cuando SÍ está fijada */
     .noticia-card.fijada .btn-fijar-admin {
-        background-color: #ff8fab; /* Rosa */
+        background-color: #ff8fab; 
     }
 </style>
 
 <div class="admin-header">
     <h1>Gestión de Noticias</h1>
-    <a asp-action="Crear" class="btn-crear">Crear</a>
+    <div class="admin-header-actions">
+        <a asp-action="Importar" class="btn-importar">Importar Noticias</a>
+        <a asp-action="Crear" class="btn-crear">Crear</a>
+    </div>
 </div>
 
 @Html.AntiForgeryToken()
@@ -61,7 +80,7 @@
                         <span class="material-symbols-outlined" style="vertical-align: middle;">push_pin</span>
                         Fijar
                     </a>
-                    </div>
+                </div>
             </div>
         </div>
     }

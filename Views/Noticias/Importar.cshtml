@@ -1,0 +1,215 @@
+@{
+    ViewData["Title"] = "Importar Noticias";
+    Layout = "_AdminLayout"; // O tu layout de Admin
+}
+<style>
+    /* ✅ NUEVO: El contenedor principal que centra todo */
+    .importar-container {
+        max-width: 900px;
+        margin: 0 auto; /* Centra el bloque */
+    }
+
+    /* 💅 Estilos para la barra de búsqueda (AHORA FUNCIONARÁ) */
+    .barra-busqueda {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 2rem;
+        /* Ya no necesita max-width ni margin, el padre lo controla */
+    }
+    #termino-busqueda {
+        flex-grow: 1; /* Crecerá para llenar el espacio */
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+    #btn-buscar {
+        padding: 10px 20px;
+        background-color: #5a5a5a;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    #btn-buscar:hover {
+        background-color: #444;
+    }
+
+    /* 💅 Estilos para el Spinner de Carga */
+    #loading-spinner {
+        display: none; 
+        text-align: center;
+        padding: 2rem;
+    }
+    .spinner-loader {
+        border: 4px solid #f3f3f3; 
+        border-top: 4px solid #5a5a5a; 
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+    }
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* --- ✅ CSS CORRECTO PARA LAS TARJETAS --- */
+
+    .resultado-articulo {
+        display: flex; 
+        align-items: center;
+        background-color: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        overflow: hidden; 
+        /* max-height: 220px; <-- Eliminamos esta línea para que pueda crecer */
+    }
+    .resultado-imagen {
+        flex-basis: 350px; /* <-- MÁS ANCHO (antes 300px) */
+        flex-shrink: 0;
+        align-self: stretch;
+    }
+    .resultado-imagen img {
+        width: 100%;
+        height: 100%; 
+        object-fit: cover; 
+        display: block;
+    }
+    .resultado-contenido {
+        flex-grow: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; 
+        /* min-height: 190px; <-- Eliminamos esto para que sea flexible */
+    }
+    .resultado-titulo {
+        font-size: 1.15rem;
+        font-weight: bold;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.3;
+    }
+    .resultado-descripcion {
+        font-size: 0.95rem; 
+        color: #444;
+        line-height: 1.5; 
+        flex-grow: 1; 
+        margin-bottom: 1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 4; /* <-- MÁS TEXTO (antes 2) */
+        -webkit-box-orient: vertical;
+    }
+    .resultado-fuente {
+        font-size: 0.8rem;
+        color: #777;
+        margin-bottom: 1rem;
+    }
+    .btn-importar {
+        display: inline-block;
+        padding: 10px 15px;
+        background-color: #748675; 
+        color: white !important; 
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+        max-width: 200px;
+    }
+    .btn-importar:hover {
+        background-color: #5E6B5F; 
+    }
+
+</style>
+<div class="importar-container">
+
+    <h2><span class="material-symbols-outlined">download</span> Importar Noticias</h2>
+    <p>Busca artículos de la web y créalos como borradores en tu sitio con un solo clic.</p>
+
+    <div class="barra-busqueda">
+        <input type="text" id="termino-busqueda" class="form-control" placeholder="Ej: salud perros">
+        <button id="btn-buscar" class="btn btn-primary">Buscar</button>
+    </div>
+    
+    <div id="loading-spinner">
+        <div class="spinner-loader"></div>
+        <p>Buscando...</p>
+    </div>
+
+    <div id="lista-resultados"></div>
+
+</div>
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnBuscar = document.getElementById('btn-buscar');
+    const inputBusqueda = document.getElementById('termino-busqueda');
+    const listaResultados = document.getElementById('lista-resultados');
+    const loadingSpinner = document.getElementById('loading-spinner');
+
+    btnBuscar.addEventListener('click', async function() {
+        const query = inputBusqueda.value.trim();
+        if (!query) {
+            alert('Por favor, escribe un término de búsqueda.');
+            return;
+        }
+
+        listaResultados.innerHTML = '';
+        loadingSpinner.style.display = 'block';
+
+        try {
+            // 1. Llama a NUESTRA API interna, no a GNews
+            const response = await fetch(`/Noticias/BuscarNoticiasGNews?q=${encodeURIComponent(query)}`);
+            
+            loadingSpinner.style.display = 'none';
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error: ${response.status}`);
+            }
+
+            const articulos = await response.json();
+
+            if (articulos.length === 0) {
+                listaResultados.innerHTML = '<p>No se encontraron artículos para esa búsqueda.</p>';
+                return;
+            }
+
+            // 2. Dibuja cada artículo
+            articulos.forEach(articulo => {
+                const articleHtml = `
+                    <div class="resultado-articulo">
+                        <div class="resultado-imagen">
+                            <img src="${articulo.image}" alt="Imagen de la noticia">
+                        </div>
+                        <div class="resultado-contenido">
+                            <h5 class="resultado-titulo">${articulo.title}</h5>
+                            <p class="resultado-descripcion">${articulo.description}</p>
+                            <p class="resultado-fuente">Fuente: ${articulo.source.name}</p>
+                            
+                            <a href="/Noticias/Crear?titulo=${encodeURIComponent(articulo.title)}&urlImagen=${encodeURIComponent(articulo.image)}&contenido=${encodeURIComponent(articulo.description + `<p><br><strong>Fuente: <a href='${articulo.url}' target='_blank'>Leer artículo completo en ${articulo.source.name}</a></strong></p>`)}"
+                               target="_blank" 
+                               class="btn-importar">
+                                Importar como Borrador
+                            </a>
+                        </div>
+                    </div>
+                `;
+                listaResultados.insertAdjacentHTML('beforeend', articleHtml);
+            });
+
+        } catch (error) {
+            loadingSpinner.style.display = 'none';
+            listaResultados.innerHTML = `<p style="color: red;">${error.message}</p>`;
+            console.error('Error al buscar noticias:', error);
+        }
+    });
+});
+</script>
+}

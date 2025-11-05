@@ -23,19 +23,21 @@ public class NoticiasController : Controller
     private readonly IHubContext<ComentarioHub> _hubContext;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly GeminiService _geminiService;
 
     public NoticiasController(ApplicationDbContext context, 
                               UserManager<IdentityUser> userManager, 
                               SignInManager<IdentityUser> signInManager,PerspectiveService perspectiveService,
-                              IHubContext<ComentarioHub> hubContext,IHttpClientFactory httpClientFactory,IConfiguration configuration) 
+                              IHubContext<ComentarioHub> hubContext,IHttpClientFactory httpClientFactory,IConfiguration configuration,GeminiService geminiService) 
     {
         _context = context;
         _userManager = userManager;
         _signInManager = signInManager;
         _perspectiveService = perspectiveService;
         _hubContext = hubContext;
-        _httpClientFactory = httpClientFactory; 
+        _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _geminiService = geminiService;
     }
 
  
@@ -651,11 +653,11 @@ public class NoticiasController : Controller
         // orientation=landscape (solo fotos horizontales)
         // per_page=12 (trae 12 fotos)
         string url = $"https://api.unsplash.com/search/photos?query={Uri.EscapeDataString(q)}&orientation=landscape&per_page=12";
-        
+
         var cliente = _httpClientFactory.CreateClient();
-        
+
         // 3. Unsplash REQUIERE que te identifiques en la cabecera (Header)
-        cliente.DefaultRequestHeaders.Authorization = 
+        cliente.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Client-ID", accessKey);
 
         try
@@ -669,7 +671,8 @@ public class NoticiasController : Controller
             }
 
             // 5. Devuelve solo los datos que necesitamos (para no enviar tanta info)
-            var fotosSimples = respuesta.Results.Select(foto => new {
+            var fotosSimples = respuesta.Results.Select(foto => new
+            {
                 id = foto.Id,
                 urlPequena = foto.Urls.Small, // Para la miniatura
                 urlRegular = foto.Urls.Regular, // Para la noticia
@@ -681,6 +684,62 @@ public class NoticiasController : Controller
         catch (HttpRequestException ex)
         {
             return StatusCode(502, new { message = $"Error al llamar a la API de Unsplash: {ex.Message}" });
+        }
+    }
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerarBorrador([FromForm] string titulo)
+    {
+        if (string.IsNullOrWhiteSpace(titulo))
+        {
+            return Json(new { success = false, message = "El título no puede estar vacío." });
+        }
+
+        // Llama al servicio de IA
+        string borradorHtml = await _geminiService.GenerarBorradorDeNoticia(titulo);
+
+        return Json(new { success = true, borrador = borradorHtml });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> VerModelos()
+    {
+        // 1. Obtiene la clave de API (la misma que usa GenerarArticulo)
+        string apiKey = _configuration["Gemini:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            // Si no la encuentra, te avisa.
+            return Content("Error: Clave de API de Gemini no configurada en secrets.json.");
+        }
+
+        // 2. Esta es la URL para "Listar Modelos"
+       // 3. Prepara la URL y el cliente (Usando el modelo de tu lista)
+        // 3. Prepara la URL y el cliente (Usando el modelo de TU lista)
+       // ✅ URL CORRECTA PARA LISTAR MODELOS
+        string url = $"https://generativelanguage.googleapis.com/v1beta/models?key={apiKey}";
+        var cliente = _httpClientFactory.CreateClient();
+
+        try
+        {
+            // 3. Llama a la API (es una petición GET)
+            var httpResponse = await cliente.GetAsync(url);
+            var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                // ¡ESTO ES LO IMPORTANTE!
+                // Si la clave es mala o la API no está habilitada, LO VEREMOS AQUÍ.
+                return Content($"ERROR AL LISTAR MODELOS: {jsonResponse}");
+            }
+
+            // 4. Si todo sale bien, te mostrará la lista de modelos como JSON
+            return Content(jsonResponse, "application/json");
+        }
+        catch (Exception ex)
+        {
+            return Content($"Error de C#: {ex.Message}");
         }
     }
         

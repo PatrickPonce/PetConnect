@@ -75,6 +75,7 @@ builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey }
 builder.Services.AddHttpClient<PerspectiveService>();
 
 builder.Services.AddSignalR();
+builder.Services.AddScoped<GeminiService>();
 // ------------------------------------
 // --- CONSTRUCCIÓN DE LA APP ---
 // ------------------------------------

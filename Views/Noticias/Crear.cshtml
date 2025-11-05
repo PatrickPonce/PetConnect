@@ -189,6 +189,68 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+    /* --- ESTILOS PARA EL BOTÓN DE IA --- */
+    /* --- ESTILOS PARA EL CONTENEDOR DEL EDITOR Y EL BOTÓN DE IA --- */
+    .editor-ai-container {
+        display: flex; /* Permite que los elementos se coloquen en línea */
+        justify-content: space-between; /* Distribuye el espacio entre elementos */
+        align-items: center; /* Centra verticalmente */
+        margin-bottom: 0.5rem; /* Espacio antes del editor */
+        gap: 1rem; /* Espacio entre el label y el botón */
+    }
+
+    /* --- ESTILOS PARA EL BOTÓN DE IA --- */
+    #btn-generar-ia {
+        background-color: #f0f0f0; /* Un gris claro, como el botón "Cancelar" de tu modal */
+        color: #5a4b56; /* Texto oscuro, como tus labels */
+        border: 1px solid #ccc;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex; /* Para alinear el ícono y el texto */
+        align-items: center;
+        gap: 8px; /* Espacio entre ícono y texto */
+        white-space: nowrap; /* Evita que el texto se rompa */
+        
+        /* Eliminamos las propiedades de posicionamiento flotante/absoluto */
+        /* float: right; */ 
+        /* margin-bottom: 5px; */
+        /* position: relative; */ 
+        /* z-index: 100; */
+    }
+
+    #btn-generar-ia:hover {
+        background-color: #e0e0e0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+    }
+
+    /* Estilo para el ícono dentro del botón */
+    #btn-generar-ia .material-symbols-outlined {
+        font-size: 1.2rem;
+        vertical-align: middle;
+    }
+
+    /* Estilo cuando está cargando (deshabilitado) */
+    #btn-generar-ia:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Ajustar el margin-bottom para el form-group del contenido */
+    /* Asegúrate de que no haya un margin-bottom en .form-control que interfiera */
+    .form-group {
+        margin-bottom: 1.5rem; /* Mantén esto */
+    }
+    .form-group label {
+        margin-bottom: 0.5rem; /* Esto está bien */
+    }
 </style>
 
 <div class="admin-container">
@@ -219,12 +281,20 @@
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Contenido" class="control-label"></label>
+                    <div class="editor-ai-container">
+                        <label asp-for="Contenido" class="control-label" style="margin-bottom: 0;"></label>
+                        
+                        <button type="button" id="btn-generar-ia">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                            Sugerir borrador con IA
+                        </button>
+                    </div>
+                    
                     <textarea asp-for="Contenido" class="form-control"></textarea>
+                    
                     <span asp-validation-for="Contenido" class="text-danger"></span>
                 </div>
-                
-
+                                
                 <div class="button-group">
                     <button type="submit" class="btn-confirmar">Confirmar</button>
                     <a asp-action="Administrador" class="btn-cancelar">Cancelar</a>
@@ -279,8 +349,7 @@
             var contenido = '';
             
             if (tinymce.get('Contenido')) {
-                // ✅ ¡AQUÍ ESTÁ LA LÍNEA MÁGICA! (Parte 1)
-                // Esto fuerza a TinyMCE a copiar su contenido al <textarea> oculto
+
                 tinymce.get('Contenido').save(); 
                 
                 contenido = tinymce.get('Contenido').getContent();
@@ -322,13 +391,55 @@
             
             // --- 1. CÓDIGO DE PREVISUALIZACIÓN ---
             const inputTitulo = document.getElementById('Titulo');
+            const btnGenerar = document.getElementById('btn-generar-ia');
             const inputUrlImagen = document.getElementById('UrlImagen'); 
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
             if (inputTitulo) {
                 inputTitulo.addEventListener('input', updatePreview);
             }
             if (inputUrlImagen) {
                 inputUrlImagen.addEventListener('input', updatePreview);
+            }
+            if (btnGenerar) {
+                btnGenerar.addEventListener('click', async function() {
+                    const titulo = inputTitulo.value;
+                    if (!titulo) {
+                        alert('Por favor, escribe un título primero.');
+                        return;
+                    }
+
+                    // Muestra que está cargando
+                    this.disabled = true;
+                    this.innerHTML = "Generando...";
+
+                    try {
+                        const response = await fetch('/Noticias/GenerarBorrador', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'RequestVerificationToken': token
+                            },
+                            body: `titulo=${encodeURIComponent(titulo)}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Pega el texto generado por la IA en el editor TinyMCE
+                            tinymce.get('Contenido').setContent(data.borrador);
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error al generar borrador:', error);
+                        alert('Error de conexión con el servicio de IA.');
+                    } finally {
+                        // Vuelve a habilitar el botón
+                        this.disabled = false;
+                        this.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: middle; margin-right: 5px;">auto_awesome</span> Sugerir borrador con IA';
+                    }
+                });
             }
             
             setTimeout(updatePreview, 500); 
@@ -425,4 +536,5 @@
             }
         });
     </script>
+    
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using PetConnect.Models;
 using System.ComponentModel.DataAnnotations;
 
+
 namespace PetConnect.Models
 {
     public class Noticia

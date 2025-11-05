@@ -425,7 +425,7 @@ public class NoticiasController : Controller
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Admin")]
     // Usamos [Bind] por seguridad, para que solo acepte los campos del formulario
-    public async Task<IActionResult> Crear([Bind("Titulo,UrlImagen,Contenido")] Noticia noticia)
+    public async Task<IActionResult> Crear([Bind("Titulo,UrlImagen,Contenido,Tags")] Noticia noticia)
     {
         // Verifica si el Título y Contenido (requeridos) están presentes
         if (ModelState.IsValid)
@@ -471,7 +471,7 @@ public class NoticiasController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Editar(int id, [Bind("Id,Titulo,Contenido,UrlImagen,FechaPublicacion")] Noticia noticia)
+    public async Task<IActionResult> Editar(int id, [Bind("Id,Titulo,Contenido,UrlImagen,FechaPublicacion,Tags")] Noticia noticia)
     {
         if (id != noticia.Id)
         {
@@ -713,11 +713,7 @@ public class NoticiasController : Controller
             // Si no la encuentra, te avisa.
             return Content("Error: Clave de API de Gemini no configurada en secrets.json.");
         }
-
-        // 2. Esta es la URL para "Listar Modelos"
-       // 3. Prepara la URL y el cliente (Usando el modelo de tu lista)
-        // 3. Prepara la URL y el cliente (Usando el modelo de TU lista)
-       // ✅ URL CORRECTA PARA LISTAR MODELOS
+        // ✅ URL CORRECTA PARA LISTAR MODELOS
         string url = $"https://generativelanguage.googleapis.com/v1beta/models?key={apiKey}";
         var cliente = _httpClientFactory.CreateClient();
 
@@ -729,8 +725,7 @@ public class NoticiasController : Controller
 
             if (!httpResponse.IsSuccessStatusCode)
             {
-                // ¡ESTO ES LO IMPORTANTE!
-                // Si la clave es mala o la API no está habilitada, LO VEREMOS AQUÍ.
+
                 return Content($"ERROR AL LISTAR MODELOS: {jsonResponse}");
             }
 
@@ -740,6 +735,49 @@ public class NoticiasController : Controller
         catch (Exception ex)
         {
             return Content($"Error de C#: {ex.Message}");
+        }
+    }
+    // Pega este método NUEVO en NoticiasController.cs
+// ¡Asegúrate de tener "using System.Text.RegularExpressions;" al inicio de tu archivo!
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken] // El token es importante
+    public async Task<IActionResult> SugerirEtiquetas([FromForm] string titulo, [FromForm] string contenido)
+    {
+        if (string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(contenido))
+        {
+            return Json(new { success = false, message = "El título y el contenido son necesarios." });
+        }
+
+        // 1. Limpiamos el HTML del contenido para enviar texto limpio a la IA
+        // Esto ahorra tokens y mejora la precisión.
+        string contenidoLimpio = Regex.Replace(contenido, "<.*?>", String.Empty);
+        
+        // 2. Comprobamos que no esté vacío después de limpiar
+        if (string.IsNullOrWhiteSpace(contenidoLimpio) || contenidoLimpio.Length < 50)
+        {
+            return Json(new { success = false, message = "El contenido es muy corto para generar etiquetas." });
+        }
+
+        try
+        {
+            // 3. Llamamos al NUEVO método del servicio
+            string etiquetasRespuesta = await _geminiService.GenerarEtiquetas(titulo, contenidoLimpio);
+
+            // 4. Verificamos si la respuesta del servicio es un error
+            if (etiquetasRespuesta.StartsWith("Error:"))
+            {
+                return Json(new { success = false, message = etiquetasRespuesta });
+            }
+
+            // 5. ¡Éxito! Devolvemos la lista de etiquetas
+            return Json(new { success = true, etiquetas = etiquetasRespuesta });
+        }
+        catch (Exception ex)
+        {
+            // Error general del servidor
+            return Json(new { success = false, message = $"Error interno del servidor: {ex.Message}" });
         }
     }
         

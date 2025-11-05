@@ -8,49 +8,171 @@
 <style>
     
     body { background-color: #FFFDEC; font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
-    .noticia-wrapper { display: flex; justify-content: center; align-items: flex-start; padding: 2rem; gap: 3rem; background-color: #748675; border-bottom: 2px solid #ddd; }
-    .noticia-info { flex: 1; max-width: 500px; display: flex; flex-direction: column; justify-content: center; position: relative; padding-right: 70px; }
-    .breadcrumbs { margin-bottom: 1.5rem; font-size: 0.9rem; }
-    .breadcrumbs a { text-decoration: none; }
-    .noticia-titulo { font-size: 3rem; font-weight: 700; color: #FFFDEC; line-height: 1.2; margin-bottom: 1rem; }
-    .noticia-fecha { font-size: 1rem; color: #FFFDEC; margin-top: 0; }
-    .noticia-imagen-container { flex: 1.5; max-width: 600px; }
-    .noticia-imagen { width: 100%; height: auto; object-fit: cover; border-radius: 12px; }
-    .contenido-principal { max-width: 900px; margin: 2rem auto; padding: 2rem; background-color: #FFFDEC; border-radius: 12px; }
-    .noticia-parrafo p { font-size: 1.1rem; line-height: 1.5; color: #444; }
-  
-    .noticia-parrafo ul,
-    .noticia-parrafo ol {
-        line-height: 1.5;     
-        margin-top: 0.5rem;     
-        margin-bottom: 1rem;    
-        padding-left: 1.5rem;   
+
+    /* --- INICIO: NUEVOS ESTILOS DE LAYOUT (2 COLUMNAS) --- */
+    
+    .detalle-layout-flex {
+        display: flex;
+        flex-wrap: wrap; /* Para responsiveness en móviles */
+        max-width: 1200px; /* Ancho total del blog */
+        margin: 2rem auto; /* Centra el layout en la página */
+        gap: 3rem; /* Espacio entre el contenido y el sidebar */
     }
 
-   
-    .noticia-parrafo li {
-        margin-bottom: 0.25rem; 
+    .columna-sidebar {
+        flex: 0 1 300px; /* Base de 300px, no crece, se encoge si es necesario */
     }
 
-    .noticia-parrafo h2,
-    .noticia-parrafo h3 {
-        margin-top: 1.5rem;     
-        margin-bottom: 0.5rem;  
+    /* Estilo de "Caja" para el contenido del sidebar */
+    .widget-sidebar {
+        background-color: #fff6f6; /* Tu color rosa pálido */
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Sombra suave */
+    }
+    .widget-sidebar h3 {
+        color: #d67a7a; /* Tu color de título */
+        border-bottom: 2px solid #f0e0e0;
+        padding-bottom: 10px;
+        margin-top: 0;
+        font-size: 1.4rem;
+    }
+    .widget-sidebar ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+    .widget-sidebar ul li {
+        margin-bottom: 10px;
+        border-bottom: 1px dashed #ddd;
+        padding-bottom: 10px;
+    }
+    .widget-sidebar ul li:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .widget-sidebar ul li a {
+        text-decoration: none;
+        color: #5a4b56; /* Tu color de texto */
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .widget-sidebar ul li a:hover {
+        color: #d67a7a;
+    }
+
+    /* --- FIN: NUEVOS ESTILOS DE LAYOUT --- */
+
+
+    /* --- INICIO: ESTILOS ANTIGUOS MODIFICADOS --- */
+
+    /* .noticia-wrapper y .noticia-info han sido ELIMINADOS */
+    
+    .breadcrumbs { 
+        margin-bottom: 1.5rem; 
+        font-size: 0.9rem; 
+    }
+    .breadcrumbs a { 
+        text-decoration: none; 
+        color: #748675; /* CAMBIADO: Color para fondo claro */
+    }
+    .breadcrumbs span { 
+        color: #aaa; /* CAMBIADO: Color para fondo claro */
+    }
+
+    .noticia-titulo {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #333; /* CAMBIADO: Color para fondo claro */
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .noticia-fecha {
+        font-size: 1rem;
+        color: #777; /* CAMBIADO: Color para fondo claro */
+        margin-top: 0;
+        margin-bottom: 1.5rem; /* AÑADIDO: Espacio debajo */
+    }
+
+    .noticia-imagen-container {
+        max-width: 100%; /* CAMBIADO: Ocupa todo el ancho de la columna */
+        margin-bottom: 2rem; /* AÑADIDO: Espacio debajo de la imagen */
+    }
+    
+    .noticia-imagen { 
+        width: 100%; 
+        height: auto; 
+        object-fit: cover; 
+        border-radius: 12px; 
+    }
+    
+    .contenido-principal {
+        /* MODIFICADO: Ahora es la columna principal de flexbox */
+        flex: 1;
+        min-width: 60%; /* Se asegura que sea más ancha que el sidebar */
+        margin: 0; /* Reseteado */
+        padding: 2rem;
+        background-color: #FFFDEC;
+        border-radius: 12px;
     }
 
     /* Estilos Botón Favorito */
-    .favorito-btn { position: absolute; top: 0; right: 0; background-color: #fce4e4; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: transform 0.2s, background-color 0.2s; }
+    .favorito-btn {
+        /* MODIFICADO: Posición cambiada de 'absolute' */
+        position: relative;
+        float: right; /* Lo alinea a la derecha */
+        margin-left: 1rem;
+        margin-bottom: 0.5rem;
+        background-color: #fce4e4;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s, background-color 0.2s;
+    }
     .favorito-btn:hover { background-color: #fce4e4; transform: scale(1.1); }
     .favorito-btn.activo { background-color: #ebadad; }
     
-    .noticia-info .favorito-btn > .material-symbols-outlined {
+    /* MODIFICADO: Selector arreglado (quitamos .noticia-info) */
+    .favorito-btn > .material-symbols-outlined {
         font-size: 28px;
         color: white; 
         transition: all 0.2s ease;
     }
-    .noticia-info .favorito-btn.activo > .material-symbols-outlined {
+    .favorito-btn.activo > .material-symbols-outlined {
         color: #e58f8f !important; /* Color relleno activo */
         transform: scale(1.1);
+    }
+
+    /* --- FIN: ESTILOS ANTIGUOS MODIFICADOS --- */
+
+
+    /* --- INICIO: ESTILOS ANTIGUOS (SIN CAMBIOS) --- */
+    /* (Párrafos, Comentarios, Modales, etc. se quedan igual) */
+
+    .noticia-parrafo p { font-size: 1.1rem; line-height: 1.5; color: #444; }
+    .noticia-parrafo ul,
+    .noticia-parrafo ol {
+        line-height: 1.5; 
+        margin-top: 0.5rem; 
+        margin-bottom: 1rem; 
+        padding-left: 1.5rem; 
+    }
+    .noticia-parrafo li {
+        margin-bottom: 0.25rem; 
+    }
+    .noticia-parrafo h2,
+    .noticia-parrafo h3 {
+        margin-top: 1.5rem; 
+        margin-bottom: 0.5rem; 
     }
 
     /* --- Estilos Comentarios --- */
@@ -95,7 +217,6 @@
         transform: translate(-50%, -50%); 
         z-index: 1000; 
         display: none; 
-        
     }
     .modal-contenido {
         background-color: #fefefe; 
@@ -107,7 +228,7 @@
         max-width: 450px;
         width: 90%;
         animation: fadeIn 0.3s ease-out;
-        pointer-events: auto; /
+        pointer-events: auto;
     }
     .close-button, .modal-cerrar-eliminar-comentario { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; font-weight: bold; cursor: pointer; color: #aaa; transition: color 0.2s; }
     .close-button:hover, .modal-cerrar-eliminar-comentario:hover { color: #5a4b56; }
@@ -125,7 +246,7 @@
     .btn-modal-cancelar { background-color: #f0f0f0; color: #555; border-color: #ddd; }
     .btn-modal-cancelar:hover { background-color: #e0e0e0; transform: translateY(-2px); }
 
-    /*  Estilos Íconos  */
+    /* Estilos Íconos */
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined' !important; 
       font-weight: normal;
@@ -141,15 +262,13 @@
       -webkit-font-feature-settings: 'liga';
       -webkit-font-smoothing: antialiased;
     }
-   
+    
     .btn-accion-comentario .material-symbols-outlined {
         font-size: 1.2rem;
     }
-   
-    .noticia-info .favorito-btn > .material-symbols-outlined {
-        font-size: 28px;
-    }
-   
+    
+    /* ELIMINÉ la definición duplicada de .noticia-info .favorito-btn... */
+    
     .comentario-texto.editando {
         display: none; 
     }
@@ -207,35 +326,31 @@
 
     .comentario-header {
         display: flex;
-        align-items: center; /* Alinea verticalmente la foto y el nombre */
+        align-items: center; 
         margin-bottom: 0.5rem;
-        gap: 10px; /* Espacio entre la foto y el nombre */
+        gap: 10px; 
     }
 
     .comentario-foto-perfil {
-        width: 40px;  /* Tamaño de la foto */
+        width: 40px; 
         height: 40px;
-        border-radius: 50%; /* La hace redonda */
-        object-fit: cover;  /* Evita que la imagen se deforme */
-        flex-shrink: 0;     /* Evita que la imagen se encoja */
+        border-radius: 50%; 
+        object-fit: cover; 
+        flex-shrink: 0; 
     }
 
     .comentario-autor {
         font-weight: bold;
         color: #555;
         margin-bottom: 0;
-        flex-grow: 1; /* Esto empuja las 'acciones' a la derecha */
+        flex-grow: 1; 
     }
     /* --- Estilos Mejorados para Modales --- */
     /* --- ESTILOS MEJORADOS (SOLO PARA EL MODAL DE ALERTA) --- */
 
-/* 1. Ocultar el modal por defecto */
     #modal-alerta-general {
         display: none; 
-        /* El resto de estilos (position, z-index, etc.) ya los tienes en .modal-overlay */
     }
-
-    /* 2. El contenedor blanco */
     #modal-alerta-general .modal-contenido {
         background-color: #fefefe;
         padding: 2.5rem;
@@ -246,27 +361,21 @@
         max-width: 450px;
         width: 90%;
     }
-
-    /* 3. El Título del modal (Rojo para error) */
     #modal-alerta-general #modal-alerta-titulo {
-        color: #d67a7a; /* Rojo para el error */
+        color: #d67a7a; 
         font-size: 1.5rem;
         font-weight: 700;
         margin-top: 0;
         margin-bottom: 1rem;
-        background-color: transparent; /* Asegura que no tenga fondo */
+        background-color: transparent; 
         padding: 0;
     }
-
-    /* 4. El Mensaje (con tu color de texto) */
     #modal-alerta-general #modal-alerta-mensaje {
         font-size: 1.1rem;
         margin-bottom: 2rem;
-        color: #5a4b56; /* Tu color de texto principal */
+        color: #5a4b56; 
         line-height: 1.5;
     }
-
-    /* 5. El botón 'X' de cerrar (Gris) */
     #modal-alerta-general .close-button {
         position: absolute;
         top: 15px;
@@ -274,37 +383,31 @@
         font-size: 1.8rem;
         font-weight: bold;
         cursor: pointer;
-        color: #aaa; /* Gris */
+        color: #aaa; 
         z-index: 10;
     }
     #modal-alerta-general .close-button:hover {
         color: #555;
     }
-
-    /* 6. El botón "Aceptar" (Verde) */
     #modal-alerta-general #btn-cerrar-alerta-general {
-        background-color: #748675; /* Tu verde principal */
+        background-color: #748675; 
         color: white;
         border: none;
         border-radius: 8px;
         font-weight: bold;
         font-size: 1rem;
         cursor: pointer;
-        padding: 12px 30px; /* Controla el tamaño con padding */
-        width: 150px; /* Ancho fijo */
+        padding: 12px 30px; 
+        width: 150px; 
         height: auto;
         transition: all 0.3s ease;
         line-height: 1.5;
-        flex: none; /* Evita que se estire */
+        flex: none; 
     }
-
-    /* 7. Hover del botón "Aceptar" */
     #modal-alerta-general #btn-cerrar-alerta-general:hover {
-        background-color: #5E6B5F; /* Verde oscuro */
+        background-color: #5E6B5F; 
         transform: translateY(-2px);
     }
-        
-    /* 8. Contenedor de botones para centrar el único botón */
     #modal-alerta-general .modal-botones-eliminar {
         justify-content: center;
     }
@@ -313,18 +416,42 @@
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    
+    /* --- Estilos para las Etiquetas en Detalle (SIN CAMBIOS) --- */
+    .tags-container-detalle {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px; 
+        margin-top: 1.5rem; 
+    }
+    .tag-pill-detalle {
+        background-color: #72626e; 
+        color: #FFFDEC; 
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none; 
+    }
+    .tag-pill-detalle:hover {
+        background-color: #5a4b56; 
+    }
+
+
 </style>
 
-<div class="noticia-wrapper">
-    <div class="noticia-info">
+<div class="detalle-layout-flex">
+
+    <div class="contenido-principal">
+        
         <div class="breadcrumbs">
-            <a href="@Url.Action("Index", "Home")" style="color: #FFFDEC;">Inicio</a> 
-            <span style="color: #FFFDEC;">»</span> 
-            <a href="@Url.Action("Index", "Noticias")" style="color: #FFFDEC;">Noticias</a>
-            <span style="color: #FFFDEC;">»</span>
+            <a href="@Url.Action("Index", "Home")">Inicio</a> 
+            <span>»</span> 
+            <a href="@Url.Action("Index", "Noticias")">Noticias</a>
+            <span>»</span>
             <span style="font-weight: bold; color: #d67a7a;">@Model.Titulo</span>
         </div>
-        
+
         @{
             bool esFavoritoInicial = ViewData["EsFavorito"] as bool? ?? false; 
         }
@@ -335,140 +462,148 @@
         </button>
 
         <h1 class="noticia-titulo">@Model.Titulo</h1>
+
         <p class="noticia-fecha">@Model.FechaPublicacion.ToShortDateString()</p>
-    </div>
-    <div class="noticia-imagen-container">
-        <img src="@Model.UrlImagen" alt="@Model.Titulo" class="noticia-imagen" />
-    </div>
-</div>
-
-<div class="contenido-principal">
-    @Html.AntiForgeryToken()
-    <article class="noticia-parrafo">
-        @Html.Raw(Model.Contenido)
-    </article>
-
-    <section class="comentarios-container">
-    <h3>Comentarios</h3>
-
-    <div id="lista-comentarios">
-        @if (Model.Comentarios != null && Model.Comentarios.Any())
+        
+        @if (!string.IsNullOrWhiteSpace(Model.Tags))
         {
-            @foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
-            {
-                bool puedeEditar = false;
-                bool authorMatch = false;
-                bool canEditTime = false;   
-                TimeSpan difference = TimeSpan.Zero;
-                string currentUsername = "No Logueado";
-
-                if (SignInManager.IsSignedIn(User))
+            <div class="tags-container-detalle" style="margin-bottom: 2rem;">
+                @foreach (var tag in Model.Tags.Split(','))
                 {
-                    currentUsername = User.Identity?.Name ?? string.Empty;
-                    if (currentUsername.Contains("@"))
+                    if (!string.IsNullOrWhiteSpace(tag))
                     {
-                        currentUsername = currentUsername.Split('@')[0];
-                    }
-                    
-                    authorMatch = currentUsername == comentario.Autor;
-                    
-                    if (authorMatch)
-                    {
-                        // --- INICIO DE LA CORRECCIÓN RAZOR ---
-                        // Asumimos que la fecha del comentario se guardó en UTC.
-                        var fechaComentarioUtc = comentario.FechaComentario;
-                        
-                        // Si EF no especificó el Kind, lo forzamos a UTC.
-                        if (fechaComentarioUtc.Kind == DateTimeKind.Unspecified)
-                        {
-                            fechaComentarioUtc = DateTime.SpecifyKind(fechaComentarioUtc, DateTimeKind.Utc);
-                        }
-
-                        // Ahora calculamos la diferencia con seguridad
-                        difference = DateTime.UtcNow - fechaComentarioUtc; 
-                        // --- FIN DE LA CORRECCIÓN RAZOR ---
-
-                        canEditTime = difference.TotalMinutes < 15 && difference.TotalMinutes >= 0;
-                        puedeEditar = canEditTime;
+                        <span class="tag-pill-detalle">@tag.Trim()</span>
                     }
                 }
-
-                <div class="comentario" data-comentario-id="@comentario.Id">
-                    <div class="comentario-header">
-
-                        <img class="comentario-foto-perfil" 
-                            src="@(comentario.AutorFotoUrl ?? "/images/avatars/default.png")" 
-                            alt="@comentario.Autor" />
-
-                        <p class="comentario-autor">@comentario.Autor</p>
-                        
-                        <div class="comentario-acciones">
-                            @if (puedeEditar)
-                            {
-                                <button class="btn-accion-comentario btn-editar-comentario" title="Editar comentario">
-                                    <span class="material-symbols-outlined">edit</span>
-                                </button>
-                            }
-
-                            @if (authorMatch) 
-                            {
-                                <button class="btn-accion-comentario btn-eliminar-comentario" title="Eliminar comentario">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                    <p class="comentario-texto">@comentario.Texto</p>
-                    <p class="comentario-fecha">
-                        <span data-utcdate="@comentario.FechaComentario.ToString("o")">cargando...</span>
-                    </p>
-                </div>
-            }
-           }
-        else
-        {
-            <p id="sin-comentarios-msg">No hay comentarios todavía. ¡Sé el primero!</p>
-        }
-    </div>
-    
-    <form id="form-agregar-comentario" class="form-comentario">
-        @Html.AntiForgeryToken() 
-        <input type="hidden" name="NoticiaId" value="@Model.Id" /> 
-        <label for="textoComentario">Deja un comentario</label>
-
-        @if (SignInManager.IsSignedIn(User))
-        {
-            <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" 
-                    placeholder="Escribe tu comentario... "></textarea>
-        }
-        else
-        {
-            <textarea id="textoComentario" name="TextoComentario" 
-                    placeholder="Inicia sesión para dejar un comentario..." disabled></textarea>
-        }
-        @if (SignInManager.IsSignedIn(User))
-        {
-            <button type="submit" class="btn-comentar">Comentar</button> 
-        }
-        else
-        {
-            <button type="button" class="btn-comentar" id="btn-abrir-login-modal" style="margin-top: 1rem;">Inicia sesión para comentar</button>
-        }
-    </form>
-    </section>
-
-    <div id="modal-confirmacion-eliminar-comentario" class="modal-confirmacion-eliminar">
-        <div class="modal-contenido">
-            <span class="modal-cerrar-eliminar-comentario">&times;</span>
-            <h3 class="modal-titulo-eliminar">Confirmar Eliminación</h3>
-            <p class="modal-mensaje-eliminar">¿Estás seguro de que deseas eliminar este comentario?</p>
-            <div class="modal-botones-eliminar">
-                <button id="btn-confirmar-eliminar-comentario" class="btn-modal-accion btn-modal-confirmar">Eliminar</button>
-                <button id="btn-cancelar-eliminar-comentario" class="btn-modal-accion btn-modal-cancelar">Cancelar</button>
             </div>
+        }
+
+        <div class="noticia-imagen-container">
+            <img src="@Model.UrlImagen" alt="@Model.Titulo" class="noticia-imagen" />
+        </div>
+
+        @Html.AntiForgeryToken()
+        <article class="noticia-parrafo">
+            @Html.Raw(Model.Contenido)
+        </article>
+
+        <section class="comentarios-container">
+            <h3>Comentarios</h3>
+
+            <div id="lista-comentarios">
+                @if (Model.Comentarios != null && Model.Comentarios.Any())
+                {
+                    @foreach (var comentario in Model.Comentarios.OrderByDescending(c => c.FechaComentario))
+                    {
+                        bool puedeEditar = false;
+                        bool authorMatch = false;
+                        bool canEditTime = false;   
+                        TimeSpan difference = TimeSpan.Zero;
+                        string currentUsername = "No Logueado";
+
+                        if (SignInManager.IsSignedIn(User))
+                        {
+                            currentUsername = User.Identity?.Name ?? string.Empty;
+                            if (currentUsername.Contains("@"))
+                            {
+                                currentUsername = currentUsername.Split('@')[0];
+                            }
+                            
+                            authorMatch = currentUsername == comentario.Autor;
+                            
+                            if (authorMatch)
+                            {
+                                var fechaComentarioUtc = comentario.FechaComentario;
+                                if (fechaComentarioUtc.Kind == DateTimeKind.Unspecified)
+                                {
+                                    fechaComentarioUtc = DateTime.SpecifyKind(fechaComentarioUtc, DateTimeKind.Utc);
+                                }
+                                difference = DateTime.UtcNow - fechaComentarioUtc; 
+                                canEditTime = difference.TotalMinutes < 15 && difference.TotalMinutes >= 0;
+                                puedeEditar = canEditTime;
+                            }
+                        }
+                        
+                        <div class="comentario" data-comentario-id="@comentario.Id">
+                            <div class="comentario-header">
+                                <img class="comentario-foto-perfil" 
+                                    src="@(comentario.AutorFotoUrl ?? "/images/avatars/default.png")" 
+                                    alt="@comentario.Autor" />
+                                <p class="comentario-autor">@comentario.Autor</p>
+                                <div class="comentario-acciones">
+                                    @if (puedeEditar)
+                                    {
+                                        <button class="btn-accion-comentario btn-editar-comentario" title="Editar comentario">
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </button>
+                                    }
+                                    @if (authorMatch) 
+                                    {
+                                        <button class="btn-accion-comentario btn-eliminar-comentario" title="Eliminar comentario">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <p class="comentario-texto">@comentario.Texto</p>
+                            <p class="comentario-fecha">
+                                <span data-utcdate="@comentario.FechaComentario.ToString("o")">cargando...</span>
+                            </p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p id="sin-comentarios-msg">No hay comentarios todavía. ¡Sé el primero!</p>
+                }
+            </div>
+            
+            <form id="form-agregar-comentario" class="form-comentario">
+                @Html.AntiForgeryToken() 
+                <input type="hidden" name="NoticiaId" value="@Model.Id" /> 
+                <label for="textoComentario">Deja un comentario</label>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" 
+                              placeholder="Escribe tu comentario... "></textarea>
+                }
+                else
+                {
+                    <textarea id="textoComentario" name="TextoComentario" 
+                              placeholder="Inicia sesión para dejar un comentario..." disabled></textarea>
+                }
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <button type="submit" class="btn-comentar">Comentar</button> 
+                }
+                else
+                {
+                    <button type="button" class="btn-comentar" id="btn-abrir-login-modal" style="margin-top: 1rem;">Inicia sesión para comentar</button>
+                }
+            </form>
+        </section> </div> <div class="columna-sidebar">
+        
+        <div class="widget-sidebar">
+            <h3>Otras Noticias</h3>
+            <ul>
+                <li><a href="#">¿Por qué los gatos duermen mucho?</a></li>
+                <li><a href="#">La importancia del paseo diario</a></li>
+                <li><a href="#">Cómo elegir el mejor alimento</a></li>
+            </ul>
+        </div>
+        
         </div>
     </div>
-
+<div id="modal-confirmacion-eliminar-comentario" class="modal-confirmacion-eliminar">
+    <div class="modal-contenido">
+        <span class="modal-cerrar-eliminar-comentario">&times;</span>
+        <h3 class="modal-titulo-eliminar">Confirmar Eliminación</h3>
+        <p class="modal-mensaje-eliminar">¿Estás seguro de que deseas eliminar este comentario?</p>
+        <div class="modal-botones-eliminar">
+            <button id="btn-confirmar-eliminar-comentario" class="btn-modal-accion btn-modal-confirmar">Eliminar</button>
+            <button id="btn-cancelar-eliminar-comentario" class="btn-modal-accion btn-modal-cancelar">Cancelar</button>
+        </div>
+    </div>
 </div>
 
 <div id="login-modal" class="modal-overlay">
@@ -478,12 +613,13 @@
              <h3>Acceso Requerido</h3>
              <p>¡Hola! Debes iniciar sesión o registrarte para comentar y guardar esta noticia en favoritos.</p>
              <div class="login-button-group">
-                 <a href="/Identity/Account/Login" class="login-button">Iniciar Sesión</a>
-                 <a href="/Identity/Account/Register" class="register-link">Registrarse</a>
+                  <a href="/Identity/Account/Login" class="login-button">Iniciar Sesión</a>
+                  <a href="/Identity/Account/Register" class="register-link">Registrarse</a>
              </div>
         </div>
     </div>
 </div>
+
 <div id="modal-alerta-general" class="modal-overlay">
     <div class="modal-contenido">
         <span id="modal-alerta-cerrar" class="close-button">&times;</span>

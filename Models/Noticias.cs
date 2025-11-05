@@ -22,6 +22,7 @@ namespace PetConnect.Models
         public int Vistas { get; set; } = 0;
         public ICollection<Comentario> Comentarios { get; set; } = new List<Comentario>();
         public ICollection<Favorito> Favoritos { get; set; } = new List<Favorito>();
+        public string? Tags { get; set; }
         
     }
 }

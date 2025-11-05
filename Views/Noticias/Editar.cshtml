@@ -61,6 +61,17 @@
     .spinner-unsplash { display: none; padding: 2rem; text-align: center; }
     .spinner-loader { border: 4px solid #f3f3f3; border-top: 4px solid #748675; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto; }
     @@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* ... Tus otros estilos ... */
+
+    .etiqueta-pill {
+        background-color: #e9e5e3;
+        color: #5a4b56;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: 1px solid #dcd8d6;
+    }
 </style>
 
 <div class="admin-container">
@@ -88,6 +99,23 @@
             <textarea asp-for="Contenido" class="form-control" ></textarea>
             <span asp-validation-for="Contenido" class="text-danger"></span>
         </div>
+
+        <div class="form-group">
+            <label class="control-label">Etiquetas Sugeridas</label>
+            <button type="button" id="btn-sugerir-etiquetas" class="btn-buscar-imagen" style="background-color: #748675; margin-bottom: 1rem;">
+                <span class="material-symbols-outlined">label</span>
+                Sugerir Etiquetas (IA)
+            </button>
+            <div id="contenedor-etiquetas-sugeridas" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Tags" class="control-label">Etiquetas (separadas por coma)</label>
+            <input asp-for="Tags" class="form-control" id="tags-input-field" />
+            <span asp-validation-for="Tags" class="text-danger"></span>
+        </div>
+
         <div class="button-group">
             <button type="submit" class="btn-confirmar">Confirmar</button>
             <a asp-action="Administrador" class="btn-cancelar">Cancelar</a>
@@ -125,7 +153,7 @@
                       bullist numlist outdent indent | removeformat | \
                       image link media | code',
             menubar: false,
-            language: 'es_MX'
+            language: 'es'
         });
 
         // --- CÓDIGO DEL MODAL DE UNSPLASH ---
@@ -139,9 +167,81 @@
             const inputBusquedaUnsplash = document.getElementById('input-busqueda-unsplash');
             const gridResultados = document.getElementById('grid-resultados-unsplash');
             const spinner = document.getElementById('spinner-unsplash');
-            const urlImagenInputPrincipal = document.getElementById('UrlImagen'); // ID generado por asp-for
+            const urlImagenInputPrincipal = document.getElementById('UrlImagen'); 
+            const btnSugerirEtiquetas = document.getElementById('btn-sugerir-etiquetas');
+            
+            const contenedorEtiquetas = document.getElementById('contenedor-etiquetas-sugeridas');
+            // Necesitamos el token y el título para este formulario también
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value; 
+            const inputTitulo = document.getElementById('Titulo'); 
 
-            function abrirModal() {
+            if (btnSugerirEtiquetas) {
+                btnSugerirEtiquetas.addEventListener('click', async function() {
+                    
+                    const titulo = inputTitulo.value;
+                    const contenido = tinymce.get('Contenido').getContent(); // Obtenemos el HTML
+
+                    if (!titulo || !contenido) {
+                        alert('Por favor, escribe un título y algo de contenido primero.');
+                        return;
+                    }
+
+                    // 1. Mostrar estado de carga
+                    this.disabled = true;
+                    this.innerHTML = "Analizando...";
+                    contenedorEtiquetas.innerHTML = ''; // Limpiar resultados anteriores
+
+                    // 2. Preparar datos (Usamos FormData)
+                    const formData = new FormData();
+                    formData.append('titulo', titulo);
+                    formData.append('contenido', contenido);
+
+                    try {
+                        const response = await fetch('/Noticias/SugerirEtiquetas', {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': token
+                            },
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Éxito: data.etiquetas es "Perros, Salud, Comida"
+                            document.getElementById('tags-input-field').value = data.etiquetas;
+                            const etiquetasArray = data.etiquetas.split(',');
+                            
+                            if (etiquetasArray.length > 0) {
+                                // Creamos las "píldoras"
+                                etiquetasArray.forEach(tag => {
+                                    const tagLimpio = tag.trim(); // Quitar espacios
+                                    if (tagLimpio) {
+                                        const pill = document.createElement('span');
+                                        pill.className = 'etiqueta-pill';
+                                        pill.textContent = tagLimpio;
+                                        contenedorEtiquetas.appendChild(pill);
+                                    }
+                                });
+                            } else {
+                                contenedorEtiquetas.innerHTML = '<p>No se sugirieron etiquetas.</p>';
+                            }
+                        } else {
+                            // Error devuelto por el controlador
+                            alert('Error: ' + data.message);
+                        }
+
+                    } catch (error) {
+                        console.error('Error al sugerir etiquetas:', error);
+                        alert('Error de conexión al sugerir etiquetas.');
+                    } finally {
+                        // 3. Restaurar botón
+                        this.disabled = false;
+                        this.innerHTML = '<span class="material-symbols-outlined">label</span> Sugerir Etiquetas (IA)';
+                    }
+                });
+            }
+                        function abrirModal() {
                 if(modal) modal.style.display = 'flex';
             }
             function cerrarModal() {

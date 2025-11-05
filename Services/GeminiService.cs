@@ -40,9 +40,6 @@ namespace PetConnect.Services
                 return "<p>Error: La clave de API de GoogleGemini no está configurada en el servidor.</p>";
             }
 
-            // 2. Esta es la URL correcta para la API de Gemini que usa API Keys
-            // ✅ ASÍ DEBE QUEDAR
-            // ✅ ESTA LÍNEA USA EL MODELO DE TU LISTA
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_apiKey}";
 
             var prompt = $"Escribe un artículo de blog para un sitio web de mascotas llamado 'PetConnect'. " +
@@ -77,7 +74,7 @@ namespace PetConnect.Services
                 }
 
                 var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
-                
+
                 // 5. Leemos la respuesta JSON
                 var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
@@ -86,7 +83,7 @@ namespace PetConnect.Services
                 {
                     return $"<p>Error de la API de Gemini: {geminiResponse.error.message}</p>";
                 }
-                
+
                 // 6. Extraemos el texto
                 string borradorHtml = geminiResponse.candidates[0].content.parts[0].text;
                 return borradorHtml;
@@ -97,5 +94,68 @@ namespace PetConnect.Services
                 return $"<p>Error de conexión con la IA: {ex.Message}</p>";
             }
         }
+
+        public async Task<string> GenerarEtiquetas(string titulo, string contenidoLimpio)
+        {
+            if (string.IsNullOrEmpty(_apiKey))
+            {
+                return "Error: API Key no configurada";
+            }
+
+            // Usamos el mismo modelo que ya confirmamos que funciona
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_apiKey}";
+
+            // --- ¡ESTE ES EL CAMBIO PRINCIPAL! ---
+            // Un prompt enfocado en clasificación y formato de salida.
+            var prompt = $"Analiza el siguiente título y contenido de un artículo para un blog de mascotas. " +
+                        $"Basado en el texto, sugiere un máximo de 5 etiquetas (tags) relevantes. " +
+                        $"Quiero que la respuesta sea ÚNICAMENTE una lista de palabras separadas por comas, y nada más. " +
+                        $"Ejemplo de respuesta: Perros, Salud, Entrenamiento, Comida\n\n" +
+                        $"TÍTULO: \"{titulo}\"\n" +
+                        $"CONTENIDO: \"{contenidoLimpio}\"";
+
+            var payload = new
+            {
+                contents = new[]
+                {
+                    new { parts = new[] { new { text = prompt } } }
+                }
+            };
+
+            var cliente = _httpClientFactory.CreateClient();
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            try
+            {
+                var httpResponse = await cliente.PostAsync(url, content);
+
+                if (!httpResponse.IsSuccessStatusCode)
+                {
+                    var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error de API (SugerirEtiquetas): {errorContent}");
+                    return $"Error: {errorContent}"; // Devuelve el error para depuración
+                }
+
+                var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+                var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (geminiResponse.error != null)
+                {
+                    return $"Error: {geminiResponse.error.message}";
+                }
+
+                string etiquetas = geminiResponse.candidates[0].content.parts[0].text;
+                
+                // Limpieza final por si la IA añade espacios extra
+                return etiquetas.Trim();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al llamar a Gemini API (Etiquetas): {ex.Message}");
+                return $"Error: {ex.Message}";
+            }
+        }
+
     }
 }

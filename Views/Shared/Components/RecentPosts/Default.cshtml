@@ -1,0 +1,16 @@
+@model IEnumerable<PetConnect.Models.Noticia>
+
+@foreach (var post in Model)
+{
+    <div class="recent-post-item">
+        <a asp-controller="Noticias" asp-action="Detalle" asp-route-id="@post.Id">
+            <img src="@(post.UrlImagen ?? "https://via.placeholder.com/75x75?text=Pet")" alt="@post.Titulo" class="recent-post-img" />
+        </a>
+        <div class="recent-post-info">
+            <a asp-controller="Noticias" asp-action="Detalle" asp-route-id="@post.Id">
+                @post.Titulo
+            </a>
+            <span>@post.FechaPublicacion.ToString("dd/MM/yyyy")</span>
+        </div>
+    </div>
+}

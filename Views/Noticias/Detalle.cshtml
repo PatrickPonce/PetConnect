@@ -6,11 +6,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
-    
+
     body { background-color: #FFFDEC; font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
 
-    /* --- INICIO: NUEVOS ESTILOS DE LAYOUT (2 COLUMNAS) --- */
-    
+
     .detalle-layout-flex {
         display: flex;
         flex-wrap: wrap; /* Para responsiveness en móviles */
@@ -23,7 +22,6 @@
         flex: 0 1 300px; /* Base de 300px, no crece, se encoge si es necesario */
     }
 
-    /* Estilo de "Caja" para el contenido del sidebar */
     .widget-sidebar {
         background-color: #fff6f6; /* Tu color rosa pálido */
         padding: 1.5rem;
@@ -63,13 +61,7 @@
         color: #d67a7a;
     }
 
-    /* --- FIN: NUEVOS ESTILOS DE LAYOUT --- */
 
-
-    /* --- INICIO: ESTILOS ANTIGUOS MODIFICADOS --- */
-
-    /* .noticia-wrapper y .noticia-info han sido ELIMINADOS */
-    
     .breadcrumbs { 
         margin-bottom: 1.5rem; 
         font-size: 0.9rem; 
@@ -101,14 +93,14 @@
         max-width: 100%; /* CAMBIADO: Ocupa todo el ancho de la columna */
         margin-bottom: 2rem; /* AÑADIDO: Espacio debajo de la imagen */
     }
-    
+
     .noticia-imagen { 
         width: 100%; 
         height: auto; 
         object-fit: cover; 
         border-radius: 12px; 
     }
-    
+
     .contenido-principal {
         /* MODIFICADO: Ahora es la columna principal de flexbox */
         flex: 1;
@@ -119,9 +111,9 @@
         border-radius: 12px;
     }
 
-    /* Estilos Botón Favorito */
+
     .favorito-btn {
-        /* MODIFICADO: Posición cambiada de 'absolute' */
+
         position: relative;
         float: right; /* Lo alinea a la derecha */
         margin-left: 1rem;
@@ -140,9 +132,9 @@
     }
     .favorito-btn:hover { background-color: #fce4e4; transform: scale(1.1); }
     .favorito-btn.activo { background-color: #ebadad; }
-    
-    /* MODIFICADO: Selector arreglado (quitamos .noticia-info) */
+
     .favorito-btn > .material-symbols-outlined {
+
         font-size: 28px;
         color: white; 
         transition: all 0.2s ease;
@@ -151,12 +143,6 @@
         color: #e58f8f !important; /* Color relleno activo */
         transform: scale(1.1);
     }
-
-    /* --- FIN: ESTILOS ANTIGUOS MODIFICADOS --- */
-
-
-    /* --- INICIO: ESTILOS ANTIGUOS (SIN CAMBIOS) --- */
-    /* (Párrafos, Comentarios, Modales, etc. se quedan igual) */
 
     .noticia-parrafo p { font-size: 1.1rem; line-height: 1.5; color: #444; }
     .noticia-parrafo ul,
@@ -175,29 +161,26 @@
         margin-bottom: 0.5rem; 
     }
 
-    /* --- Estilos Comentarios --- */
     .comentarios-container { margin-top: 3rem; padding: 2rem; background-color: #fff6f6; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
     .comentario { background-color: #fefefe; border-left: 4px solid #72626e; border-radius: 8px; padding: 1.2rem; margin-bottom: 1.5rem; }
     .comentario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
     .comentario-autor { font-weight: bold; color: #555; margin-bottom: 0; }
-    .comentario-texto { color: #333; line-height: 1.6; }
-    .comentario-fecha { font-size: 0.8rem; color: #aaa; text-align: right; margin-top: 0.5rem; }
     
-    /* Estilos Botones Editar/Eliminar */
+    .comentario-texto { 
+        color: #333; line-height: 1.6; }
+    
+    .comentario-fecha { font-size: 0.8rem; color: #aaa; text-align: right; margin-top: 0.5rem; }
     .comentario-acciones { display: flex; gap: 0.5rem; }
     .btn-accion-comentario { background: none; border: none; cursor: pointer; padding: 0; color: #aaa; transition: color 0.2s ease; }
     .btn-accion-comentario .material-symbols-outlined { font-size: 1.1rem; vertical-align: middle; }
     .btn-accion-comentario:hover { color: #72626e; }
     .btn-eliminar-comentario:hover { color: #d67a7a; } /* Rojo hover */
-    
-    /* Estilos Formulario Comentario */
     .form-comentario { margin-top: 2rem; }
     .form-comentario label { font-weight: bold; color: #72626e; display: block; margin-bottom: 0.5rem; }
     .form-comentario textarea { width: 100%; height: 120px; padding: 0.75rem; border-radius: 8px; border: 1px solid #ccc; resize: vertical; font-size: 1rem; }
     .form-comentario button { margin-top: 1rem; padding: 0.75rem 1.5rem; background-color: #72626e; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; }
     .form-comentario button:hover { background-color: #5a4b56; transform: translateY(-2px); }
-    
-    /* --- Estilos Modales (Login y Confirmación) --- */
+
     .modal-overlay { 
         position: fixed;
         top: 0;
@@ -246,7 +229,6 @@
     .btn-modal-cancelar { background-color: #f0f0f0; color: #555; border-color: #ddd; }
     .btn-modal-cancelar:hover { background-color: #e0e0e0; transform: translateY(-2px); }
 
-    /* Estilos Íconos */
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined' !important; 
       font-weight: normal;
@@ -262,36 +244,27 @@
       -webkit-font-feature-settings: 'liga';
       -webkit-font-smoothing: antialiased;
     }
-    
     .btn-accion-comentario .material-symbols-outlined {
         font-size: 1.2rem;
     }
-    
-    /* ELIMINÉ la definición duplicada de .noticia-info .favorito-btn... */
-    
     .comentario-texto.editando {
         display: none; 
     }
-
     .form-editar-comentario {
         display: none; 
         flex-direction: column; 
         gap: 0.5rem;
         margin-top: 0.5rem;
     }
-
     .comentario.modo-edicion .form-editar-comentario {
         display: flex; 
     }
-
     .comentario.modo-edicion .comentario-texto {
-        display: none; 
+        display:none; 
     }
-
     .comentario.modo-edicion .comentario-acciones {
         display: none; 
     }
-
     .textarea-editar-comentario {
         width: 100%;
         min-height: 80px;
@@ -302,7 +275,6 @@
         font-size: 1rem;
         resize: vertical;
     }
-
     .botones-editar {
         display: flex;
         justify-content: flex-end; 
@@ -323,14 +295,12 @@
         background-color: #f0f0f0; 
         color: #555;
     }
-
     .comentario-header {
         display: flex;
         align-items: center; 
         margin-bottom: 0.5rem;
         gap: 10px; 
     }
-
     .comentario-foto-perfil {
         width: 40px; 
         height: 40px;
@@ -338,16 +308,12 @@
         object-fit: cover; 
         flex-shrink: 0; 
     }
-
     .comentario-autor {
         font-weight: bold;
         color: #555;
         margin-bottom: 0;
         flex-grow: 1; 
     }
-    /* --- Estilos Mejorados para Modales --- */
-    /* --- ESTILOS MEJORADOS (SOLO PARA EL MODAL DE ALERTA) --- */
-
     #modal-alerta-general {
         display: none; 
     }
@@ -361,6 +327,7 @@
         max-width: 450px;
         width: 90%;
     }
+
     #modal-alerta-general #modal-alerta-titulo {
         color: #d67a7a; 
         font-size: 1.5rem;
@@ -411,13 +378,10 @@
     #modal-alerta-general .modal-botones-eliminar {
         justify-content: center;
     }
-
     @@keyframes fadeIn {
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
-    /* --- Estilos para las Etiquetas en Detalle (SIN CAMBIOS) --- */
     .tags-container-detalle {
         display: flex;
         flex-wrap: wrap;
@@ -436,12 +400,58 @@
     .tag-pill-detalle:hover {
         background-color: #5a4b56; 
     }
-
-
+    .recent-post-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .recent-post-img {
+        width: 75px;
+        height: 75px;
+        object-fit: cover;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+    .recent-post-info a {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+        font-size: 1rem;
+        line-height: 1.3;
+        display: block;
+    }
+    .recent-post-info a:hover {
+        color: #d67a7a;
+    }
+    .recent-post-info span {
+        font-size: 0.85rem;
+        color: #888;
+        margin-top: 5px;
+        display: block;
+    }
+    .tags-widget-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .tag-pill-widget {
+        background-color: #f0f0f0; /* Color gris claro */
+        color: #555;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid #ddd;
+    }
+    .tag-pill-widget:hover {
+        background-color: #e0e0e0;
+        color: #333;
+    }
 </style>
 
 <div class="detalle-layout-flex">
-
     <div class="contenido-principal">
         
         <div class="breadcrumbs">
@@ -451,7 +461,7 @@
             <span>»</span>
             <span style="font-weight: bold; color: #d67a7a;">@Model.Titulo</span>
         </div>
-
+        
         @{
             bool esFavoritoInicial = ViewData["EsFavorito"] as bool? ?? false; 
         }
@@ -460,36 +470,23 @@
                 @(esFavoritoInicial ? "favorite" : "favorite_border") 
             </span>
         </button>
-
+        
         <h1 class="noticia-titulo">@Model.Titulo</h1>
-
+        
         <p class="noticia-fecha">@Model.FechaPublicacion.ToShortDateString()</p>
         
-        @if (!string.IsNullOrWhiteSpace(Model.Tags))
-        {
-            <div class="tags-container-detalle" style="margin-bottom: 2rem;">
-                @foreach (var tag in Model.Tags.Split(','))
-                {
-                    if (!string.IsNullOrWhiteSpace(tag))
-                    {
-                        <span class="tag-pill-detalle">@tag.Trim()</span>
-                    }
-                }
-            </div>
-        }
-
         <div class="noticia-imagen-container">
             <img src="@Model.UrlImagen" alt="@Model.Titulo" class="noticia-imagen" />
         </div>
-
+        
         @Html.AntiForgeryToken()
+        
         <article class="noticia-parrafo">
             @Html.Raw(Model.Contenido)
         </article>
-
+        
         <section class="comentarios-container">
             <h3>Comentarios</h3>
-
             <div id="lista-comentarios">
                 @if (Model.Comentarios != null && Model.Comentarios.Any())
                 {
@@ -500,7 +497,6 @@
                         bool canEditTime = false;   
                         TimeSpan difference = TimeSpan.Zero;
                         string currentUsername = "No Logueado";
-
                         if (SignInManager.IsSignedIn(User))
                         {
                             currentUsername = User.Identity?.Name ?? string.Empty;
@@ -508,9 +504,7 @@
                             {
                                 currentUsername = currentUsername.Split('@')[0];
                             }
-                            
-                            authorMatch = currentUsername == comentario.Autor;
-                            
+                            authorMatch = currentUsername == comentario.Autor;         
                             if (authorMatch)
                             {
                                 var fechaComentarioUtc = comentario.FechaComentario;
@@ -523,7 +517,6 @@
                                 puedeEditar = canEditTime;
                             }
                         }
-                        
                         <div class="comentario" data-comentario-id="@comentario.Id">
                             <div class="comentario-header">
                                 <img class="comentario-foto-perfil" 
@@ -565,12 +558,12 @@
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <textarea id="textoComentario" name="TextoComentario" required minlength="3" maxlength="500" 
-                              placeholder="Escribe tu comentario... "></textarea>
+                    placeholder="Escribe tu comentario... "></textarea>
                 }
                 else
                 {
                     <textarea id="textoComentario" name="TextoComentario" 
-                              placeholder="Inicia sesión para dejar un comentario..." disabled></textarea>
+                    placeholder="Inicia sesión para dejar un comentario..." disabled></textarea>
                 }
                 @if (SignInManager.IsSignedIn(User))
                 {
@@ -581,18 +574,30 @@
                     <button type="button" class="btn-comentar" id="btn-abrir-login-modal" style="margin-top: 1rem;">Inicia sesión para comentar</button>
                 }
             </form>
-        </section> </div> <div class="columna-sidebar">
+        </section> 
+        
+        </div> <div class="columna-sidebar">
+        
+        @if (!string.IsNullOrWhiteSpace(Model.Tags))
+        {
+            <div class="widget-sidebar">
+                <h3>Etiquetas</h3>
+                <div class="tags-widget-container">
+                    @foreach (var tag in Model.Tags.Split(','))
+                    {
+                        if (!string.IsNullOrWhiteSpace(tag))
+                        {
+                            <span class="tag-pill-widget">@tag.Trim()</span>
+                        }
+                    }
+                </div>
+            </div>
+        }
         
         <div class="widget-sidebar">
-            <h3>Otras Noticias</h3>
-            <ul>
-                <li><a href="#">¿Por qué los gatos duermen mucho?</a></li>
-                <li><a href="#">La importancia del paseo diario</a></li>
-                <li><a href="#">Cómo elegir el mejor alimento</a></li>
-            </ul>
+            <h3>Publicaciones Recientes</h3> @await Component.InvokeAsync("RecentPosts", new { idActual = Model.Id })
         </div>
         
-        </div>
     </div>
 <div id="modal-confirmacion-eliminar-comentario" class="modal-confirmacion-eliminar">
     <div class="modal-contenido">
@@ -605,7 +610,6 @@
         </div>
     </div>
 </div>
-
 <div id="login-modal" class="modal-overlay">
     <div class="modal-contenido">
         <span class="close-button">&times;</span>
@@ -619,7 +623,6 @@
         </div>
     </div>
 </div>
-
 <div id="modal-alerta-general" class="modal-overlay">
     <div class="modal-contenido">
         <span id="modal-alerta-cerrar" class="close-button">&times;</span>
@@ -890,9 +893,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (listaComentariosDiv) {
         listaComentariosDiv.addEventListener('click', async function(event) {
-            
-            
-            
             const deleteButton = event.target.closest('.btn-eliminar-comentario');
             if (deleteButton) {
                 event.preventDefault();
@@ -901,9 +901,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!comentarioId) { console.error('No se pudo encontrar ID del comentario (eliminar).'); return; }
                 mostrarModalConfirmacionComentario(comentarioId);
             }
-
-            
-            
+        
             const editButton = event.target.closest('.btn-editar-comentario');
             if (editButton) {
                 event.preventDefault();
@@ -915,9 +913,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const textoElement = comentarioDiv.querySelector('.comentario-texto');
                 const textoOriginal = textoElement.textContent;
 
-                
                 comentarioDiv.classList.add('modo-edicion');
-
                 
                 const formEdicionHtml = `
                     <form class="form-editar-comentario" onsubmit="return false;">

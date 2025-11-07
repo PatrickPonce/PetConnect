@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace PetConnect.Models
 {
@@ -21,5 +22,11 @@ namespace PetConnect.Models
 
         // Relación con favoritos
         public ICollection<FavoritoProducto> Favoritos { get; set; } = new List<FavoritoProducto>();
+
+        public ICollection<ResenaProducto> Resenas { get; set; } = new List<ResenaProducto>();
+
+        // --- NUEVO: Propiedad calculada para el promedio de estrellas ---
+        [NotMapped]
+        public double PromedioCalificacion => Resenas.Any() ? Resenas.Average(r => r.Puntuacion) : 0;
     }
 }

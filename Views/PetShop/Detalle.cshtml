@@ -1,53 +1,210 @@
 @model PetConnect.Models.ProductoPetShop
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
 @{
     ViewData["Title"] = Model.Nombre;
-    // Obtenemos la lista de IDs de video que pasamos desde el controlador
     var videoIds = ViewBag.VideoIds as List<string> ?? new List<string>();
+    var promedio = Model.PromedioCalificacion;
+    var totalResenas = Model.Resenas.Count;
 }
-    
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+
 <style>
-    .tag { background-color: #f0f0f0; color: #555; padding: 4px 8px; border-radius: 5px; font-size: 0.8rem; margin-right: 5px; display: inline-block; margin-bottom: 5px;}
-    
-    /* Estilos para la página de detalles */
-    .detalle-producto { max-width: 900px; margin: 2rem auto; }
-    .detalle-producto img { width: 100%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: block; margin: 0 auto 2rem auto; }
-    .detalle-producto h1 { font-size: 2.5rem; font-weight: bold; }
-    .detalle-producto h3 { color: #E88989; font-size: 2rem; font-weight: 600; }
-    .product-tags { margin: 1rem 0; }
-    .detalle-producto p { font-size: 1.1rem; line-height: 1.7; color: #555; }
-    
-    /* Estilos para la sección de videos */
-    .video-reseñas-section { margin-top: 3rem; border-top: 2px solid #f0f0f0; padding-top: 2rem; }
-    .video-reseñas-section h2 { font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; }
-    .video-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-    }
-    .video-wrapper {
-        position: relative;
-        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-        height: 0;
+    body { background-color: #fdfaf1; font-family: 'Poppins', sans-serif; }
+
+    /* --- CONTENEDOR PRINCIPAL --- */
+    .product-detail-container {
+        max-width: 1100px;
+        margin: 3rem auto;
+        background-color: #fff;
+        border-radius: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
         overflow: hidden;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .video-wrapper iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: 0;
     }
 
-    /* --- INICIO: ESTILOS PARA BREADCRUMBS (CORREGIDOS) --- */
+    .product-main-info {
+        display: flex;
+        padding: 40px;
+        gap: 50px;
+    }
+
+    /* --- IMAGEN DEL PRODUCTO --- */
+    .product-image-wrapper {
+        flex: 1;
+        max-width: 500px;
+        position: relative;
+    }
+    .product-image-wrapper img {
+        width: 100%;
+        height: auto;
+        border-radius: 20px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        object-fit: cover;
+    }
+
+    /* --- INFO DEL PRODUCTO --- */
+    .product-info-wrapper {
+        flex: 1.2;
+        display: flex;
+        flex-direction: column;
+    }
+    .product-brand {
+        color: #999;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+    .product-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: #333;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    .product-rating-summary {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 2rem;
+    }
+    .stars-display { color: #FFC107; /* Color dorado para estrellas */ }
+    .material-symbols-rounded.filled { font-variation-settings: 'FILL' 1; }
+    .rating-text { color: #777; font-size: 0.95rem; }
+
+    .product-price {
+        font-size: 2.5rem;
+        color: #E88989; /* Rosa */
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    .product-description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #555;
+        margin-bottom: 2rem;
+    }
+    .product-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 3rem;
+    }
+    .product-tag {
+        background-color: #f0f8ed;
+        color: #5a8c5a;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* --- SECCIÓN DE RESEÑAS Y VIDEOS --- */
+    .details-lower-section {
+        background-color: #fafafa;
+        padding: 40px;
+        border-top: 1px solid #eee;
+    }
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #444;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* --- FORMULARIO DE RESEÑA (ESTRELLAS INTERACTIVAS) --- */
+    .review-form-card {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        margin-bottom: 3rem;
+    }
+    .star-rating-input {
+        display: flex;
+        flex-direction: row-reverse; /* Truco para que el hover funcione de izquierda a derecha */
+        justify-content: flex-end;
+        gap: 5px;
+        margin-bottom: 1.5rem;
+    }
+    .star-rating-input input { display: none; }
+    .star-rating-input label {
+        font-size: 2.5rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    /* Magia CSS para las estrellas: al pasar el mouse o seleccionar, se colorean */
+    .star-rating-input input:checked ~ label,
+    .star-rating-input label:hover,
+    .star-rating-input label:hover ~ label {
+        color: #FFC107;
+    }
+    .star-rating-input label .material-symbols-rounded {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+    }
+
+    .review-textarea {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #eee;
+        border-radius: 12px;
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+        margin-bottom: 1rem;
+        transition: border-color 0.3s;
+    }
+    .review-textarea:focus { outline: none; border-color: #97a992; }
+    .btn-submit-review {
+        background-color: #97a992; color: white; padding: 12px 30px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.3s;
+    }
+    .btn-submit-review:hover { background-color: #82947c; }
+
+    /* --- LISTA DE RESEÑAS --- */
+    .reviews-list { display: flex; flex-direction: column; gap: 20px; }
+    .review-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid #eee;
+    }
+    .review-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .review-author { font-weight: 700; color: #333; display: flex; align-items: center; gap: 10px; }
+    .review-avatar-placeholder { width: 35px; height: 35px; background-color: #E88989; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .review-date { color: #999; font-size: 0.9rem; }
+    .review-stars { color: #FFC107; margin-bottom: 10px; }
+    .review-text { color: #555; line-height: 1.6; }
+
+    /* --- VIDEOS (Estilo que ya tenías) --- */
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px; }
+    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+    
+    /* --- ESTADO VACÍO/INVITADO --- */
+    .guest-prompt-card {
+        background-color: #fff0f0; border: 2px dashed #E88989; padding: 30px;
+        border-radius: 15px; text-align: center; color: #d17a7a;
+    }
+    .guest-prompt-card a { color: #333; text-decoration: underline; font-weight: 700; }
+
+    /* --- INICIO: ESTILOS PARA BREADCRUMBS (MEJORADOS) --- */
     .breadcrumb-nav {
-        /* Se posiciona fuera del .container, así que le damos su propio max-width */
-        max-width: 1200px; /* Ancho similar al de tus otras páginas */
-        margin: 0 auto; /* Centrarlo */
-        padding: 1.5rem 2rem; /* Espaciado interno */
+        max-width: 1100px; /* Alineado con el contenedor del producto */
+        margin: 1rem auto 2rem auto;
+        padding: 1rem 1.5rem;
+        background-color: #fff; /* Fondo blanco para destacar */
+        border-radius: 12px;    /* Bordes redondeados */
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* Sombra muy sutil */
         font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
     }
     
     .breadcrumb-list {
@@ -56,96 +213,181 @@
         list-style: none;
         padding: 0;
         margin: 0;
-        font-size: 0.95rem;
+        align-items: center;
     }
     
     .breadcrumb-item {
         display: flex;
         align-items: center;
+        color: #666;
     }
     
     .breadcrumb-item a {
-        color: #E88989; /* Color rosa/salmón */
+        color: #777;
         text-decoration: none;
-        font-weight: 500;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px; /* Espacio para posibles iconos */
     }
     .breadcrumb-item a:hover {
-        text-decoration: underline;
+        color: #E88989; /* Rosa al pasar el mouse */
     }
     
-    .breadcrumb-item::after { /* El separador '>' */
-        content: '>';
-        margin: 0 10px;
-        color: #999;
-        font-size: 0.8rem;
+    /* Separador mejorado (icono chevron) */
+    .breadcrumb-item::after {
+        content: '›'; /* Usamos un carácter más bonito que '>' */
+        font-size: 1.2rem;
+        margin: 0 12px;
+        color: #ccc;
+        line-height: 1;
     }
     
     .breadcrumb-item.active {
-        color: #777; /* Color del texto de la página actual */
-        font-weight: 500;
+        color: #E88989; /* El último elemento en rosa */
+        font-weight: 600;
     }
     
-    /* Oculta el separador del último elemento */
     .breadcrumb-item.active::after {
-        content: '';
-        margin: 0;
+        content: none; /* Oculta el separador del último */
     }
     /* --- FIN: ESTILOS PARA BREADCRUMBS --- */
+
+    @@media (max-width: 768px) {
+        .product-main-info { flex-direction: column; padding: 20px; gap: 30px; }
+        .product-image-wrapper { max-width: 100%; }
+        .product-title { font-size: 2rem; }
+    }
 </style>
 
 @section Breadcrumbs {
-    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+    <nav class="breadcrumb-nav" style="max-width: 1100px; margin: 0 auto; padding: 1rem 0;">
         <ol class="breadcrumb-list">
-            <li class="breadcrumb-item">
-                <a asp-controller="Home" asp-action="Guest">Inicio</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a asp-controller="Directorio" asp-action="Index">Servicios</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a asp-controller="PetShop" asp-action="Index">Pet Shop</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a asp-controller="PetShop" asp-action="Productos" asp-route-tipo="@Model.TipoProducto">@Model.TipoProducto</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-                @(Model.Nombre.Length > 25 ? Model.Nombre.Substring(0, 25) + "..." : Model.Nombre)
-            </li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Guest">Inicio</a></li>
+            <li class="breadcrumb-item"><a asp-controller="PetShop" asp-action="Index">Categorías</a></li>
+            <li class="breadcrumb-item"><a asp-controller="PetShop" asp-action="Productos" asp-route-tipo="@Model.TipoProducto">@Model.TipoProducto</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Nombre</li>
         </ol>
     </nav>
 }
 
-<div class="detalle-producto">
-    <img src="@Model.UrlImagen" alt="@Model.Nombre" />
-    <h1>@Model.Nombre</h1>
-    <h3>S/. @Model.Precio.ToString("0.00")</h3>
+<div class="product-detail-container">
     
-    <div class="product-tags">
-        @foreach(var tag in Model.Tags)
-        {
-            <span class="tag">@tag</span>
-        }
-    </div>
-    
-    <p>@Model.Descripcion</p>
+    <div class="product-main-info">
+        <div class="product-image-wrapper">
+             <img src="@Model.UrlImagen" alt="@Model.Nombre" onerror="this.src='/images/placeholder.png';" />
+        </div>
+        <div class="product-info-wrapper">
+            <div class="product-brand">@Model.TipoProducto</div>
+            <h1 class="product-title">@Model.Nombre</h1>
+            
+            <div class="product-rating-summary">
+                <div class="stars-display">
+                    @for(int i=1; i<=5; i++) {
+                        <span class="material-symbols-rounded @(i <= Math.Round(promedio) ? "filled" : "")">star</span>
+                    }
+                </div>
+                <span class="rating-text">@promedio.ToString("0.0") (@totalResenas opiniones)</span>
+            </div>
 
-    @if (videoIds.Any())
-    {
-        <div class="video-reseñas-section">
-            <h2>Reseñas del Producto</h2>
-            <div class="video-grid">
-                @foreach(var videoId in videoIds)
-                {
-                    <div class="video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/@videoId" 
-                                title="YouTube video player" 
-                                frameborder="0" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowfullscreen>
-                        </iframe>
-                    </div>
+            <div class="product-price">S/. @Model.Precio.ToString("0.00")</div>
+            
+            <div class="product-description">
+                @Model.Descripcion
+            </div>
+
+            <div class="product-tags">
+                @foreach(var tag in Model.Tags) {
+                    <span class="product-tag">#@tag</span>
                 }
             </div>
         </div>
-    }
     </div>
+
+    <div class="details-lower-section">
+        
+        <div id="resenas-section" style="margin-bottom: 4rem;">
+            <h2 class="section-title">
+                <span class="material-symbols-rounded" style="color: #FFC107;">reviews</span>
+                Opiniones de Clientes
+            </h2>
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="review-form-card">
+                    <h4>Deja tu opinión</h4>
+                    <form asp-action="AgregarResena" method="post">
+                        <input type="hidden" name="productoId" value="@Model.Id" />
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="star-rating-input">
+                            <input type="radio" id="star5" name="puntuacion" value="5" required /><label for="star5" title="Excelente"><span class="material-symbols-rounded">star</span></label>
+                            <input type="radio" id="star4" name="puntuacion" value="4" /><label for="star4" title="Muy bueno"><span class="material-symbols-rounded">star</span></label>
+                            <input type="radio" id="star3" name="puntuacion" value="3" /><label for="star3" title="Bueno"><span class="material-symbols-rounded">star</span></label>
+                            <input type="radio" id="star2" name="puntuacion" value="2" /><label for="star2" title="Regular"><span class="material-symbols-rounded">star</span></label>
+                            <input type="radio" id="star1" name="puntuacion" value="1" /><label for="star1" title="Malo"><span class="material-symbols-rounded">star</span></label>
+                        </div>
+
+                        <textarea name="texto" class="review-textarea" placeholder="¿Qué te pareció este producto? Cuéntanos tu experiencia..." required></textarea>
+                        <button type="submit" class="btn-submit-review">Publicar Opinión</button>
+                    </form>
+                    @if (TempData["SuccessMessage"] != null) { <div class="text-success mt-3 fw-bold">@TempData["SuccessMessage"]</div> }
+                    @if (TempData["ErrorMessage"] != null) { <div class="text-danger mt-3 fw-bold">@TempData["ErrorMessage"]</div> }
+                </div>
+            }
+            else
+            {
+                <div class="guest-prompt-card">
+                    <span class="material-symbols-rounded" style="font-size: 3rem; margin-bottom: 1rem;">lock</span>
+                    <p>Para dejar una opinión, necesitas <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path">iniciar sesión</a> o <a asp-area="Identity" asp-page="/Account/Register">registrarte</a>.</p>
+                </div>
+            }
+
+            <div class="reviews-list">
+                @if (Model.Resenas != null && Model.Resenas.Any())
+                {
+                    @foreach (var resena in Model.Resenas.OrderByDescending(r => r.Fecha))
+                    {
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-author">
+                                    <div class="review-avatar-placeholder">@resena.Usuario.UserName?.Substring(0, 1).ToUpper()</div>
+                                    @resena.Usuario.UserName
+                                </div>
+                                <div class="review-date">@resena.Fecha.ToString("dd MMM yyyy")</div>
+                            </div>
+                            <div class="review-stars">
+                                @for(int i=1; i<=5; i++) {
+                                    <span class="material-symbols-rounded @(i <= resena.Puntuacion ? "filled" : "")" style="font-size: 1.2rem;">star</span>
+                                }
+                            </div>
+                            <p class="review-text">@resena.Texto</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p style="color: #777; font-style: italic;">Aún no hay opiniones para este producto. ¡Sé el primero!</p>
+                }
+            </div>
+        </div>
+
+        @if (videoIds.Any())
+        {
+            <div class="video-reseñas-section">
+                <h2 class="section-title">
+                    <span class="material-symbols-rounded" style="color: #E88989;">smart_display</span>
+                    Reseñas en Video
+                </h2>
+                <div class="video-grid">
+                    @foreach(var videoId in videoIds)
+                    {
+                        <div class="video-wrapper">
+                            <iframe src="https://www.youtube.com/embed/@videoId" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </div> </div>

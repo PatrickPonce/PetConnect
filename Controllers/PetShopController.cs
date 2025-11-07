@@ -123,15 +123,20 @@ public class PetShopController : Controller
         return View("Productos", productosVM);
     }
 
-    // --- ACCIÓN DETALLE (PRODUCTOS LOCALES) ---
+    // --- ACCIÓN DETALLE ACTUALIZADA ---
     public async Task<IActionResult> Detalle(int id)
     {
-        var producto = await _context.ProductosPetShop.FindAsync(id); 
+        var producto = await _context.ProductosPetShop
+            .Include(p => p.Resenas) // <-- Cargar reseñas
+                .ThenInclude(r => r.Usuario) // <-- Cargar autores de las reseñas
+            .FirstOrDefaultAsync(p => p.Id == id); // Usamos FirstOrDefaultAsync para poder usar Include
+            
         if (producto == null) return NotFound();
         
+        // API 2: Imagen de Pexels
         producto.UrlImagen = await _pexelsService.ObtenerImagenAsync(producto.QueryImagen);
         
-        // Videos de YouTube
+        // API 3: Videos de YouTube
         var videos = await _youTubeService.BuscarVideosAsync(producto.Nombre);
         ViewBag.VideoIds = videos;
         
@@ -180,5 +185,44 @@ public class PetShopController : Controller
 
         await _context.SaveChangesAsync();
         return Json(new { success = true, agregado = agregado });
+    }
+
+
+    // --- NUEVA ACCIÓN: AGREGAR RESEÑA ---
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AgregarResena(int productoId, int puntuacion, string texto)
+    {
+        if (puntuacion < 1 || puntuacion > 5 || string.IsNullOrWhiteSpace(texto))
+        {
+            TempData["ErrorMessage"] = "Por favor, selecciona una calificación y escribe un comentario.";
+            return RedirectToAction("Detalle", new { id = productoId });
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        // Opcional: Evitar que un usuario comente dos veces el mismo producto
+        bool yaComento = await _context.ResenasProducto.AnyAsync(r => r.ProductoPetShopId == productoId && r.UsuarioId == userId);
+        if (yaComento)
+        {
+             TempData["ErrorMessage"] = "Ya has valorado este producto.";
+             return RedirectToAction("Detalle", new { id = productoId });
+        }
+
+        var nuevaResena = new ResenaProducto
+        {
+            ProductoPetShopId = productoId,
+            UsuarioId = userId,
+            Puntuacion = puntuacion,
+            Texto = texto,
+            Fecha = DateTime.UtcNow
+        };
+
+        _context.ResenasProducto.Add(nuevaResena);
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "¡Gracias por tu opinión!";
+        return RedirectToAction("Detalle", new { id = productoId });
     }
 }

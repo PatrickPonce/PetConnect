@@ -1,0 +1,152 @@
+@model PetConnect.ViewModels.ProductoViewModel
+@{
+    ViewData["Title"] = Model.Nombre;
+    // Usamos el layout principal para mantener el diseño
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<style>
+    /* Estilos específicos para esta vista de detalle externo */
+    .detalle-externo-container {
+        max-width: 900px;
+        margin: 3rem auto;
+        background-color: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+    }
+
+    .detalle-externo-imagen {
+        flex: 0 0 40%; /* La imagen ocupa el 40% del ancho */
+    }
+    .detalle-externo-imagen img {
+        width: 100%;
+        border-radius: 15px;
+        border: 1px solid #eee;
+        object-fit: cover;
+    }
+
+    .detalle-externo-info {
+        flex: 1; /* El resto del espacio para la info */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detalle-externo-tienda {
+        color: #999;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .detalle-externo-titulo {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .detalle-externo-descripcion {
+        font-size: 1.05rem;
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 2.5rem;
+        flex-grow: 1;
+    }
+
+    .btn-ir-tienda {
+        background-color: #4A90E2; /* Azul para diferenciar de acciones internas */
+        color: white !important;
+        text-align: center;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+    }
+    .btn-ir-tienda:hover {
+        background-color: #357ABD;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+    }
+
+    .btn-volver {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #777;
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        transition: color 0.2s;
+    }
+    .btn-volver:hover {
+        color: #E88989;
+    }
+
+    /* Responsive para móviles */
+    @@media (max-width: 768px) {
+        .detalle-externo-container {
+            flex-direction: column;
+            padding: 20px;
+            margin: 1rem auto;
+        }
+        .detalle-externo-titulo {
+            font-size: 1.8rem;
+        }
+        .btn-ir-tienda {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="container" style="max-width: 1200px; margin-top: 2rem;">
+    <a href="javascript:history.back()" class="btn-volver">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Volver a los resultados
+    </a>
+
+    <div class="detalle-externo-container">
+        <div class="detalle-externo-imagen">
+            <img src="@Model.UrlImagen" alt="@Model.Nombre" onerror="this.src='/images/placeholder.png';" />
+        </div>
+
+        <div class="detalle-externo-info">
+            <div class="detalle-externo-tienda">
+                <span class="material-symbols-outlined" style="font-size: 1.2rem;">store</span>
+                Producto de @Model.NombreTienda
+            </div>
+            
+            <h1 class="detalle-externo-titulo">@Model.Nombre</h1>
+            
+            <div class="detalle-externo-descripcion">
+                <p>@Html.Raw(Model.Descripcion)</p>
+                <p style="font-size: 0.9rem; color: #888; font-style: italic; margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                    * Este producto es vendido por un tercero. Al hacer clic en el botón de abajo, serás redirigido a la tienda oficial para ver más detalles, precio actualizado y disponibilidad.
+                </p>
+            </div>
+
+            <a href="@Model.UrlExterna" target="_blank" class="btn-ir-tienda">
+                Ver en @Model.NombreTienda
+                <span class="material-symbols-outlined">open_in_new</span>
+            </a>
+        </div>
+    </div>
+</div>

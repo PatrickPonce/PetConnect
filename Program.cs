@@ -70,6 +70,8 @@ builder.Services.AddScoped<PexelsService>();
 
 builder.Services.AddScoped<YouTubeService>();
 
+builder.Services.AddScoped<GoogleSearchService>();
+
 builder.Services.AddScoped<ProductoService>();
 
 // Configuración de Google Maps API Key

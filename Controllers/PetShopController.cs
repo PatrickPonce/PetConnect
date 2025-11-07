@@ -9,21 +9,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using PetConnect.ViewModels; // Asegúrate de que tu ProductoViewModel esté aquí
+using PetConnect.ViewModels;
 
 public class PetShopController : Controller
 {
-    private readonly ApplicationDbContext _context; 
+    private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly PexelsService _pexelsService;
     private readonly YouTubeService _youTubeService;
+    private readonly GoogleSearchService _googleSearchService; // Servicio añadido
 
-    public PetShopController(ApplicationDbContext context, UserManager<IdentityUser> userManager, PexelsService pexelsService, YouTubeService youTubeService)
+    public PetShopController(
+        ApplicationDbContext context, 
+        UserManager<IdentityUser> userManager, 
+        PexelsService pexelsService, 
+        YouTubeService youTubeService, 
+        GoogleSearchService googleSearchService) // Inyección añadida
     {
         _context = context;
         _userManager = userManager;
         _pexelsService = pexelsService;
         _youTubeService = youTubeService;
+        _googleSearchService = googleSearchService; // Asignación añadida
     }
 
     // --- ACCIÓN INDEX (MENÚ DE CATEGORÍAS) ---
@@ -32,89 +39,122 @@ public class PetShopController : Controller
         return View();
     }
 
-    // --- ACCIÓN DE GALERÍA (CON ÁMBITO CORREGIDO) ---
-public async Task<IActionResult> Productos(string tipo, string busqueda, string tag)
-{
-    var productosQuery = _context.ProductosPetShop.AsQueryable();
-
-    // --- Lógica de Filtros ---
-    if (!string.IsNullOrEmpty(busqueda))
+    // --- ACCIÓN DE GALERÍA (PRODUCTOS) ---
+    public async Task<IActionResult> Productos(string tipo, string busqueda, string tag, string marca) // Parámetro 'marca' añadido
     {
-        var busquedaLower = busqueda.ToLower();
-        productosQuery = productosQuery.Where(p => 
-            p.Nombre.ToLower().Contains(busquedaLower)
-        );
+        // ============================================================
+        // NUEVA LÓGICA: SI HAY MARCA, USAMOS GOOGLE Y TERMINAMOS
+        // ============================================================
+        if (!string.IsNullOrEmpty(marca))
+        {
+            ViewData["Title"] = $"Marca: {marca}";
+            ViewData["MarcaActual"] = marca; // Para resaltar en el menú lateral
+
+            // Llamamos a Google y obtenemos resultados externos
+            var productosExternos = await _googleSearchService.BuscarProductosExternos(marca);
+            
+            // Pasamos datos vacíos para los filtros para evitar errores en la vista
+            ViewData["TiposProducto"] = new List<string>();
+            ViewData["TipoActual"] = "Todos";
+
+            return View("Productos", productosExternos);
+        }
+        // ============================================================
+
+        var productosQuery = _context.ProductosPetShop.AsQueryable();
+
+        // --- Filtros (BD Local) ---
+        if (!string.IsNullOrEmpty(busqueda))
+        {
+            productosQuery = productosQuery.Where(p => p.Nombre.ToLower().Contains(busqueda.ToLower()));
+        }
+        if (!string.IsNullOrEmpty(tipo) && tipo != "Todos")
+        {
+            productosQuery = productosQuery.Where(p => p.TipoProducto.ToLower() == tipo.ToLower());
+        }
+        if (!string.IsNullOrEmpty(tag))
+        {
+            productosQuery = productosQuery.Where(p => p.Tags.Contains(tag));
+        }
+
+        var productos = await productosQuery.ToListAsync();
+
+        // --- Favoritos (Solo para productos locales) ---
+        HashSet<int> favoritosIds = new HashSet<int>();
+        if (User.Identity.IsAuthenticated)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            favoritosIds = await _context.FavoritosProducto
+                .Where(f => f.UsuarioId == userId)
+                .Select(f => f.ProductoPetShopId)
+                .ToHashSetAsync();
+        }
+            
+        // --- ViewModels + Imágenes Pexels (CORREGIDO) ---
+        var productosVM = new List<ProductoViewModel>();
+        foreach (var prod in productos)
+        {
+            // 1. Obtener imagen de Pexels
+            string imagenPexels = await _pexelsService.ObtenerImagenAsync(prod.QueryImagen);
+            
+            // 2. Llenar el ViewModel PLANO
+            productosVM.Add(new ProductoViewModel { 
+                // Propiedades comunes (necesarias para la vista unificada)
+                Id = prod.Id,
+                Nombre = prod.Nombre,
+                Descripcion = prod.Descripcion,
+                Precio = prod.Precio,
+                UrlImagen = imagenPexels,
+                Tags = prod.Tags,
+                
+                // Propiedades específicas
+                EsExterno = false, // Es un producto interno
+                EsFavorito = favoritosIds.Contains(prod.Id),
+                Producto = prod // Mantenemos la referencia por si acaso
+            });
+        }
+
+        // --- Datos para la Vista ---
+        ViewData["TiposProducto"] = (await _context.ProductosPetShop.Select(p => p.TipoProducto).Distinct().ToListAsync());
+        ViewData["BusquedaActual"] = busqueda;
+        ViewData["TipoActual"] = tipo ?? "Todos";
+        ViewData["TagActual"] = tag; 
+
+        return View("Productos", productosVM);
     }
-    if (!string.IsNullOrEmpty(tipo) && tipo != "Todos")
-    {
-        productosQuery = productosQuery.Where(p => p.TipoProducto.ToLower() == tipo.ToLower());
-    }
-    if (!string.IsNullOrEmpty(tag))
-    {
-        productosQuery = productosQuery.Where(p => p.Tags.Contains(tag));
-    }
-    // --- Fin Lógica de Filtros ---
 
-    var productos = await productosQuery.ToListAsync(); 
-
-    // =======================================================
-    // INICIO DE LA CORRECCIÓN
-    // 1. Declaramos la variable 'favoritosIds' aquí fuera
-    // =======================================================
-    HashSet<int> favoritosIds = new HashSet<int>();
-
-    if (User.Identity.IsAuthenticated)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        // 2. Llenamos la variable (ya no la declaramos con 'var')
-        favoritosIds = await _context.FavoritosProducto
-            .Where(f => f.UsuarioId == userId)
-            .Select(f => f.ProductoPetShopId)
-            .ToHashSetAsync();
-    }
-    // =======================================================
-    // FIN DE LA CORRECCIÓN
-    // =======================================================
-
-    // 3. Crear ViewModels y obtener imágenes (API 2: Pexels)
-    var productosVM = new List<ProductoViewModel>(); // <-- Esta línea ya no dará error
-    foreach (var prod in productos)
-    {
-        prod.UrlImagen = await _pexelsService.ObtenerImagenAsync(prod.QueryImagen);
-
-        productosVM.Add(new ProductoViewModel { // <-- Esta tampoco
-            Producto = prod, 
-            EsFavorito = favoritosIds.Contains(prod.Id) // <-- Y esta tampoco
-        });
-    }
-
-    // 4. Pasar filtros a la vista
-    ViewData["TiposProducto"] = (await _context.ProductosPetShop.Select(p => p.TipoProducto).Distinct().ToListAsync());
-    ViewData["BusquedaActual"] = busqueda;
-    ViewData["TipoActual"] = tipo ?? "Todos";
-
-    return View("Productos", productosVM);
-    }
-
-    // 3. ACTUALIZA LA ACCIÓN 'DETALLE'
+    // --- ACCIÓN DETALLE (PRODUCTOS LOCALES) ---
     public async Task<IActionResult> Detalle(int id)
     {
         var producto = await _context.ProductosPetShop.FindAsync(id); 
         if (producto == null) return NotFound();
         
-        // API 2: Obtener imagen de Pexels (como antes)
         producto.UrlImagen = await _pexelsService.ObtenerImagenAsync(producto.QueryImagen);
         
-        // --- INICIO: NUEVA LÓGICA DE YOUTUBE ---
-        // API 3: Obtener videos de YouTube
+        // Videos de YouTube
         var videos = await _youTubeService.BuscarVideosAsync(producto.Nombre);
-        ViewBag.VideoIds = videos; // Pasamos la lista de IDs a la vista
-        // --- FIN: NUEVA LÓGICA DE YOUTUBE ---
+        ViewBag.VideoIds = videos;
         
         return View(producto);
     }
 
-    // --- ACCIÓN FAVORITOS (Sin cambios) ---
+    // --- NUEVA ACCIÓN: DETALLE PARA PRODUCTOS EXTERNOS (GOOGLE) ---
+    public IActionResult DetalleExterno(string nombre, string imagen, string descripcion, string url, string tienda)
+    {
+        var modelo = new ProductoViewModel
+        {
+            Nombre = nombre,
+            UrlImagen = imagen,
+            Descripcion = descripcion,
+            UrlExterna = url,
+            NombreTienda = tienda,
+            EsExterno = true,
+            Precio = 0 
+        };
+        return View(modelo);
+    }
+
+    // --- ACCIÓN FAVORITOS (SOLO LOCALES) ---
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]

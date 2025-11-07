@@ -196,11 +196,24 @@
 
         <div id="marcas" class="petshop-content-panel">
             <div class="brands-grid">
-                <a asp-controller="PetShop" asp-action="Productos" asp-route-busqueda="Royal Canin" class="brand-logo"><img src="https://.../royal-canin-logo.png" alt="Royal Canin" /></a>
-                <a asp-controller="PetShop" asp-action="Productos" asp-route-busqueda="Purina" class="brand-logo"><img src="https://.../purina-logo.png" alt="Purina" /></a>
-                <a asp-controller="PetShop" asp-action="Productos" asp-route-busqueda="Hills" class="brand-logo"><img src="https://.../hills-logo.png" alt="Hills" /></a>
-                <a asp-controller="PetShop" asp-action="Productos" asp-route-busqueda="Felix" class="brand-logo"><img src="https://.../felix-logo.png" alt="Felix" /></a>
-                </div>
+                
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="Petco" class="brand-logo" title="Petco">
+                    <img src="https://logo.clearbit.com/petco.com" alt="Petco" />
+                </a>
+                
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="PetSmart" class="brand-logo" title="PetSmart">
+                    <img src="https://logo.clearbit.com/petsmart.com" alt="PetSmart" />
+                </a>
+
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="Chewy" class="brand-logo" title="Chewy">
+                    <img src="https://logo.clearbit.com/chewy.com" alt="Chewy" />
+                </a>
+                
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="Amazon Pets" class="brand-logo" title="Amazon Pets">
+                    <img src="https://logo.clearbit.com/amazon.com" alt="Amazon" />
+                </a>
+
+            </div>
         </div>
 
     </div>

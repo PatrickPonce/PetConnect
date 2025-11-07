@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
 using PetConnect.Services;
-using Microsoft.AspNetCore.HttpOverrides; 
-using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; // Este 'using' puede no ser estrictamente necesario, pero no hace daño
-
+using Microsoft.AspNetCore.HttpOverrides;
+using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; 
+using Microsoft.ML; 
+using Microsoft.Extensions.ML; 
+using PetConnect.MlNet;
 // ------------------------------------
 // --- CONFIGURACIÓN DE SERVICIOS ---
 // ------------------------------------
@@ -73,11 +75,12 @@ builder.Services.AddHttpClient<PerspectiveService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<GeminiService>();
-// ------------------------------------
-// --- CONSTRUCCIÓN DE LA APP ---
-// ------------------------------------
+builder.Services.AddScoped<MlNetPredictionService>(); 
+builder.Services.AddSingleton<MLContext>();
 
-builder.Services.AddHttpClient();
+builder.Services.AddPredictionEnginePool<NoticiaData, NoticiaPrediction>()
+    .FromFile("TextClassificationModel.zip", true);
+    
 var app = builder.Build();
 
 

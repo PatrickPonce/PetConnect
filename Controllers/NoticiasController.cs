@@ -14,6 +14,7 @@ using PetConnect.Claims;
 using PetConnect.Services;
 using Microsoft.AspNetCore.SignalR;
 using PetConnect.Hubs;
+using System.Text.RegularExpressions;
 public class NoticiasController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -24,11 +25,13 @@ public class NoticiasController : Controller
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly GeminiService _geminiService;
+    private readonly MlNetPredictionService _mlNetPredictionService;
 
-    public NoticiasController(ApplicationDbContext context, 
-                              UserManager<IdentityUser> userManager, 
-                              SignInManager<IdentityUser> signInManager,PerspectiveService perspectiveService,
-                              IHubContext<ComentarioHub> hubContext,IHttpClientFactory httpClientFactory,IConfiguration configuration,GeminiService geminiService) 
+    public NoticiasController(ApplicationDbContext context,
+                              UserManager<IdentityUser> userManager,
+                              SignInManager<IdentityUser> signInManager, PerspectiveService perspectiveService,
+                              IHubContext<ComentarioHub> hubContext, IHttpClientFactory httpClientFactory, IConfiguration configuration,
+                              GeminiService geminiService,MlNetPredictionService mlNetPredictionService) 
     {
         _context = context;
         _userManager = userManager;
@@ -38,6 +41,7 @@ public class NoticiasController : Controller
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _geminiService = geminiService;
+        _mlNetPredictionService = mlNetPredictionService;
     }
 
  
@@ -740,9 +744,12 @@ public class NoticiasController : Controller
     // Pega este método NUEVO en NoticiasController.cs
 // ¡Asegúrate de tener "using System.Text.RegularExpressions;" al inicio de tu archivo!
 
+    // En NoticiasController.cs
+
+    // Este código ya está correcto. Asegúrate de tenerlo en tu controlador.
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    [ValidateAntiForgeryToken] // El token es importante
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SugerirEtiquetas([FromForm] string titulo, [FromForm] string contenido)
     {
         if (string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(contenido))
@@ -750,11 +757,9 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "El título y el contenido son necesarios." });
         }
 
-        // 1. Limpiamos el HTML del contenido para enviar texto limpio a la IA
-        // Esto ahorra tokens y mejora la precisión.
+        // 1. Limpiamos el HTML para el análisis de ML.NET y Gemini
         string contenidoLimpio = Regex.Replace(contenido, "<.*?>", String.Empty);
         
-        // 2. Comprobamos que no esté vacío después de limpiar
         if (string.IsNullOrWhiteSpace(contenidoLimpio) || contenidoLimpio.Length < 50)
         {
             return Json(new { success = false, message = "El contenido es muy corto para generar etiquetas." });
@@ -762,16 +767,23 @@ public class NoticiasController : Controller
 
         try
         {
-            // 3. Llamamos al NUEVO método del servicio
-            string etiquetasRespuesta = await _geminiService.GenerarEtiquetas(titulo, contenidoLimpio);
+            // 2. ✅ USAR ML.NET: Predecir la categoría principal de la noticia.
+            string etiquetaPrincipal = _mlNetPredictionService.PredecirCategoria(titulo, contenidoLimpio);
 
-            // 4. Verificamos si la respuesta del servicio es un error
+            if (etiquetaPrincipal == "Modelo no disponible")
+            {
+                return Json(new { success = false, message = "El modelo de clasificación (ML.NET) no ha sido cargado." });
+            }
+            
+            // 3. Usar Gemini: Enviamos el TÍTULO y la ETIQUETA PREDECIDA a Gemini para que genere la lista final.
+            string etiquetasRespuesta = await _geminiService.GenerarEtiquetas(titulo, etiquetaPrincipal); 
+
             if (etiquetasRespuesta.StartsWith("Error:"))
             {
                 return Json(new { success = false, message = etiquetasRespuesta });
             }
 
-            // 5. ¡Éxito! Devolvemos la lista de etiquetas
+            // 4. ¡Éxito! Devolvemos la lista de etiquetas
             return Json(new { success = true, etiquetas = etiquetasRespuesta });
         }
         catch (Exception ex)

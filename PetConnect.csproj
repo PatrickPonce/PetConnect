@@ -16,6 +16,10 @@
     <PackageReference Include="Google.Cloud.AIPlatform.V1" Version="3.55.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.ML" Version="4.0.3" />
+    <PackageReference Include="Microsoft.ML" Version="4.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Stripe.net" Version="49.1.0" />
     <PackageReference Include="X.PagedList" Version="8.4.7" />

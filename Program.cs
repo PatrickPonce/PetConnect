@@ -7,8 +7,9 @@ using PetConnect.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; 
 using Microsoft.ML; 
-using Microsoft.Extensions.ML; 
+using Microsoft.Extensions.ML;
 using PetConnect.MlNet;
+
 // ------------------------------------
 // --- CONFIGURACIÓN DE SERVICIOS ---
 // ------------------------------------
@@ -80,7 +81,12 @@ builder.Services.AddSingleton<MLContext>();
 
 builder.Services.AddPredictionEnginePool<NoticiaData, NoticiaPrediction>()
     .FromFile("TextClassificationModel.zip", true);
-    
+
+builder.Services.AddPredictionEnginePool<NoticiaRatingInput, NoticiaRatingPrediction>()
+    .FromFile("RecommendationModel.zip", true);
+
+builder.Services.AddScoped<MlNetRecommendationService>();
+
 var app = builder.Build();
 
 

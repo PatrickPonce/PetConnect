@@ -1,43 +1,151 @@
-@model PetConnect.Models.Servicio
+@model PetConnect.Models.ProductoPetShop
 @{
     ViewData["Title"] = Model.Nombre;
-    var detalles = Model.PetShopDetalle;
+    // Obtenemos la lista de IDs de video que pasamos desde el controlador
+    var videoIds = ViewBag.VideoIds as List<string> ?? new List<string>();
+}
+    
+<style>
+    .tag { background-color: #f0f0f0; color: #555; padding: 4px 8px; border-radius: 5px; font-size: 0.8rem; margin-right: 5px; display: inline-block; margin-bottom: 5px;}
+    
+    /* Estilos para la página de detalles */
+    .detalle-producto { max-width: 900px; margin: 2rem auto; }
+    .detalle-producto img { width: 100%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: block; margin: 0 auto 2rem auto; }
+    .detalle-producto h1 { font-size: 2.5rem; font-weight: bold; }
+    .detalle-producto h3 { color: #E88989; font-size: 2rem; font-weight: 600; }
+    .product-tags { margin: 1rem 0; }
+    .detalle-producto p { font-size: 1.1rem; line-height: 1.7; color: #555; }
+    
+    /* Estilos para la sección de videos */
+    .video-reseñas-section { margin-top: 3rem; border-top: 2px solid #f0f0f0; padding-top: 2rem; }
+    .video-reseñas-section h2 { font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    .video-wrapper {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0;
+        overflow: hidden;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .video-wrapper iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    /* --- INICIO: ESTILOS PARA BREADCRUMBS (CORREGIDOS) --- */
+    .breadcrumb-nav {
+        /* Se posiciona fuera del .container, así que le damos su propio max-width */
+        max-width: 1200px; /* Ancho similar al de tus otras páginas */
+        margin: 0 auto; /* Centrarlo */
+        padding: 1.5rem 2rem; /* Espaciado interno */
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .breadcrumb-list {
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .breadcrumb-item a {
+        color: #E88989; /* Color rosa/salmón */
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item::after { /* El separador '>' */
+        content: '>';
+        margin: 0 10px;
+        color: #999;
+        font-size: 0.8rem;
+    }
+    
+    .breadcrumb-item.active {
+        color: #777; /* Color del texto de la página actual */
+        font-weight: 500;
+    }
+    
+    /* Oculta el separador del último elemento */
+    .breadcrumb-item.active::after {
+        content: '';
+        margin: 0;
+    }
+    /* --- FIN: ESTILOS PARA BREADCRUMBS --- */
+</style>
+
+@section Breadcrumbs {
+    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Guest">Inicio</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Directorio" asp-action="Index">Servicios</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="PetShop" asp-action="Index">Pet Shop</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tipo="@Model.TipoProducto">@Model.TipoProducto</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @(Model.Nombre.Length > 25 ? Model.Nombre.Substring(0, 25) + "..." : Model.Nombre)
+            </li>
+        </ol>
+    </nav>
 }
 
-<div class="detalle-page">
-    <div class="detalle-header">
-        <h1>@Model.Nombre</h1>
-        <p>@detalles?.Direccion</p>
+<div class="detalle-producto">
+    <img src="@Model.UrlImagen" alt="@Model.Nombre" />
+    <h1>@Model.Nombre</h1>
+    <h3>S/. @Model.Precio.ToString("0.00")</h3>
+    
+    <div class="product-tags">
+        @foreach(var tag in Model.Tags)
+        {
+            <span class="tag">@tag</span>
+        }
     </div>
+    
+    <p>@Model.Descripcion</p>
 
-    <div class="detalle-body">
-        <div class="detalle-main-content">
-            @if (detalles != null)
-            {
-                <div class="descripcion-section">
-                    @Html.Raw(detalles.DescripcionLarga)
-                </div>
-
-                <div class="info-section">
-                    <h3>Características</h3>
-                    <ul>
-                        <li><strong>Marcas Principales:</strong> @detalles.MarcasDestacadas</li>
-                        <li><strong>Categorías:</strong> @detalles.CategoriasProductos</li>
-                        <li><strong>Compra Online:</strong> @(detalles.OfreceCompraOnline ? "Sí" : "No")</li>
-                    </ul>
-                </div>
-            }
-        </div>
-
-        <aside class="detalle-sidebar-contacto">
-            <h3>Información de Contacto</h3>
-            <ul>
-                @if(!string.IsNullOrEmpty(detalles?.Telefono))
+    @if (videoIds.Any())
+    {
+        <div class="video-reseñas-section">
+            <h2>Reseñas del Producto</h2>
+            <div class="video-grid">
+                @foreach(var videoId in videoIds)
                 {
-                    <li><span class="material-symbols-outlined">call</span> @detalles.Telefono</li>
+                    <div class="video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/@videoId" 
+                                title="YouTube video player" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
                 }
-                <li><span class="material-symbols-outlined">location_on</span> @detalles?.Direccion</li>
-            </ul>
-        </aside>
+            </div>
+        </div>
+    }
     </div>
-</div>

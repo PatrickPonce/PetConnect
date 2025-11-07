@@ -19,6 +19,8 @@
     @* AQUÍ ESTÁ LA MAGIA: Llamamos a nuestra vista parcial reutilizable *@
     @await Html.PartialAsync("_Navbar")
 
+    @await RenderSectionAsync("Breadcrumbs", required: false)
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()

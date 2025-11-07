@@ -1,25 +1,34 @@
 // Services/ChatbotService.cs
 using Google.Cloud.AIPlatform.V1;
 using System.Threading.Tasks;
+using Google.Api.Gax.Grpc;
 
 namespace PetConnect.Services
 {
     public class ChatbotService
     {
         private readonly PredictionServiceClient _predictionServiceClient;
-        private readonly IConfiguration _configuration;
-        private readonly string _projectId;
         private readonly string _endpoint;
+        private readonly string _projectId;
 
         public ChatbotService(IConfiguration configuration)
         {
-            _configuration = configuration;
-            _projectId = "tu-google-cloud-project-id"; // Reemplaza con tu Project ID de Google Cloud
+            _projectId = configuration["Gemini:ProjectId"];
+            var apiKey = configuration["Gemini:ApiKey"];
+
+            if (string.IsNullOrEmpty(_projectId) || string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("El ProjectId o ApiKey de Gemini no están configurados.");
+            }
+            
             _endpoint = $"projects/{_projectId}/locations/us-central1/publishers/google/models/gemini-1.0-pro";
 
             _predictionServiceClient = new PredictionServiceClientBuilder
             {
-                Endpoint = "us-central1-aiplatform.googleapis.com"
+                Endpoint = "us-central1-aiplatform.googleapis.com",
+                GrpcAdapter = GrpcNetClientAdapter.Default.WithAdditionalOptions(options => options.CallOptions = new Grpc.Core.CallOptions(
+                    new Grpc.Core.Metadata { { "x-goog-api-key", apiKey } }
+                ))
             }.Build();
         }
 

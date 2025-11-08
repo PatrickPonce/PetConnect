@@ -123,17 +123,17 @@ namespace PetConnect.Controllers
             return Json(new { success = true });
         }
 
-        public class ToggleFavoritoRequest
-        {
-            public int ServicioId { get; set; }
-        }
-
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleFavorito(int servicioId)
+        public async Task<IActionResult> ToggleFavorito(int servicioId) // <-- CAMBIO: Recibimos un simple 'int'
         {
+            if (servicioId <= 0)
+            {
+                return BadRequest(new { success = false, message = "ID de servicio no válido." });
+            }
+
             var userId = _userManager.GetUserId(User);
             var favoritoExistente = await _context.FavoritosServicio
                 .FirstOrDefaultAsync(f => f.ServicioId == servicioId && f.UsuarioId == userId);
@@ -152,6 +152,7 @@ namespace PetConnect.Controllers
             await _context.SaveChangesAsync();
             return Json(new { success = true, agregado = agregado });
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

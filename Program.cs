@@ -65,6 +65,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ConfiguracionSitioService>();
 builder.Services.AddScoped<AnimalApiService>();
+builder.Services.AddScoped<ChatbotService>();
 
 // Configuración de Google Maps API Key
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];

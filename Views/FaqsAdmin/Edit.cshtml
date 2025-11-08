@@ -1,0 +1,100 @@
+@model PetConnect.Models.Faq
+@{
+    ViewData["Title"] = "Editar FAQ";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+
+<style>
+    .form-card { background: white; padding: 40px 50px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.06); max-width: 900px; margin: 3rem auto; }
+    .form-header { text-align: center; margin-bottom: 3rem; }
+    .form-title { color: #333; font-weight: 800; font-size: 2.2rem; margin-bottom: 0.5rem; }
+    .form-subtitle { color: #999; font-size: 1.1rem; }
+    .form-label { font-weight: 700; color: #555; margin-bottom: 10px; display: block; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-control-custom { width: 100%; padding: 15px 20px; border-radius: 12px; border: 2px solid #f0f0f0; font-size: 1rem; transition: all 0.3s ease; background-color: #fafafa; }
+    .form-control-custom:focus { border-color: #97a992; background-color: #fff; box-shadow: 0 5px 15px rgba(151, 169, 146, 0.15); outline: none; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
+    .form-full-width { grid-column: 1 / -1; margin-bottom: 25px; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 40px; padding-top: 30px; border-top: 1px solid #f5f5f5; }
+    .btn-custom { padding: 12px 35px; border-radius: 12px; font-weight: 700; font-size: 1.1rem; border: none; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-save { background-color: #E88989; color: white; }
+    .btn-save:hover { background-color: #d17a7a; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(232, 137, 137, 0.3); }
+    .btn-cancel { background-color: #f0f0f0; color: #777; }
+    .btn-cancel:hover { background-color: #e0e0e0; color: #555; }
+    .tox-tinymce { border-radius: 12px !important; border: 2px solid #f0f0f0 !important; }
+</style>
+
+<div class="container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="form-title">Editar Pregunta</h1>
+            <p class="form-subtitle">Modifica los detalles de esta FAQ</p>
+        </div>
+        
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+            
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-grid">
+                <div>
+                    <label asp-for="Categoria" class="form-label">Categoría</label>
+                    <input asp-for="Categoria" class="form-control-custom" list="categorias-list" />
+                    <datalist id="categorias-list">
+                        <option value="General"/>
+                        <option value="Cuenta"/>
+                        <option value="Servicios"/>
+                        <option value="Pagos"/>
+                        <option value="Adopción"/>
+                    </datalist>
+                    <span asp-validation-for="Categoria" class="text-danger small"></span>
+                </div>
+                <div>
+                    <label asp-for="Orden" class="form-label">Orden</label>
+                    <input asp-for="Orden" class="form-control-custom" type="number" min="1" />
+                    <span asp-validation-for="Orden" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="form-full-width">
+                <label asp-for="Pregunta" class="form-label">Pregunta</label>
+                <input asp-for="Pregunta" class="form-control-custom" style="font-size: 1.2rem;" />
+                <span asp-validation-for="Pregunta" class="text-danger small"></span>
+            </div>
+
+            <div class="form-full-width">
+                <label asp-for="Respuesta" class="form-label">Respuesta Detallada</label>
+                <textarea asp-for="Respuesta" id="RespuestaEditor" rows="10"></textarea>
+                <span asp-validation-for="Respuesta" class="text-danger small"></span>
+            </div>
+
+            <div class="form-actions">
+                <a asp-action="Index" class="btn-custom btn-cancel">Cancelar</a>
+                <button type="submit" class="btn-custom btn-save">
+                    <span class="material-symbols-outlined" style="margin-right: 8px;">save</span> Guardar Cambios
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="https://cdn.tiny.cloud/1/us4xrxsoq6f33ntv9173pd2xkhoxj9kl21t4o6owwrw4kqs3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <script>
+        tinymce.init({
+            selector: '#RespuestaEditor',
+            height: 350,
+            menubar: false,
+            plugins: 'lists link autolink',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
+            skin: 'oxide',
+            content_style: 'body { font-family:Poppins,Helvetica,Arial,sans-serif; font-size:16px; color:#555; }',
+            branding: false
+        });
+    </script>
+}

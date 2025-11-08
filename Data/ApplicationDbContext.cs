@@ -37,6 +37,8 @@ namespace PetConnect.Data
 
         public DbSet<ResenaProducto> ResenasProducto { get; set; }
 
+        public DbSet<Faq> Faqs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -1,0 +1,188 @@
+@model IEnumerable<PetConnect.Models.Faq>
+@{
+    ViewData["Title"] = "Gestión de FAQs";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-page-header {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+    }
+    .admin-page-title {
+        color: #333; font-weight: 800; font-size: 2rem; margin: 0;
+    }
+    .btn-add-new {
+        background-color: #E88989; color: white; font-weight: 700; padding: 0.7rem 1.5rem;
+        border-radius: 10px; border: none; display: flex; align-items: center; gap: 8px;
+        transition: all 0.3s; text-decoration: none;
+    }
+    .btn-add-new:hover {
+        background-color: #d17a7a; transform: translateY(-2px); color: white;
+        box-shadow: 0 5px 15px rgba(232, 137, 137, 0.3);
+    }
+    .admin-table-card {
+        background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden;
+    }
+    .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .admin-table thead th {
+        background-color: #f8f9fa; color: #777; font-weight: 700; text-transform: uppercase;
+        font-size: 0.85rem; padding: 1.2rem 1.5rem; border-bottom: 2px solid #eee; text-align: left;
+    }
+    .admin-table tbody td {
+        padding: 1.2rem 1.5rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; color: #555;
+    }
+    .category-badge {
+        display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem;
+        font-weight: 700; text-transform: uppercase;
+    }
+    .badge-general { background-color: #e3f2fd; color: #1976d2; }
+    .badge-cuenta { background-color: #ede7f6; color: #673ab7; }
+    .badge-servicios { background-color: #e8f5e9; color: #388e3c; }
+    .badge-pagos { background-color: #fff3e0; color: #f57c00; }
+    .badge-default { background-color: #f5f5f5; color: #616161; }
+    .question-text { font-weight: 600; color: #333; font-size: 1rem; }
+    .action-btn {
+        width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+        border: none; cursor: pointer; transition: all 0.2s; color: #555; background-color: #f5f5f5; text-decoration: none;
+    }
+    .action-btn:hover { background-color: #eee; color: #333; }
+    .btn-edit:hover { background-color: #e3f2fd; color: #1976d2; }
+    .btn-delete:hover { background-color: #ffebee; color: #d32f2f; }
+
+    /* --- ESTILOS DEL NUEVO MODAL --- */
+    .admin-modal-overlay {
+        display: none; /* Oculto por defecto */
+        position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+    .admin-modal-content {
+        background-color: #fff; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px;
+        text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease;
+    }
+    .modal-icon-warning {
+        color: #f0ad4e; font-size: 3.5rem; margin-bottom: 1rem;
+    }
+    .modal-title { font-size: 1.5rem; font-weight: 700; color: #333; margin-bottom: 10px; }
+    .modal-text { color: #666; margin-bottom: 25px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 10px; justify-content: center; }
+    .btn-modal { padding: 10px 25px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-modal-cancel { background-color: #f0f0f0; color: #555; }
+    .btn-modal-cancel:hover { background-color: #e0e0e0; }
+    .btn-modal-confirm { background-color: #dc3545; color: white; }
+    .btn-modal-confirm:hover { background-color: #c82333; box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3); }
+
+    @@keyframes popIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="admin-page-header">
+        <div>
+            <h1 class="admin-page-title">Gestión de Preguntas Frecuentes</h1>
+            <p style="color: #777; margin-top: 5px;">Crea, edita y organiza las dudas de tus usuarios.</p>
+        </div>
+        <a asp-action="Create" class="btn-add-new">
+            <span class="material-symbols-outlined" style="vertical-align: middle;">add_circle</span> Nueva Pregunta
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mb-4" style="border-radius: 10px; border: none; background-color: #d4edda; color: #155724;">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="admin-table-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Categoría</th>
+                    <th style="width: 10%; text-align: center;">Orden</th>
+                    <th style="width: 60%;">Pregunta</th>
+                    <th style="width: 15%; text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    string badgeClass = "badge-default";
+                    if (item.Categoria.Contains("General")) badgeClass = "badge-general";
+                    else if (item.Categoria.Contains("Cuenta")) badgeClass = "badge-cuenta";
+                    else if (item.Categoria.Contains("Servicio") || item.Categoria.Contains("Veterinaria")) badgeClass = "badge-servicios";
+                    else if (item.Categoria.Contains("Pago")) badgeClass = "badge-pagos";
+
+                    <tr>
+                        <td><span class="category-badge @badgeClass">@item.Categoria</span></td>
+                        <td style="text-align: center; font-weight: 700; color: #999;">#@item.Orden</td>
+                        <td><div class="question-text">@item.Pregunta</div></td>
+                        <td>
+                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit" title="Editar">
+                                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">edit</span>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="delete-faq-form" style="margin:0;">
+                                    <button type="button" class="action-btn btn-delete btn-trigger-delete" title="Eliminar">
+                                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="deleteModal" class="admin-modal-overlay">
+    <div class="admin-modal-content">
+        <span class="material-symbols-outlined modal-icon-warning">warning</span>
+        <h3 class="modal-title">¿Estás seguro?</h3>
+        <p class="modal-text">Esta pregunta frecuente se eliminará permanentemente y ya no será visible para los usuarios.</p>
+        <div class="modal-actions">
+            <button id="cancelDelete" class="btn-modal btn-modal-cancel">Cancelar</button>
+            <button id="confirmDelete" class="btn-modal btn-modal-confirm">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteModal = document.getElementById('deleteModal');
+            const cancelBtn = document.getElementById('cancelDelete');
+            const confirmBtn = document.getElementById('confirmDelete');
+            let formToDelete = null; // Variable para recordar qué formulario enviar
+
+            // 1. Cuando se hace clic en CUALQUIER botón de eliminar
+            document.querySelectorAll('.btn-trigger-delete').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Guardamos la referencia al formulario padre de este botón
+                    formToDelete = this.closest('.delete-faq-form');
+                    // Mostramos el modal
+                    deleteModal.style.display = 'flex';
+                });
+            });
+
+            // 2. Si el usuario confirma
+            confirmBtn.addEventListener('click', function () {
+                if (formToDelete) {
+                    formToDelete.submit(); // Enviamos el formulario guardado
+                }
+            });
+
+            // 3. Si el usuario cancela (botón o clic fuera)
+            function closeModal() {
+                deleteModal.style.display = 'none';
+                formToDelete = null;
+            }
+            cancelBtn.addEventListener('click', closeModal);
+            deleteModal.addEventListener('click', (e) => {
+                if (e.target === deleteModal) closeModal();
+            });
+        });
+    </script>
+}

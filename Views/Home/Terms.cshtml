@@ -1,17 +1,227 @@
 @{
     ViewData["Title"] = "Términos y Condiciones";
+    // Layout = "~/Views/Shared/_Layout.cshtml"; // Asegúrate de que tu _ViewStart ya lo incluya, si no, descomenta esto.
 }
 
-<div class="container my-5" style="max-width: 800px;">
-    <h1 class="mb-4" style="color: #97a992; font-weight: 700;">Términos y Condiciones</h1>
-    <p class="text-muted">Última actualización: @DateTime.Now.ToString("MMMM yyyy")</p>
+<style>
+    body {
+        background-color: #fdfaf1; /* Color de fondo crema de tu sitio */
+    }
+    .terms-header {
+        text-align: center;
+        padding: 4rem 1rem 3rem 1rem;
+        background-color: #fff;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        border-radius: 0 0 30px 30px; /* Un toque moderno */
+    }
+    .terms-title {
+        color: #333;
+        font-weight: 800;
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+    }
+    .terms-subtitle {
+        color: #777;
+        font-size: 1.1rem;
+    }
+    .terms-container {
+        max-width: 1200px;
+        margin: 0 auto 5rem auto;
+        padding: 0 2rem;
+        display: flex;
+        gap: 3rem;
+        position: relative;
+    }
+
+    /* --- NAVEGACIÓN LATERAL --- */
+    .terms-nav {
+        flex: 0 0 280px; /* Ancho fijo */
+        position: sticky;
+        top: 100px; /* Se queda fija al hacer scroll */
+        height: fit-content;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    .terms-nav-title {
+        font-weight: 700;
+        color: #97a992; /* Verde corporativo */
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .terms-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .terms-nav li {
+        margin-bottom: 0.5rem;
+    }
+    .terms-nav a {
+        display: block;
+        padding: 0.7rem 1rem;
+        color: #555;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+        border-left: 3px solid transparent;
+    }
+    .terms-nav a:hover {
+        background-color: #f9fdf9;
+        color: #97a992;
+    }
+    .terms-nav a.active {
+        background-color: #f0f8ed; /* Fondo verde muy claro */
+        color: #97a992;             /* Texto verde */
+        font-weight: 600;
+        border-left-color: #97a992; /* Borde verde activo */
+    }
+
+    /* --- CONTENIDO PRINCIPAL --- */
+    .terms-content {
+        flex: 1;
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+        color: #444;
+        line-height: 1.8;
+    }
+    .terms-section {
+        margin-bottom: 4rem;
+        scroll-margin-top: 120px; /* Para que el header fijo no tape el título al hacer click */
+    }
+    .terms-section h2 {
+        color: #E88989; /* Rosa para los títulos de sección */
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+    .terms-content p {
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+    }
+    .terms-content ul {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+    .terms-content li {
+        margin-bottom: 0.8rem;
+    }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .terms-container { flex-direction: column; }
+        .terms-nav { position: relative; top: 0; width: 100%; margin-bottom: 2rem; }
+    }
+</style>
+
+<div class="terms-header">
+    <h1 class="terms-title">Términos y Condiciones</h1>
+    <p class="terms-subtitle">Última actualización: @DateTime.Now.ToString("MMMM yyyy")</p>
+</div>
+
+<div class="terms-container">
     
-    <hr />
+    <nav class="terms-nav">
+        <div class="terms-nav-title">Índice</div>
+        <ul>
+            <li><a href="#introduccion" class="terms-link active">1. Introducción</a></li>
+            <li><a href="#uso-servicio" class="terms-link">2. Uso del Servicio</a></li>
+            <li><a href="#cuentas-usuario" class="terms-link">3. Cuentas de Usuario</a></li>
+            <li><a href="#contenido-usuario" class="terms-link">4. Contenido del Usuario</a></li>
+            <li><a href="#propiedad-intelectual" class="terms-link">5. Propiedad Intelectual</a></li>
+            <li><a href="#limitacion-responsabilidad" class="terms-link">6. Limitación de Responsabilidad</a></li>
+            <li><a href="#cambios-terminos" class="terms-link">7. Cambios en los Términos</a></li>
+            <li><a href="#contacto" class="terms-link">8. Contacto</a></li>
+        </ul>
+    </nav>
 
-    <h3 style="color: #555; margin-top: 2rem;">1. Aceptación de los Términos</h3>
-    <p>Al acceder y utilizar PetConnect, aceptas cumplir y estar obligado por estos términos y condiciones...</p>
+    <div class="terms-content">
+        
+        <section id="introduccion" class="terms-section">
+            <h2>1. Introducción</h2>
+            <p>Bienvenido a Purr & Paws. Estos términos y condiciones describen las reglas y regulaciones para el uso del sitio web de Purr & Paws.</p>
+            <p>Al acceder a este sitio web, asumimos que aceptas estos términos y condiciones en su totalidad. No continúes usando el sitio web de Purr & Paws si no aceptas todos los términos y condiciones establecidos en esta página.</p>
+        </section>
 
-    <h3 style="color: #555; margin-top: 2rem;">2. Uso del Servicio</h3>
-    <p>Te comprometes a usar nuestra plataforma solo para fines legales y de una manera que no infrinja los derechos de, restrinja o inhiba el uso y disfrute de la plataforma por parte de cualquier tercero...</p>
+        <section id="uso-servicio" class="terms-section">
+            <h2>2. Uso del Servicio</h2>
+            <p>Nuestro servicio te permite buscar, valorar y guardar información sobre servicios para mascotas. Te comprometes a usar nuestra plataforma solo para fines legales y de una manera que no infrinja los derechos de, restrinja o inhiba el uso y disfrute de la plataforma por parte de cualquier tercero.</p>
+            <ul>
+                <li>No debes usar el sitio para transmitir contenido dañino, ofensivo o ilegal.</li>
+                <li>No debes intentar obtener acceso no autorizado a nuestros sistemas.</li>
+                <li>Nos reservamos el derecho de suspender tu acceso si violas estas reglas.</li>
+            </ul>
+        </section>
+
+        <section id="cuentas-usuario" class="terms-section">
+            <h2>3. Cuentas de Usuario</h2>
+            <p>Para acceder a ciertas funciones de la plataforma (como guardar favoritos o dejar reseñas), debes crear una cuenta. Eres responsable de mantener la confidencialidad de tu contraseña y cuenta, y eres totalmente responsable de todas las actividades que ocurran bajo tu contraseña o cuenta.</p>
+        </section>
+
+        <section id="contenido-usuario" class="terms-section">
+             <h2>4. Contenido del Usuario</h2>
+             <p>Al publicar reseñas, comentarios o fotos en nuestro sitio, nos otorgas una licencia no exclusiva, libre de regalías, perpetua y mundial para usar, reproducir, modificar, adaptar, publicar, traducir y distribuir dicho contenido en cualquier medio.</p>
+             <p>Garantizas que tu contenido no viola los derechos de autor, marcas registradas u otros derechos de propiedad de terceros.</p>
+        </section>
+
+        <section id="propiedad-intelectual" class="terms-section">
+            <h2>5. Propiedad Intelectual</h2>
+            <p>A menos que se indique lo contrario, Purr & Paws y/o sus licenciantes poseen los derechos de propiedad intelectual de todo el material en Purr & Paws. Todos los derechos de propiedad intelectual están reservados.</p>
+        </section>
+
+         <section id="limitacion-responsabilidad" class="terms-section">
+            <h2>6. Limitación de Responsabilidad</h2>
+            <p>Purr & Paws no será responsable de ningún daño indirecto, incidental, especial, consecuente o punitivo, incluyendo sin limitación, pérdida de beneficios, datos, uso, buena voluntad, u otras pérdidas intangibles, resultantes de tu acceso o uso o la imposibilidad de acceder o usar el servicio.</p>
+        </section>
+
+        <section id="cambios-terminos" class="terms-section">
+             <h2>7. Cambios en los Términos</h2>
+             <p>Nos reservamos el derecho, a nuestra sola discreción, de modificar o reemplazar estos Términos en cualquier momento. Si una revisión es material, intentaremos proporcionar un aviso de al menos 30 días antes de que entren en vigor los nuevos términos.</p>
+        </section>
+
+        <section id="contacto" class="terms-section">
+            <h2>8. Contacto</h2>
+            <p>Si tienes alguna pregunta sobre estos Términos, por favor contáctanos a través de nuestra página de contacto o enviando un correo a <a href="mailto:legal@petconnect.com" style="color: #97a992; font-weight: 700; text-decoration: none;">legal@petconnect.com</a>.</p>
+        </section>
 
     </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll(".terms-section");
+            const navLinks = document.querySelectorAll(".terms-nav a");
+
+            // Función para resaltar el enlace activo al hacer scroll
+            window.addEventListener("scroll", () => {
+                let current = "";
+                sections.forEach((section) => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    // Ajuste de -150px para que cambie antes de llegar exactamente al topo
+                    if (pageYOffset >= sectionTop - 200) {
+                        current = section.getAttribute("id");
+                    }
+                });
+
+                navLinks.forEach((link) => {
+                    link.classList.remove("active");
+                    if (link.getAttribute("href").includes(current)) {
+                        link.classList.add("active");
+                    }
+                });
+            });
+        });
+    </script>
+}

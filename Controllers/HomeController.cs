@@ -67,11 +67,6 @@ namespace PetConnect.Controllers
         }
 
         // --- NUEVAS ACCIONES PARA EL FOOTER ---
-        public IActionResult Faq() // Preguntas Frecuentes
-        {
-            return View();
-        }
-
         public IActionResult Terms() // Términos y Condiciones
         {
             return View();
@@ -82,5 +77,16 @@ namespace PetConnect.Controllers
             return View();
         }
         // ------------------------------------
+
+        public async Task<IActionResult> Faq()
+        {
+            // Obtenemos todas las FAQs ordenadas por categoría y luego por orden
+            var faqs = await _context.Faqs
+                .OrderBy(f => f.Categoria)
+                .ThenBy(f => f.Orden)
+                .ToListAsync();
+
+            return View(faqs);
+        }
     }
 }

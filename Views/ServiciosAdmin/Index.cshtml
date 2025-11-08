@@ -1,0 +1,150 @@
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@using PetConnect.Models
+@model IPagedList<PetConnect.Models.Servicio>
+
+@{
+    ViewData["Title"] = "Gestión del Directorio";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    /* Estilos para las tarjetas de tipo de servicio */
+    .service-type-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+    }
+    .badge-veterinaria { background-color: #e3f2fd; color: #1565c0; }
+    .badge-petshop { background-color: #fce4ec; color: #c2185b; }
+    .badge-lugar { background-color: #e8f5e9; color: #2e7d32; }
+    .badge-guarderia { background-color: #fff3e0; color: #e65100; }
+    .badge-adopcion { background-color: #f3e5f5; color: #6a1b9a; }
+
+    /* Estilos de la tabla */
+    .admin-table img.service-img {
+        width: 50px; height: 50px; object-fit: cover; border-radius: 8px;
+        border: 1px solid #eee;
+    }
+    
+    /* Paginación */
+    .pagination-container { margin-top: 2rem; display: flex; justify-content: center; }
+    .pagination { display: flex; padding-left: 0; list-style: none; }
+    .page-item { margin: 0 2px; }
+    .page-link { padding: 8px 16px; border: 1px solid #ddd; color: #97a992; text-decoration: none; border-radius: 5px; }
+    .page-item.active .page-link { background-color: #97a992; color: white; border-color: #97a992; }
+</style>
+
+<div class="container mt-5">
+    
+    <div class="admin-page-header">
+        <div>
+            <h1 class="admin-page-title">Directorio de Servicios</h1>
+            <p style="color: #777; margin-top: 5px;">Administra las 5 áreas principales de tu plataforma.</p>
+        </div>
+        <a asp-action="Create" class="btn-add-new">
+            <span class="material-symbols-outlined">add_business</span> Nuevo Servicio
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mb-4" style="border-radius: 10px; background-color: #d4edda; color: #155724; border: none; padding: 15px;">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+        <form asp-action="Index" method="get" style="display: flex; gap: 15px; align-items: flex-end;">
+            <div style="flex: 2;">
+                <label class="form-label fw-bold" style="color: #555;">Buscar por nombre</label>
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Ej: VetCare..." />
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label class="form-label fw-bold" style="color: #555;">Filtrar por Tipo</label>
+                <select name="tipoFilter" class="form-select" asp-items="Html.GetEnumSelectList<PetConnect.Models.TipoServicio>()">
+                    <option value="">Todos los Servicios</option>
+                </select>
+            </div>
+            <button type="submit" class="btn" style="background-color: #97a992; color: white; font-weight: bold; padding: 10px 25px; height: fit-content;">Filtrar</button>
+            <a asp-action="Index" class="btn btn-outline-secondary" style="padding: 10px 20px; height: fit-content;">Limpiar</a>
+        </form>
+    </div>
+
+    <div class="admin-table-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Imagen</th>
+                    <th>Nombre</th>
+                    <th>Tipo de Servicio</th>
+                    <th>Descripción Corta</th>
+                    <th style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    // Determinar clase del badge según el tipo
+                    string badgeClass = item.Tipo switch {
+                        TipoServicio.Veterinaria => "badge-veterinaria",
+                        TipoServicio.PetShop => "badge-petshop",
+                        TipoServicio.LugarPetFriendly => "badge-lugar",
+                        TipoServicio.Guarderia => "badge-guarderia",
+                        TipoServicio.Adopcion => "badge-adopcion",
+                        _ => "badge-default"
+                    };
+                    // Icono según el tipo
+                    string icon = item.Tipo switch {
+                        TipoServicio.Veterinaria => "medical_services",
+                        TipoServicio.PetShop => "storefront",
+                        TipoServicio.LugarPetFriendly => "pets",
+                        TipoServicio.Guarderia => "home_work",
+                        TipoServicio.Adopcion => "favorite",
+                        _ => "info"
+                    };
+
+                    <tr>
+                        <td>
+                            <img src="@(item.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="@item.Nombre" class="service-img" onerror="this.src='/images/placeholder.png'" />
+                        </td>
+                        <td><strong>@item.Nombre</strong></td>
+                        <td>
+                            <span class="service-type-badge @badgeClass">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">@icon</span>
+                                @item.Tipo
+                            </span>
+                        </td>
+                        <td style="color: #666;">
+                            @(item.DescripcionCorta?.Length > 60 ? item.DescripcionCorta.Substring(0, 60) + "..." : item.DescripcionCorta)
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-tipo="@item.Tipo" class="action-btn btn-edit" title="Editar">
+                                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">edit</span>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="delete-form" style="margin:0;">
+                                    <button type="button" class="action-btn btn-delete btn-trigger-delete" title="Eliminar">
+                                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-container">
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewData["CurrentFilter"], tipoFilter = ViewData["TipoFilter"] }),
+            new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always
+            })
+    </div>
+
+</div>

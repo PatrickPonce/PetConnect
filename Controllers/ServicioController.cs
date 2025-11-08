@@ -123,6 +123,12 @@ namespace PetConnect.Controllers
             return Json(new { success = true });
         }
 
+        public class ToggleFavoritoRequest
+        {
+            public int ServicioId { get; set; }
+        }
+
+
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]

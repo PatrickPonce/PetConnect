@@ -31,6 +31,9 @@ namespace PetConnect.Data
         public DbSet<ProductoPetShop> ProductosPetShop { get; set; }
         public DbSet<FavoritoProducto> FavoritosProducto { get; set; }
         public DbSet<Favorito> Favoritos { get; set; }
+
+        public DbSet<ComentarioServicio> ComentariosServicio { get; set; }
+        public DbSet<FavoritoServicio> FavoritosServicio { get; set; }
         public object Configuration { get; internal set; }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }

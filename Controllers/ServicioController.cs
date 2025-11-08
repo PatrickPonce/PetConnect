@@ -1,13 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
 using PetConnect.Models;
-using System.Linq;
-using System.Threading.Tasks;
-using X.PagedList;
+using PetConnect.ViewModels;
 using Stripe;
 using Stripe.Checkout;
-using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using X.PagedList;
 
 namespace PetConnect.Controllers
 {
@@ -15,35 +16,58 @@ namespace PetConnect.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public ServicioController(ApplicationDbContext context, IConfiguration configuration)
+        public ServicioController(ApplicationDbContext context, IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _configuration = configuration;
+            _userManager = userManager;
         }
+
         public async Task<IActionResult> Index(string busqueda, int? page)
         {
             ViewData["BusquedaActual"] = busqueda;
-            
-            IQueryable<Servicio> query = _context.Servicios
+
+            var query = _context.Servicios
+                .Include(s => s.VeterinariaDetalle) // Incluir detalles para la dirección
                 .Where(s => s.Tipo == TipoServicio.Veterinaria)
-                .OrderBy(s => s.Nombre) 
+                .OrderBy(s => s.Nombre)
                 .AsNoTracking();
 
             if (!string.IsNullOrEmpty(busqueda))
             {
-                string busquedaLower = busqueda.ToLower();
-                query = query.Where(s => s.Nombre.ToLower().Contains(busquedaLower));
+                query = query.Where(s => s.Nombre.ToLower().Contains(busqueda.ToLower()));
             }
-            
+
             int pageSize = 6;
-            int pageNumber = (page ?? 1);
+            var pagedServicios = await query.ToPagedListAsync(page ?? 1, pageSize);
+            var viewModels = new List<ServicioViewModel>();
 
-            var veterinariasPaginadas = await query.ToPagedListAsync(pageNumber, pageSize);
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = _userManager.GetUserId(User);
+                var favoritosIds = await _context.FavoritosServicio
+                    .Where(f => f.UsuarioId == userId)
+                    .Select(f => f.ServicioId)
+                    .ToHashSetAsync();
 
-            return View(veterinariasPaginadas);
+                foreach (var servicio in pagedServicios)
+                {
+                    viewModels.Add(new ServicioViewModel { Servicio = servicio, EsFavorito = favoritosIds.Contains(servicio.Id) });
+                }
+            }
+            else
+            {
+                foreach (var servicio in pagedServicios)
+                {
+                    viewModels.Add(new ServicioViewModel { Servicio = servicio, EsFavorito = false });
+                }
+            }
+
+            var pagedViewModel = new StaticPagedList<ServicioViewModel>(viewModels, pagedServicios.GetMetaData());
+            return View(pagedViewModel);
         }
-
 
         public async Task<IActionResult> Detalle(int? id)
         {
@@ -51,7 +75,8 @@ namespace PetConnect.Controllers
 
             var veterinaria = await _context.Servicios
                 .Include(s => s.VeterinariaDetalle)
-                    .ThenInclude(vd => vd.Resenas)
+                .Include(s => s.Comentarios)
+                    .ThenInclude(c => c.Usuario)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id && s.Tipo == TipoServicio.Veterinaria);
 
@@ -59,24 +84,91 @@ namespace PetConnect.Controllers
 
             return View(veterinaria);
         }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AgregarComentario(int servicioId, string textoComentario)
+        {
+            if (string.IsNullOrWhiteSpace(textoComentario))
+                return Json(new { success = false, message = "El comentario no puede estar vacío." });
+
+            var userId = _userManager.GetUserId(User);
+            var comentario = new ComentarioServicio
+            {
+                Texto = textoComentario,
+                FechaComentario = DateTime.UtcNow,
+                ServicioId = servicioId,
+                UsuarioId = userId
+            };
+
+            _context.ComentariosServicio.Add(comentario);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Comentario añadido." });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarComentario(int comentarioId)
+        {
+            var userId = _userManager.GetUserId(User);
+            var comentario = await _context.ComentariosServicio.FindAsync(comentarioId);
+
+            if (comentario == null) return NotFound();
+            if (comentario.UsuarioId != userId) return Forbid();
+
+            _context.ComentariosServicio.Remove(comentario);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleFavorito([FromBody] ToggleServicioRequest request)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var favoritoExistente = await _context.FavoritosServicio
+                .FirstOrDefaultAsync(f => f.ServicioId == request.ServicioId && f.UsuarioId == userId);
+
+            bool agregado;
+            if (favoritoExistente != null)
+            {
+                _context.FavoritosServicio.Remove(favoritoExistente);
+                agregado = false; // Se quitó
+            }
+            else
+            {
+                var nuevoFavorito = new FavoritoServicio
+                {
+                    ServicioId = request.ServicioId,
+                    UsuarioId = userId
+                };
+                _context.FavoritosServicio.Add(nuevoFavorito);
+                agregado = true; // Se añadió
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Devolvemos la respuesta JSON que el script espera
+            return Json(new { success = true, agregado = agregado });
+        }
+
+
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearSesionDePago(int id)
         {
             var servicio = await _context.Servicios.FindAsync(id);
-            if (servicio == null)
-            {
-                return NotFound();
-            }
+            if (servicio == null) return NotFound();
 
-            var secretKey = _configuration["Stripe:SecretKey"];
-            StripeConfiguration.ApiKey = secretKey;
-            
-            // El resto de la lógica no cambia
+            StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
             var domain = $"{Request.Scheme}://{Request.Host}";
-            var successUrl = $"{domain}/Servicio/ReservaConfirmada";
-            var cancelUrl = $"{domain}/Servicio/Detalle/{id}";
-
             var options = new SessionCreateOptions
             {
                 PaymentMethodTypes = new List<string> { "card" },
@@ -86,32 +178,29 @@ namespace PetConnect.Controllers
                     {
                         PriceData = new SessionLineItemPriceDataOptions
                         {
-                            UnitAmount = 2500, // 25.00
-                            Currency = "usd",
-                            ProductData = new SessionLineItemPriceDataProductDataOptions
-                            {
-                                Name = $"Reserva de Cita en {servicio.Nombre}",
-                                Description = "Confirmación de cita para consulta veterinaria.",
-                            },
+                            UnitAmount = 2500, Currency = "usd",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions { Name = $"Reserva de Cita en {servicio.Nombre}", },
                         },
                         Quantity = 1,
                     },
                 },
                 Mode = "payment",
-                SuccessUrl = successUrl,
-                CancelUrl = cancelUrl,
+                SuccessUrl = $"{domain}/Servicio/ReservaConfirmada",
+                CancelUrl = $"{domain}/Servicio/Detalle/{id}",
             };
-
             var service = new SessionService();
             Session session = await service.CreateAsync(options);
-
             return Redirect(session.Url);
         }
 
-        // --- NUEVA ACCIÓN PARA LA PÁGINA DE ÉXITO ---
         public IActionResult ReservaConfirmada()
         {
-            return View(); // Mostraremos una página simple de "Gracias por tu reserva"
+            return View();
         }
     }
+}
+
+public class ToggleServicioRequest
+{
+    public int ServicioId { get; set; }
 }

@@ -304,15 +304,12 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (type === 'noticia') {
                 url = '/Noticias/ToggleFavorito';
                 bodyObject = { noticiaId: id }; // <-- Objeto JSON
-<<<<<<< HEAD
             } else if (type === 'producto') { // <-- AÑADIR ESTE 'ELSE IF'
                 url = '/PetShop/ToggleFavorito';
                 body = `productoId=${id}`;
-=======
             } else if (type === 'servicio') {
                 url = '/Servicio/ToggleFavorito';
                 bodyObject = { servicioId: id };
->>>>>>> Servicio-Veterinaria
             } else {
                 console.error('Tipo desconocido:', type);
                 ocultarModalConfirmarUno();

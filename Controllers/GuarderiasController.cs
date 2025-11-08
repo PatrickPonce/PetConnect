@@ -1,3 +1,5 @@
+// Archivo: Controllers/GuarderiasController.cs
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +8,7 @@ using PetConnect.Data;
 using PetConnect.Models;
 using PetConnect.Services;
 using PetConnect.ViewModels;
-using System.Globalization; // <-- Añadido para asegurar el formato de fecha correcto
+using System.Globalization;
 using System.Security.Claims;
 
 public class GuarderiasController : Controller
@@ -136,48 +138,44 @@ public class GuarderiasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EnviarSolicitudCita([FromForm] CitaViewModel model)
     {
+        // La validación de fecha pasada ahora se maneja automáticamente por el atributo [FutureDate] en el ViewModel.
         if (ModelState.IsValid)
         {
             var guarderia = await _context.Guarderias.FindAsync(model.GuarderiaId);
             if (guarderia == null) return NotFound(new { success = false, message = "Guardería no encontrada." });
             
-            // Opcional: Si tienes un modelo 'Reserva', aquí es donde lo guardarías
-            // var nuevaReserva = new Reserva { ... };
-            // _context.Reservas.Add(nuevaReserva);
-            // await _context.SaveChangesAsync();
-
             try
             {
+                // URL de la imagen que quieres mostrar en el correo.
+                // ¡IMPORTANTE! Esta URL no funcionará. Debes subir tu logo a un sitio como Imgur y pegar la URL directa aquí.
+                var urlImagenLogo = "https://raw.githubusercontent.com/gist/brudnak/aba00c9a1c92d226f68e8ad8ba1e0a40/raw/e1e4a92f6072d15014f19aa8903d24a1ac0c41a4/nyan-cat.gif"; // <-- CAMBIA ESTA URL por una URL directa a tu imagen.
 
-                var urlImagenLogo = "https://www.google.com/url?sa=i&url=https%3A%2F%2Far.pinterest.com%2Fpin%2F530650768612557378%2F&psig=AOvVaw1rYHRPSG1gvycVc6JIyo36&ust=1762668932491000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCNi3qs_z4ZADFQAAAAAdAAAAABAo"; // <-- CAMBIA ESTA URL por la de tu logo
-
-                // Para mostrar la fecha en español (ej. "lunes, 15 de enero de 2024")
                 var culturaEspañol = new CultureInfo("es-ES");
 
-                // --- Correo para el Cliente ---
+                // --- Correo para el Cliente (CORREGIDO) ---
                 var subjectCliente = $"Confirmación de tu solicitud de cita en {guarderia.Nombre}";
                 var contentCliente = $@"
-                    <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;'>
+                    <div style='font-family: Arial, sans-serif; color: #3a6e4cff; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;'>
                         <img src='{urlImagenLogo}' alt='Logo de PetConnect' style='max-width: 150px; height: auto; display: block; margin-bottom: 20px;'/>
                         <h2 style='color: #4A4A4A;'>¡Hola, {model.NombreCliente}!</h2>
                         <p>Hemos recibido correctamente tu solicitud de cita para <strong style='color: #5a4fcf;'>{guarderia.Nombre}</strong>.</p>
                         <p>Estos son los detalles que registramos:</p>
                         <div style='background-color: #f7f7f7; padding: 15px; border-radius: 5px;'>
                             <ul style='list-style: none; padding: 0;'>
-                                <li><strong>Fecha:</strong> <span style='color: #d63384; font-weight: bold;'>{model.Fecha.ToString("dddd, dd 'de' MMMM 'de' yyyy", culturaEspañol)}</span></li>
-                                <li><strong>Hora:</strong> <span style='color: #d63384; font-weight: bold;'>{model.Hora:hh\\:mm}</span></li>
+                                <li><strong>Fecha:</strong> <span style='color: #e57373; font-weight: bold;'>{model.Fecha.ToString("dddd, dd 'de' MMMM 'de' yyyy", culturaEspañol)}</span></li>
+                                <li><strong>Hora:</strong> <span style='color: #e57373; font-weight: bold;'>{model.Hora.ToString(@"hh\:mm")}</span></li>
                             </ul>
                         </div>
                         <p>El personal de la guardería se pondrá en contacto contigo a la brevedad para confirmar la disponibilidad y los siguientes pasos.</p>
-                        <p style='margin-top: 30px; font-size: 0.9em; color: #777;'>Atentamente,<br>El equipo de Purr & Paws</p>
+                        <p style='margin-top: 30px; font-size: 0.9em; color: #777;'>Atentamente,<br>El equipo de PetConnect</p>
                     </div>";
                 
                 await _emailService.SendEmailAsync(model.EmailCliente, subjectCliente, contentCliente);
 
-                // --- Correo para el Dueño de la Guardería ---
-                var emailDueño = "correo.dueño.guarderia@ejemplo.com"; // <-- CAMBIA ESTO por el email real del negocio
+                // --- Correo para el Dueño de la Guardería (CORREGIDO) ---
+                var emailDueño = "correo.dueño.guarderia@ejemplo.com"; 
                 var subjectDueño = $"Nueva Solicitud de Cita: {model.NombreCliente} para el {model.Fecha:dd/MM/yyyy}";
-                var contentDueño = $@"<h1>¡Nueva Solicitud de Cita!</h1><p>Has recibido una nueva solicitud:</p><ul><li><strong>Cliente:</strong> {model.NombreCliente} ({model.EmailCliente})</li><li><strong>Fecha y Hora:</strong> {model.Fecha.ToString("dd/MM/yyyy")} a las {model.Hora:hh\\:mm}</li><li><strong>Mensaje:</strong> {(string.IsNullOrEmpty(model.Mensaje) ? "N/A" : model.Mensaje)}</li></ul><p>Por favor, ponte en contacto con el cliente para confirmar.</p>";
+                var contentDueño = $@"<h1>¡Nueva Solicitud de Cita!</h1><p>Has recibido una nueva solicitud:</p><ul><li><strong>Cliente:</strong> {model.NombreCliente} ({model.EmailCliente})</li><li><strong>Fecha y Hora:</strong> {model.Fecha.ToString("dd/MM/yyyy")} a las {model.Hora.ToString(@"hh\:mm")}</li><li><strong>Mensaje:</strong> {(string.IsNullOrEmpty(model.Mensaje) ? "N/A" : model.Mensaje)}</li></ul><p>Por favor, ponte en contacto con el cliente para confirmar.</p>";
                 
                 await _emailService.SendEmailAsync(emailDueño, subjectDueño, contentDueño);
 
@@ -185,12 +183,12 @@ public class GuarderiasController : Controller
             }
             catch (Exception ex)
             {
-                // Para depuración, puedes registrar el error
                 Console.WriteLine(ex.ToString());
                 return StatusCode(500, new { success = false, message = "Hubo un error al enviar la notificación por correo." });
             }
         }
 
+        // Si el modelo no es válido (ej. la fecha es pasada), se devolverá este error.
         var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
         return BadRequest(new { success = false, message = "Por favor, corrige los errores.", errors = errors });
     }

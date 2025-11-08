@@ -75,6 +75,9 @@ var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
 builder.Services.AddHttpClient<PerspectiveService>();
 
+builder.Services.AddScoped<IEmailService, BrevoEmailService>();
+
+
 builder.Services.AddSignalR();
 builder.Services.AddScoped<GeminiService>();
 builder.Services.AddScoped<MlNetPredictionService>(); 

@@ -23,5 +23,10 @@ namespace PetConnect.Models
         public VeterinariaDetalle? VeterinariaDetalle { get; set; }
 
         public PetShopDetalle? PetShopDetalle { get; set; }
+
+        public virtual ICollection<ComentarioServicio> Comentarios { get; set; }
+    
+        public virtual ICollection<FavoritoServicio> Favoritos { get; set; }
+    
     }
 }

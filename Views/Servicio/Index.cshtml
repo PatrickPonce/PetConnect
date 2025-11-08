@@ -1,6 +1,6 @@
-@using X.PagedList.Mvc.Core;
-@using X.PagedList;
-@model IPagedList<PetConnect.Models.Servicio>
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model IPagedList<PetConnect.ViewModels.ServicioViewModel>
 @{
     ViewData["Title"] = "Veterinarias";
 }
@@ -15,47 +15,85 @@
         <h2 class="page-subtitle">Encuentra la mejor veterinaria para tu mascota</h2>
 
         <form asp-controller="Servicio" asp-action="Index" method="get">
-            @* Llamamos a la vista parcial del buscador *@
             @await Html.PartialAsync("_SearchBarPartial", ViewData["BusquedaActual"] as string)
         </form>
 
         <div class="listing-grid-v2">
-            @foreach (var servicio in Model)
+            @foreach (var item in Model)
             {
-                <a asp-action="Detalle" asp-route-id="@servicio.Id" class="listing-card-v2">
-                    <div class="card-image">
-                        <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Logo de @servicio.Nombre" />
-                    </div>
-                    <div class="card-content">
-                        <div class="card-header">
-                            <span class="card-category">@servicio.FundacionNombre</span>
-                            <button class="card-favorite-btn"><span class="material-symbols-outlined">star</span></button>
+                <div class="listing-card-v2-wrapper">
+                    <a asp-action="Detalle" asp-route-id="@item.Servicio.Id" class="listing-card-v2">
+                        <div class="card-image">
+                            <img src="@(item.Servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Logo de @item.Servicio.Nombre" />
                         </div>
-                        <h3 class="card-title">@servicio.Nombre</h3>
-                        <p class="card-location">
-                            <span class="material-symbols-outlined">location_on</span>
-                            Lince @* Esto debería venir de la BD, pero lo hardcodeamos por ahora *@
-                        </p>
-                    </div>
-                    <div class="card-footer">
-                        <span class="btn-ver-mas">Ver más <span class="material-symbols-outlined">arrow_forward</span></span>
-                    </div>
-                </a>
+                        <div class="card-content">
+                            <h3 class="card-title">@item.Servicio.Nombre</h3>
+                            <p class="card-location">
+                                <span class="material-symbols-outlined">location_on</span>
+                                @item.Servicio.VeterinariaDetalle?.Direccion?.Split(',').FirstOrDefault()
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <span class="btn-ver-mas">Ver más <span class="material-symbols-outlined">arrow_forward</span></span>
+                        </div>
+                    </a>
+                    <button class="card-favorite-btn @(item.EsFavorito ? "active" : "")" data-id="@item.Servicio.Id" title="Añadir a favoritos">
+                        <span class="material-symbols-outlined">star</span>
+                    </button>
+                </div>
             }
         </div>
 
-        <!-- Controles de Paginación -->
         <div class="pagination-container">
             @Html.PagedListPager(Model, page => Url.Action("Index", new { page, busqueda = ViewData["BusquedaActual"] }),
                 new PagedListRenderOptions
                 {
                     LiElementClasses = new string[] { "page-item" },
                     PageClasses = new string[] { "page-link" },
-                    DisplayLinkToFirstPage = PagedListDisplayMode.Always,
-                    DisplayLinkToLastPage = PagedListDisplayMode.Always,
-                    DisplayLinkToNextPage = PagedListDisplayMode.Always,
-                    DisplayLinkToPreviousPage = PagedListDisplayMode.Always
                 })
         </div>
     </div>
 </div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const usuarioHaIniciadoSesion = @(User.Identity.IsAuthenticated ? "true" : "false");
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    document.querySelectorAll('.card-favorite-btn').forEach(button => {
+        button.addEventListener('click', async function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!usuarioHaIniciadoSesion) {
+                alert('Debes iniciar sesión para añadir a favoritos.');
+                window.location.href = '/Identity/Account/Login';
+                return;
+            }
+
+            const servicioId = this.dataset.id;
+            const response = await fetch('/Servicio/ToggleFavorito', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: `servicioId=${servicioId}`
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.classList.toggle('active', result.agregado);
+                }
+            } else {
+                alert('Hubo un error al procesar tu solicitud.');
+            }
+        });
+    });
+});
+</script>
+}

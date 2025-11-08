@@ -33,7 +33,7 @@ public class BrevoEmailService : IEmailService
         var apiInstance = new TransactionalEmailsApi(config);
 
         var senderEmail = "min.sunhee.nwn@gmail.com"; // <-- ¡RECUERDA CAMBIAR ESTO SI ES NECESARIO!
-        var senderName = "Equipo de PetConnect";
+        var senderName = "Equipo de Purr & Paws";
         var sender = new SendSmtpEmailSender(senderName, senderEmail);
 
         var to = new List<SendSmtpEmailTo> { new SendSmtpEmailTo(toEmail) };

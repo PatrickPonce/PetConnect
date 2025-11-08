@@ -7,14 +7,14 @@ namespace PetConnect.ViewModels
         [Required]
         public int GuarderiaId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Tu nombre es requerido.")]
         public string NombreCliente { get; set; }
 
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Tu email es requerido.")]
+        [EmailAddress(ErrorMessage = "Por favor, introduce un email válido.")]
         public string EmailCliente { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "La fecha es requerida.")]
         public DateTime Fecha { get; set; }
 
         public string? Mensaje { get; set; }

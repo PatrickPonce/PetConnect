@@ -27,9 +27,12 @@
         </main>
     </div>
 
+    @await Html.PartialAsync("_Footer")
     <!-- Referencia a tu archivo JavaScript principal -->
     <script src="~/js/site.js" asp-append-version="true"></script>
     
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

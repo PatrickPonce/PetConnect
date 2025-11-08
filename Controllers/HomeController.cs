@@ -3,6 +3,10 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity; // <-- AÑADE ESTA DIRECTIVA 'USING'
 using PetConnect.Models;
+using Microsoft.EntityFrameworkCore;
+using PetConnect.Data;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PetConnect.Controllers
 {
@@ -10,12 +14,14 @@ namespace PetConnect.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly SignInManager<IdentityUser> _signInManager; // <-- AÑADE ESTA LÍNEA
+        private readonly ApplicationDbContext _context;
 
         // Modifica el constructor para que también reciba SignInManager
-        public HomeController(ILogger<HomeController> logger, SignInManager<IdentityUser> signInManager)
+        public HomeController(ILogger<HomeController> logger, SignInManager<IdentityUser> signInManager, ApplicationDbContext context)
         {
             _logger = logger;
             _signInManager = signInManager; // <-- AÑADE ESTA LÍNEA
+            _context = context;
         }
 
         // --- ACCIÓN INDEX MODIFICADA ---
@@ -33,11 +39,20 @@ namespace PetConnect.Controllers
             return View(); // Devuelve /Views/Home/Index.cshtml
         }
 
-        public IActionResult Guest()
+        // --- ACCIÓN GUEST ACTUALIZADA ---
+        public async Task<IActionResult> Guest()
         {
-            // Esta será ahora la página principal para usuarios logueados e invitados.
-            // Asegúrate de que esta vista (/Views/Home/Guest.cshtml) use el layout principal (_Layout.cshtml).
-            return View();
+            // Noticias para el carrusel
+            var noticiasDestacadas = await _context.Noticias
+                .OrderByDescending(n => n.FechaPublicacion)
+                .Take(6) // Traemos 6 para que el carrusel se vea lleno
+                .ToListAsync();
+
+            // (Opcional) Podrías pasar contadores reales si quisieras
+            // ViewBag.TotalUsuarios = await _context.Users.CountAsync();
+            // ViewBag.TotalServicios = await _context.Servicios.CountAsync();
+
+            return View(noticiasDestacadas);
         }
 
         public IActionResult Privacy()
@@ -50,5 +65,22 @@ namespace PetConnect.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        // --- NUEVAS ACCIONES PARA EL FOOTER ---
+        public IActionResult Faq() // Preguntas Frecuentes
+        {
+            return View();
+        }
+
+        public IActionResult Terms() // Términos y Condiciones
+        {
+            return View();
+        }
+
+        public IActionResult Contact() // Contacto
+        {
+            return View();
+        }
+        // ------------------------------------
     }
 }

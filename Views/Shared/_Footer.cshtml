@@ -1,0 +1,181 @@
+@* Views/Shared/_Footer.cshtml *@
+@using PetConnect.Services
+@inject ConfiguracionSitioService configService
+
+@{
+    // Recuperamos el nombre del sitio para usarlo dinámicamente
+    var nombreSitio = await configService.ObtenerValorAsync("NombreSitio", "Purr & Paws");
+}
+
+<style>
+    /* --- ESTILOS DEL FOOTER --- */
+    .app-footer {
+        background-color: #97a992; /* Mismo verde corporativo que el navbar */
+        color: #f3d9d7; /* Color de texto claro */
+        padding: 4rem 2rem 2rem 2rem;
+        margin-top: auto; /* Empuja el footer al fondo si el contenido es corto */
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .footer-section h4 {
+        color: #ffffff;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    /* Pequeña línea decorativa debajo de los títulos */
+    .footer-section h4::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 40px;
+        height: 3px;
+        background-color: #E88989; /* Rosa para contraste */
+        border-radius: 2px;
+    }
+
+    .footer-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-section ul li {
+        margin-bottom: 0.8rem;
+    }
+
+    .footer-section a {
+        color: #f3d9d7;
+        text-decoration: none;
+        transition: color 0.3s, padding-left 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .footer-section a:hover {
+        color: #ffffff;
+        padding-left: 5px; /* Efecto de desplazamiento sutil al hacer hover */
+    }
+
+    .footer-about p {
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+
+    /* Redes Sociales */
+    .social-links {
+        display: flex;
+        gap: 15px;
+        margin-top: 1.5rem;
+    }
+    .social-link {
+        width: 40px; height: 40px;
+        background-color: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s;
+        text-decoration: none !important; /* Forzar sin subrayado */
+    }
+    .social-link:hover {
+        background-color: #E88989; /* Rosa al hacer hover */
+        transform: translateY(-3px);
+    }
+    .social-link img { width: 20px; height: 20px; filter: invert(1); /* Invertir color si usas iconos negros */ }
+
+    /* Barra inferior de Copyright */
+    .footer-bottom {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 2rem;
+        text-align: center;
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .app-footer { padding: 3rem 1.5rem 2rem 1.5rem; }
+        .footer-content { gap: 2.5rem; }
+    }
+</style>
+
+<footer class="app-footer">
+    <div class="footer-content">
+        
+        <div class="footer-section footer-about">
+            <h4>Sobre @nombreSitio</h4>
+            <p>
+                Somos la plataforma líder que conecta a dueños de mascotas con los mejores servicios, productos y una comunidad apasionada. Cuidamos a quien más quieres.
+            </p>
+            <div class="social-links">
+                <a href="#" class="social-link" title="Facebook">
+                    <span class="material-symbols-outlined" style="color: white;">public</span>
+                </a>
+                <a href="#" class="social-link" title="Instagram">
+                    <span class="material-symbols-outlined" style="color: white;">photo_camera</span>
+                </a>
+                <a href="#" class="social-link" title="TikTok">
+                     <span class="material-symbols-outlined" style="color: white;">music_note</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <h4>Explora</h4>
+            <ul>
+                <li><a asp-controller="Home" asp-action="Guest">Inicio</a></li>
+                <li><a asp-controller="Directorio" asp-action="Index">Directorio de Servicios</a></li>
+                <li><a asp-controller="PetShop" asp-action="Index">Tienda (Pet Shop)</a></li>
+                <li><a asp-controller="Noticias" asp-action="Index">Noticias y Consejos</a></li>
+                <li><a asp-controller="Adopcion" asp-action="Index">Adopta una Mascota</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Ayuda</h4>
+            <ul>
+                <li><a asp-controller="Home" asp-action="Faq">Preguntas Frecuentes (FAQ)</a></li>
+                
+                <li><a asp-controller="Home" asp-action="Terms">Términos y Condiciones</a></li>
+                
+                <li><a asp-controller="Home" asp-action="Privacy">Política de Privacidad</a></li>
+                
+                <li><a asp-controller="Home" asp-action="Contact">Contacto</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Contáctanos</h4>
+            <ul>
+                <li>
+                    <span class="material-symbols-outlined" style="color: #E88989;">mail</span>
+                    soporte@petconnect.com
+                </li>
+                <li>
+                    <span class="material-symbols-outlined" style="color: #E88989;">call</span>
+                    +1 (555) 123-4567
+                </li>
+                <li>
+                    <span class="material-symbols-outlined" style="color: #E88989;">location_on</span>
+                    Lima, Perú
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        &copy; @DateTime.Now.Year @nombreSitio. Todos los derechos reservados. Hecho con <span style="color: #E88989;">&#10084;</span> para las mascotas.
+    </div>
+</footer>

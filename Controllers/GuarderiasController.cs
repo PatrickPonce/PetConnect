@@ -1,25 +1,27 @@
+// Archivo: Controllers/GuarderiasController.cs
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
 using PetConnect.Models;
+using PetConnect.Services;
 using PetConnect.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 public class GuarderiasController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IEmailService _emailService;
 
-    public GuarderiasController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+    public GuarderiasController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IEmailService emailService)
     {
         _context = context;
         _userManager = userManager;
+        _emailService = emailService;
     }
 
     public async Task<IActionResult> Index(string searchString, int? pageNumber)
@@ -32,47 +34,27 @@ public class GuarderiasController : Controller
         }
 
         int pageSize = 9;
-        int currentPage = pageNumber ?? 1;
-
-        var paginatedGuarderias = await PaginatedList<Guarderia>.CreateAsync(guarderiasQuery.AsNoTracking(), currentPage, pageSize);
-
+        var paginatedGuarderias = await PaginatedList<Guarderia>.CreateAsync(guarderiasQuery.AsNoTracking(), pageNumber ?? 1, pageSize);
         var guarderiaViewModels = new List<GuarderiaViewModel>();
 
         if (User.Identity.IsAuthenticated)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var favoritosUsuarioIds = await _context.FavoritosGuarderia
-                .Where(f => f.UsuarioId == userId)
-                .Select(f => f.GuarderiaId)
-                .ToHashSetAsync();
-
+            var favoritosUsuarioIds = await _context.FavoritosGuarderia.Where(f => f.UsuarioId == userId).Select(f => f.GuarderiaId).ToHashSetAsync();
             foreach (var guarderia in paginatedGuarderias)
             {
-                guarderiaViewModels.Add(new GuarderiaViewModel
-                {
-                    Guarderia = guarderia,
-                    EsFavorito = favoritosUsuarioIds.Contains(guarderia.Id)
-                });
+                guarderiaViewModels.Add(new GuarderiaViewModel { Guarderia = guarderia, EsFavorito = favoritosUsuarioIds.Contains(guarderia.Id) });
             }
         }
         else
         {
             foreach (var guarderia in paginatedGuarderias)
             {
-                guarderiaViewModels.Add(new GuarderiaViewModel
-                {
-                    Guarderia = guarderia,
-                    EsFavorito = false
-                });
+                guarderiaViewModels.Add(new GuarderiaViewModel { Guarderia = guarderia, EsFavorito = false });
             }
         }
         
-        var paginatedViewModel = new PaginatedList<GuarderiaViewModel>(
-            guarderiaViewModels, 
-            await guarderiasQuery.CountAsync(), 
-            currentPage, 
-            pageSize
-        );
+        var paginatedViewModel = new PaginatedList<GuarderiaViewModel>(guarderiaViewModels, await guarderiasQuery.CountAsync(), pageNumber ?? 1, pageSize);
 
         ViewData["CurrentFilter"] = searchString;
         return View(paginatedViewModel);
@@ -80,21 +62,9 @@ public class GuarderiasController : Controller
     
     public async Task<IActionResult> Detalle(int? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
-        var guarderia = await _context.Guarderias
-            .Include(g => g.Comentarios)
-                .ThenInclude(c => c.Usuario)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (guarderia == null)
-        {
-            return NotFound();
-        }
-
+        if (id == null) return NotFound();
+        var guarderia = await _context.Guarderias.Include(g => g.Comentarios).ThenInclude(c => c.Usuario).FirstOrDefaultAsync(m => m.Id == id);
+        if (guarderia == null) return NotFound();
         return View(guarderia);
     }
 
@@ -103,32 +73,12 @@ public class GuarderiasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AgregarComentario(int guarderiaId, string textoComentario)
     {
-        if (string.IsNullOrWhiteSpace(textoComentario))
-        {
-            return Json(new { success = false, message = "El comentario no puede estar vacío." });
-        }
-
+        if (string.IsNullOrWhiteSpace(textoComentario)) return Json(new { success = false, message = "El comentario no puede estar vacío." });
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var usuario = await _userManager.FindByIdAsync(userId);
-
-        var comentario = new ComentarioGuarderia
-        {
-            Texto = textoComentario,
-            FechaComentario = DateTime.UtcNow,
-            GuarderiaId = guarderiaId,
-            UsuarioId = userId
-        };
-
+        var comentario = new ComentarioGuarderia { Texto = textoComentario, FechaComentario = DateTime.UtcNow, GuarderiaId = guarderiaId, UsuarioId = userId };
         _context.ComentariosGuarderia.Add(comentario);
         await _context.SaveChangesAsync();
-
-        return Json(new {
-            success = true,
-            message = "Comentario añadido.",
-            autor = usuario.UserName,
-            texto = comentario.Texto,
-            fecha = comentario.FechaComentario.ToString("g")
-        });
+        return Json(new { success = true, message = "Comentario añadido." });
     }
 
     [HttpPost]
@@ -138,20 +88,10 @@ public class GuarderiasController : Controller
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var comentario = await _context.ComentariosGuarderia.FindAsync(comentarioId);
-
-        if (comentario == null)
-        {
-            return NotFound();
-        }
-
-        if (comentario.UsuarioId != userId)
-        {
-            return Forbid();
-        }
-
+        if (comentario == null) return NotFound();
+        if (comentario.UsuarioId != userId) return Forbid();
         _context.ComentariosGuarderia.Remove(comentario);
         await _context.SaveChangesAsync();
-
         return Json(new { success = true });
     }
 
@@ -161,9 +101,7 @@ public class GuarderiasController : Controller
     public async Task<IActionResult> ToggleFavorito(int guarderiaId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var favoritoExistente = await _context.FavoritosGuarderia
-            .FirstOrDefaultAsync(f => f.GuarderiaId == guarderiaId && f.UsuarioId == userId);
-
+        var favoritoExistente = await _context.FavoritosGuarderia.FirstOrDefaultAsync(f => f.GuarderiaId == guarderiaId && f.UsuarioId == userId);
         bool agregado;
         if (favoritoExistente != null)
         {
@@ -172,47 +110,86 @@ public class GuarderiasController : Controller
         }
         else
         {
-            var nuevoFavorito = new FavoritoGuarderia
-            {
-                GuarderiaId = guarderiaId,
-                UsuarioId = userId
-            };
-            _context.FavoritosGuarderia.Add(nuevoFavorito);
+            _context.FavoritosGuarderia.Add(new FavoritoGuarderia { GuarderiaId = guarderiaId, UsuarioId = userId });
             agregado = true;
         }
-
         await _context.SaveChangesAsync();
         return Json(new { success = true, agregado = agregado });
     }
+    
     [HttpPost]
     [Authorize]
-    [ValidateAntiForgeryToken] // ¡Importante para seguridad!
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarFavoritos([FromBody] List<int> lugarIds) 
     {
-        if (lugarIds == null || !lugarIds.Any())
-        {
-            return Json(new { success = false, message = "No se seleccionaron lugares." });
-        }
-
-        // Usar FindFirstValue es más directo que UserManager si solo necesitas el ID
+        if (lugarIds == null || !lugarIds.Any()) return Json(new { success = false, message = "No se seleccionaron lugares." });
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized(new { success = false, message = "Usuario no autorizado." });
-        }
-
-        // Busca en la tabla 'FavoritosLugar' (o como se llame tu tabla join)
-        var favoritosAEliminar = await _context.FavoritosLugar 
-            .Where(f => f.UsuarioId == userId && lugarIds.Contains(f.LugarPetFriendlyId)) // <-- Ajusta 'LugarPetFriendlyId' al nombre real de tu FK
-            .ToListAsync();
-
+        if (string.IsNullOrEmpty(userId)) return Unauthorized(new { success = false, message = "Usuario no autorizado." });
+        var favoritosAEliminar = await _context.FavoritosLugar.Where(f => f.UsuarioId == userId && lugarIds.Contains(f.LugarPetFriendlyId)).ToListAsync();
         if (favoritosAEliminar.Any())
         {
             _context.FavoritosLugar.RemoveRange(favoritosAEliminar);
             await _context.SaveChangesAsync();
         }
-        
-        // Devuelve siempre success = true, incluso si no se encontró nada que borrar
         return Json(new { success = true }); 
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnviarSolicitudCita([FromForm] CitaViewModel model)
+    {
+        // La validación de fecha pasada ahora se maneja automáticamente por el atributo [FutureDate] en el ViewModel.
+        if (ModelState.IsValid)
+        {
+            var guarderia = await _context.Guarderias.FindAsync(model.GuarderiaId);
+            if (guarderia == null) return NotFound(new { success = false, message = "Guardería no encontrada." });
+            
+            try
+            {
+                // URL de la imagen que quieres mostrar en el correo.
+                // ¡IMPORTANTE! Esta URL no funcionará. Debes subir tu logo a un sitio como Imgur y pegar la URL directa aquí.
+                var urlImagenLogo = "https://raw.githubusercontent.com/gist/brudnak/aba00c9a1c92d226f68e8ad8ba1e0a40/raw/e1e4a92f6072d15014f19aa8903d24a1ac0c41a4/nyan-cat.gif"; // <-- CAMBIA ESTA URL por una URL directa a tu imagen.
+
+                var culturaEspañol = new CultureInfo("es-ES");
+
+                // --- Correo para el Cliente (CORREGIDO) ---
+                var subjectCliente = $"Confirmación de tu solicitud de cita en {guarderia.Nombre}";
+                var contentCliente = $@"
+                    <div style='font-family: Arial, sans-serif; color: #3a6e4cff; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;'>
+                        <img src='{urlImagenLogo}' alt='Logo de Purr & Paws' style='max-width: 150px; height: auto; display: block; margin: 0 auto 20px auto;'/>
+                        <h2 style='color: #4A4A4A;'>¡Hola, {model.NombreCliente}!</h2>
+                        <p>Hemos recibido correctamente tu solicitud de cita para <strong style='color: #5a4fcf;'>{guarderia.Nombre}</strong>.</p>
+                        <p>Estos son los detalles que registramos:</p>
+                        <div style='background-color: #f7f7f7; padding: 15px; border-radius: 5px;'>
+                            <ul style='list-style: none; padding: 0;'>
+                                <li><strong>Fecha:</strong> <span style='color: #e57373; font-weight: bold;'>{model.Fecha.ToString("dddd, dd 'de' MMMM 'de' yyyy", culturaEspañol)}</span></li>
+                                <li><strong>Hora:</strong> <span style='color: #e57373; font-weight: bold;'>{model.Hora.ToString(@"hh\:mm")}</span></li>
+                            </ul>
+                        </div>
+                        <p>El personal de la guardería se pondrá en contacto contigo a la brevedad para confirmar la disponibilidad y los siguientes pasos.</p>
+                        <p style='margin-top: 30px; font-size: 0.9em; color: #777;'>Atentamente,<br>El equipo de PetConnect</p>
+                    </div>";
+                
+                await _emailService.SendEmailAsync(model.EmailCliente, subjectCliente, contentCliente);
+
+                // --- Correo para el Dueño de la Guardería (CORREGIDO) ---
+                var emailDueño = "correo.dueño.guarderia@ejemplo.com"; 
+                var subjectDueño = $"Nueva Solicitud de Cita: {model.NombreCliente} para el {model.Fecha:dd/MM/yyyy}";
+                var contentDueño = $@"<h1>¡Nueva Solicitud de Cita!</h1><p>Has recibido una nueva solicitud:</p><ul><li><strong>Cliente:</strong> {model.NombreCliente} ({model.EmailCliente})</li><li><strong>Fecha y Hora:</strong> {model.Fecha.ToString("dd/MM/yyyy")} a las {model.Hora.ToString(@"hh\:mm")}</li><li><strong>Mensaje:</strong> {(string.IsNullOrEmpty(model.Mensaje) ? "N/A" : model.Mensaje)}</li></ul><p>Por favor, ponte en contacto con el cliente para confirmar.</p>";
+                
+                await _emailService.SendEmailAsync(emailDueño, subjectDueño, contentDueño);
+
+                return Json(new { success = true, message = "¡Solicitud enviada! Revisa tu correo para más detalles." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return StatusCode(500, new { success = false, message = "Hubo un error al enviar la notificación por correo." });
+            }
+        }
+
+        // Si el modelo no es válido (ej. la fecha es pasada), se devolverá este error.
+        var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+        return BadRequest(new { success = false, message = "Por favor, corrige los errores.", errors = errors });
     }
 }

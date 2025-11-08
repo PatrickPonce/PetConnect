@@ -28,8 +28,97 @@
     </div>
 
     @await Html.PartialAsync("_Footer")
+    <div id="chatbot-fab" class="chatbot-fab">
+        <span class="material-symbols-outlined">smart_toy</span>
+    </div>
+
+    <div id="chatbot-window" class="chatbot-window">
+        <div class="chatbot-header">
+            <span>Asistente Patitas 🐾</span>
+            <button id="chatbot-close" class="chatbot-close">&times;</button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages">
+            <!-- Los mensajes del chat aparecerán aquí -->
+            <div class="message bot-message">¡Hola! Soy Patitas, tu asistente virtual. ¿En qué puedo ayudarte hoy?</div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Escribe tu pregunta..." />
+            <button id="chatbot-send">
+                <span class="material-symbols-outlined">send</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Referencia a tu archivo JavaScript principal -->
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fab = document.getElementById('chatbot-fab');
+            const window = document.getElementById('chatbot-window');
+            const closeBtn = document.getElementById('chatbot-close');
+            const sendBtn = document.getElementById('chatbot-send');
+            const input = document.getElementById('chatbot-input');
+            const messagesContainer = document.getElementById('chatbot-messages');
+
+            fab.addEventListener('click', () => window.classList.toggle('open'));
+            closeBtn.addEventListener('click', () => window.classList.remove('open'));
+
+            sendBtn.addEventListener('click', sendMessage);
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const question = input.value.trim();
+                if (question === '') return;
+
+                appendMessage(question, 'user-message');
+                input.value = '';
+                showTypingIndicator();
+
+                fetch('/api/chatbot/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    removeTypingIndicator();
+                    appendMessage(data.answer, 'bot-message');
+                })
+                .catch(error => {
+                    removeTypingIndicator();
+                    appendMessage('Lo siento, algo salió mal. Intenta de nuevo.', 'bot-message');
+                    console.error('Error:', error);
+                });
+            }
+
+            function appendMessage(text, className) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', className);
+                messageDiv.textContent = text;
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll to bottom
+            }
+            
+            let typingIndicator;
+            function showTypingIndicator() {
+                typingIndicator = document.createElement('div');
+                typingIndicator.classList.add('message', 'typing-indicator');
+                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                messagesContainer.appendChild(typingIndicator);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function removeTypingIndicator() {
+                if(typingIndicator) {
+                    messagesContainer.removeChild(typingIndicator);
+                }
+            }
+        });
+    </script>
     
     @await RenderSectionAsync("Scripts", required: false)
 

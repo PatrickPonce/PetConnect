@@ -5,23 +5,27 @@ using Microsoft.AspNetCore.Identity; // <-- AÑADE ESTA DIRECTIVA 'USING'
 using PetConnect.Models;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
-using System.Linq;
+using System.Linq; // <-- AÑADE ESTE USING
 using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace PetConnect.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly SignInManager<IdentityUser> _signInManager; // <-- AÑADE ESTA LÍNEA
-        private readonly ApplicationDbContext _context;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly ApplicationDbContext _context; // <-- Necesario para noticias dinámicas
+        private readonly IConfiguration _configuration;
 
         // Modifica el constructor para que también reciba SignInManager
-        public HomeController(ILogger<HomeController> logger, SignInManager<IdentityUser> signInManager, ApplicationDbContext context)
+        // Constructor combinado que resuelve el conflicto
+        public HomeController(ILogger<HomeController> logger, SignInManager<IdentityUser> signInManager, ApplicationDbContext context, IConfiguration configuration)
         {
             _logger = logger;
-            _signInManager = signInManager; // <-- AÑADE ESTA LÍNEA
+            _signInManager = signInManager;
             _context = context;
+            _configuration = configuration;
         }
 
         // --- ACCIÓN INDEX MODIFICADA ---
@@ -76,7 +80,6 @@ namespace PetConnect.Controllers
         {
             return View();
         }
-        // ------------------------------------
 
         public async Task<IActionResult> Faq()
         {
@@ -87,6 +90,33 @@ namespace PetConnect.Controllers
                 .ToListAsync();
 
             return View(faqs);
+        }
+
+        [HttpGet("debug/gemini-models")]
+        public async Task<IActionResult> DebugGeminiModels()
+        {
+            // Usa la misma clave que tu chatbot para asegurar que la prueba sea válida
+            var apiKey = _configuration["MiGemini:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                return Content("Error: La clave 'MiGemini:ApiKey' no está configurada.");
+            }
+
+            var apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models?key={apiKey}";
+            var httpClient = new HttpClient();
+
+            try
+            {
+                var response = await httpClient.GetAsync(apiUrl);
+                var content = await response.Content.ReadAsStringAsync();
+
+                // Devolvemos el JSON crudo que nos da Google para que lo veas
+                return Content(content, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return Content($"Error al conectar con la API de Gemini: {ex.Message}");
+            }
         }
     }
 }

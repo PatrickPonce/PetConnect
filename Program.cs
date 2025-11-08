@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
 using PetConnect.Services;
-using Microsoft.AspNetCore.HttpOverrides; 
-using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; // Este 'using' puede no ser estrictamente necesario, pero no hace daño
+using Microsoft.AspNetCore.HttpOverrides;
+using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants; 
+using Microsoft.ML; 
+using Microsoft.Extensions.ML;
+using PetConnect.MlNet;
 
 // ------------------------------------
 // --- CONFIGURACIÓN DE SERVICIOS ---
@@ -65,6 +68,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ConfiguracionSitioService>();
 builder.Services.AddScoped<AnimalApiService>();
+builder.Services.AddScoped<ChatbotService>();
 
 builder.Services.AddScoped<PexelsService>();
 
@@ -74,18 +78,29 @@ builder.Services.AddScoped<GoogleSearchService>();
 
 builder.Services.AddScoped<ProductoService>();
 
+builder.Services.AddSingleton<RecommendationService>();
+
 // Configuración de Google Maps API Key
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });
 builder.Services.AddHttpClient<PerspectiveService>();
 
+builder.Services.AddScoped<IEmailService, BrevoEmailService>();
+
+
 builder.Services.AddSignalR();
 builder.Services.AddScoped<GeminiService>();
-// ------------------------------------
-// --- CONSTRUCCIÓN DE LA APP ---
-// ------------------------------------
+builder.Services.AddScoped<MlNetPredictionService>(); 
+builder.Services.AddSingleton<MLContext>();
 
-builder.Services.AddHttpClient();
+builder.Services.AddPredictionEnginePool<NoticiaData, NoticiaPrediction>()
+    .FromFile("TextClassificationModel.zip", true);
+
+builder.Services.AddPredictionEnginePool<NoticiaRatingInput, NoticiaRatingPrediction>()
+    .FromFile("RecommendationModel.zip", true);
+
+builder.Services.AddScoped<MlNetRecommendationService>();
+
 var app = builder.Build();
 
 

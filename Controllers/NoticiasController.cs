@@ -14,6 +14,7 @@ using PetConnect.Claims;
 using PetConnect.Services;
 using Microsoft.AspNetCore.SignalR;
 using PetConnect.Hubs;
+using X.PagedList;
 public class NoticiasController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -24,11 +25,13 @@ public class NoticiasController : Controller
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly GeminiService _geminiService;
+    private readonly MlNetPredictionService _mlNetPredictionService;
 
-    public NoticiasController(ApplicationDbContext context, 
-                              UserManager<IdentityUser> userManager, 
-                              SignInManager<IdentityUser> signInManager,PerspectiveService perspectiveService,
-                              IHubContext<ComentarioHub> hubContext,IHttpClientFactory httpClientFactory,IConfiguration configuration,GeminiService geminiService) 
+    public NoticiasController(ApplicationDbContext context,
+                              UserManager<IdentityUser> userManager,
+                              SignInManager<IdentityUser> signInManager, PerspectiveService perspectiveService,
+                              IHubContext<ComentarioHub> hubContext, IHttpClientFactory httpClientFactory, IConfiguration configuration,
+                              GeminiService geminiService,MlNetPredictionService mlNetPredictionService) 
     {
         _context = context;
         _userManager = userManager;
@@ -38,34 +41,43 @@ public class NoticiasController : Controller
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _geminiService = geminiService;
+        _mlNetPredictionService = mlNetPredictionService;
     }
-
- 
-    public async Task<IActionResult> Index()
+    // Reemplaza tu método Index() con este:
+    public async Task<IActionResult> Index(int? page) // 1. Acepta un número de página
     {
-        var noticias = await _context.Noticias
-                                      .OrderByDescending(n => n.EsFijada) 
-                                    .ThenByDescending(n => n.FechaPublicacion) 
-                                      .ToListAsync();
+        // 2. Define el tamaño de la página (ej. 6 noticias por página)
+        int pageSize = 6;
 
+        // 3. Define el número de página actual (si es nulo, empieza en 1)
+        int pageNumber = (page ?? 1);
+
+        // 4. Prepara la consulta (¡SIN ToListAsync() todavía!)
+        var noticiasQuery = _context.Noticias
+                                .OrderByDescending(n => n.EsFijada)
+                                .ThenByDescending(n => n.FechaPublicacion)
+                                .AsQueryable(); // AsQueryable() es clave
+
+        // 5. Obtén la página de noticias
+        var pagedNoticias = await noticiasQuery.ToPagedListAsync(pageNumber, pageSize);
+
+        // --- Tu lógica de Favoritos (sigue igual) ---
         var favoritosDelUsuario = new HashSet<int>();
         if (_signInManager.IsSignedIn(User))
         {
             var userId = _userManager.GetUserId(User);
-      
             var ids = await _context.Favoritos
-                                    .Where(f => f.UsuarioId == userId)
-                                    .Select(f => f.NoticiaId)
-                                    .ToListAsync();
+                                .Where(f => f.UsuarioId == userId)
+                                .Select(f => f.NoticiaId)
+                                .ToListAsync();
             favoritosDelUsuario = new HashSet<int>(ids);
         }
-
         ViewData["FavoritosDelUsuario"] = favoritosDelUsuario;
 
-        foreach (var noticia in noticias)
+        // --- Tu lógica de recorte de Contenido (sigue igual) ---
+        foreach (var noticia in pagedNoticias) // Ahora solo procesa las 6 de esta página
         {
             string contenidoLimpio = Regex.Replace(noticia.Contenido ?? string.Empty, "<.*?>", String.Empty);
-            
             if (contenidoLimpio.Length > 100)
             {
                 noticia.Contenido = contenidoLimpio.Substring(0, 100) + "...";
@@ -76,7 +88,8 @@ public class NoticiasController : Controller
             }
         }
 
-        return View(noticias);
+        // 6. Envía la lista PAGINADA a la vista
+        return View(pagedNoticias);
     }
     
     public async Task<IActionResult> Detalle(int? id)
@@ -386,18 +399,19 @@ public class NoticiasController : Controller
         // 4. Devuelve la respuesta al cliente que hizo la edición
         return Json(dataParaCliente);
     }
-    // Añade estos métodos DENTRO de tu clase NoticiasController
-
-// 1. GET: /Noticias/Administrador (Muestra la lista de noticias como en image_3cc995.png)
-    [Authorize(Roles = "Admin")] // ¡Importante! Solo los admins pueden ver esto
-    public async Task<IActionResult> Administrador()
+ 
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Administrador(int? page)
     {
-        var noticias = await _context.Noticias
-                                    .OrderByDescending(n => n.EsFijada) 
-                                    .ThenByDescending(n => n.FechaPublicacion) 
-                                    .ToListAsync();
-        // Esta acción usará una nueva vista: Views/Noticias/Administrador.cshtml
-        return View(noticias);
+        int pageSize = 10; // En el admin podemos mostrar más
+        int pageNumber = (page ?? 1);
+
+        var pagedNoticias = await _context.Noticias
+                                .OrderByDescending(n => n.EsFijada)
+                                .ThenByDescending(n => n.FechaPublicacion)
+                                .ToPagedListAsync(pageNumber, pageSize);
+
+        return View(pagedNoticias);
     }
 
     // 2. GET: /Noticias/Crear (Muestra el formulario para crear una noticia nueva)
@@ -740,9 +754,12 @@ public class NoticiasController : Controller
     // Pega este método NUEVO en NoticiasController.cs
 // ¡Asegúrate de tener "using System.Text.RegularExpressions;" al inicio de tu archivo!
 
+    // En NoticiasController.cs
+
+    // Este código ya está correcto. Asegúrate de tenerlo en tu controlador.
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    [ValidateAntiForgeryToken] // El token es importante
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SugerirEtiquetas([FromForm] string titulo, [FromForm] string contenido)
     {
         if (string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(contenido))
@@ -750,11 +767,9 @@ public class NoticiasController : Controller
             return Json(new { success = false, message = "El título y el contenido son necesarios." });
         }
 
-        // 1. Limpiamos el HTML del contenido para enviar texto limpio a la IA
-        // Esto ahorra tokens y mejora la precisión.
+        // 1. Limpiamos el HTML para el análisis de ML.NET y Gemini
         string contenidoLimpio = Regex.Replace(contenido, "<.*?>", String.Empty);
         
-        // 2. Comprobamos que no esté vacío después de limpiar
         if (string.IsNullOrWhiteSpace(contenidoLimpio) || contenidoLimpio.Length < 50)
         {
             return Json(new { success = false, message = "El contenido es muy corto para generar etiquetas." });
@@ -762,16 +777,23 @@ public class NoticiasController : Controller
 
         try
         {
-            // 3. Llamamos al NUEVO método del servicio
-            string etiquetasRespuesta = await _geminiService.GenerarEtiquetas(titulo, contenidoLimpio);
+            // 2. ✅ USAR ML.NET: Predecir la categoría principal de la noticia.
+            string etiquetaPrincipal = _mlNetPredictionService.PredecirCategoria(titulo, contenidoLimpio);
 
-            // 4. Verificamos si la respuesta del servicio es un error
+            if (etiquetaPrincipal == "Modelo no disponible")
+            {
+                return Json(new { success = false, message = "El modelo de clasificación (ML.NET) no ha sido cargado." });
+            }
+            
+            // 3. Usar Gemini: Enviamos el TÍTULO y la ETIQUETA PREDECIDA a Gemini para que genere la lista final.
+            string etiquetasRespuesta = await _geminiService.GenerarEtiquetas(titulo, etiquetaPrincipal); 
+
             if (etiquetasRespuesta.StartsWith("Error:"))
             {
                 return Json(new { success = false, message = etiquetasRespuesta });
             }
 
-            // 5. ¡Éxito! Devolvemos la lista de etiquetas
+            // 4. ¡Éxito! Devolvemos la lista de etiquetas
             return Json(new { success = true, etiquetas = etiquetasRespuesta });
         }
         catch (Exception ex)

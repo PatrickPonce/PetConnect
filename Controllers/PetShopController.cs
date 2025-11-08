@@ -18,19 +18,22 @@ public class PetShopController : Controller
     private readonly PexelsService _pexelsService;
     private readonly YouTubeService _youTubeService;
     private readonly GoogleSearchService _googleSearchService; // Servicio añadido
+    private readonly RecommendationService _recommendationService;
 
     public PetShopController(
-        ApplicationDbContext context, 
-        UserManager<IdentityUser> userManager, 
-        PexelsService pexelsService, 
-        YouTubeService youTubeService, 
-        GoogleSearchService googleSearchService) // Inyección añadida
+        ApplicationDbContext context,
+        UserManager<IdentityUser> userManager,
+        PexelsService pexelsService,
+        YouTubeService youTubeService,
+        GoogleSearchService googleSearchService,
+        RecommendationService recommendationService) // Inyección añadida
     {
         _context = context;
         _userManager = userManager;
         _pexelsService = pexelsService;
         _youTubeService = youTubeService;
         _googleSearchService = googleSearchService; // Asignación añadida
+        _recommendationService = recommendationService;
     }
 
     // --- ACCIÓN INDEX (MENÚ DE CATEGORÍAS) ---
@@ -123,22 +126,54 @@ public class PetShopController : Controller
         return View("Productos", productosVM);
     }
 
-    // --- ACCIÓN DETALLE ACTUALIZADA ---
+    // --- ACCIÓN DETALLE ACTUALIZADA CON ML ---
     public async Task<IActionResult> Detalle(int id)
     {
         var producto = await _context.ProductosPetShop
-            .Include(p => p.Resenas) // <-- Cargar reseñas
-                .ThenInclude(r => r.Usuario) // <-- Cargar autores de las reseñas
-            .FirstOrDefaultAsync(p => p.Id == id); // Usamos FirstOrDefaultAsync para poder usar Include
+            .Include(p => p.Resenas)
+                .ThenInclude(r => r.Usuario)
+            .FirstOrDefaultAsync(p => p.Id == id);
             
         if (producto == null) return NotFound();
         
-        // API 2: Imagen de Pexels
+        // APIs existentes
         producto.UrlImagen = await _pexelsService.ObtenerImagenAsync(producto.QueryImagen);
-        
-        // API 3: Videos de YouTube
-        var videos = await _youTubeService.BuscarVideosAsync(producto.Nombre);
-        ViewBag.VideoIds = videos;
+        ViewBag.VideoIds = await _youTubeService.BuscarVideosAsync(producto.Nombre);
+
+        // --- INICIO: LÓGICA DE RECOMENDACIÓN ML.NET ---
+        var recomendaciones = new List<ProductoPetShop>();
+        if (User.Identity.IsAuthenticated)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            // 1. Obtenemos los IDs recomendados por la IA
+            var recommendedIds = await _recommendationService.GetRecommendationsAsync(userId, topN: 3);
+            
+            // 2. Si la IA no dio suficientes (ej. usuario nuevo), rellenamos con productos aleatorios
+            if (recommendedIds.Count < 3)
+            {
+                var randomIds = await _context.ProductosPetShop
+                    .Where(p => p.Id != id && !recommendedIds.Contains(p.Id))
+                    .OrderBy(r => Guid.NewGuid())
+                    .Take(3 - recommendedIds.Count)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+                recommendedIds.AddRange(randomIds);
+            }
+
+            // 3. Cargamos los productos completos desde la BD
+            recomendaciones = await _context.ProductosPetShop
+                .Where(p => recommendedIds.Contains(p.Id))
+                .ToListAsync();
+
+            // 4. Cargamos sus imágenes de Pexels
+            foreach (var rec in recomendaciones)
+            {
+                rec.UrlImagen = await _pexelsService.ObtenerImagenAsync(rec.QueryImagen);
+            }
+        }
+        ViewBag.Recomendaciones = recomendaciones;
+        // --- FIN: LÓGICA DE RECOMENDACIÓN ML.NET ---
         
         return View(producto);
     }

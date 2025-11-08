@@ -6,8 +6,11 @@
 @{
     ViewData["Title"] = Model.Nombre;
     var videoIds = ViewBag.VideoIds as List<string> ?? new List<string>();
-    var promedio = Model.PromedioCalificacion;
-    var totalResenas = Model.Resenas.Count;
+    // Cálculo del promedio: si no hay reseñas, es 0; si hay, calculamos el promedio.
+    var promedio = (Model.Resenas != null && Model.Resenas.Any()) ? Model.Resenas.Average(r => r.Puntuacion) : 0;
+    var totalResenas = Model.Resenas?.Count ?? 0;
+    // Recomendaciones (si implementaste ML.NET)
+    var recomendaciones = ViewBag.Recomendaciones as List<PetConnect.Models.ProductoPetShop>;
 }
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
@@ -15,243 +18,70 @@
 <style>
     body { background-color: #fdfaf1; font-family: 'Poppins', sans-serif; }
 
+    /* --- ESTILOS BREADCRUMBS --- */
+    .breadcrumb-nav { max-width: 1100px; margin: 1rem auto 2rem auto; padding: 1rem 1.5rem; background-color: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); font-size: 0.9rem; }
+    .breadcrumb-list { display: flex; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; align-items: center; }
+    .breadcrumb-item { display: flex; align-items: center; color: #666; }
+    .breadcrumb-item a { color: #777; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: #E88989; }
+    .breadcrumb-item::after { content: '›'; font-size: 1.2rem; margin: 0 12px; color: #ccc; line-height: 1; }
+    .breadcrumb-item.active { color: #E88989; font-weight: 600; }
+    .breadcrumb-item.active::after { content: none; }
+
     /* --- CONTENEDOR PRINCIPAL --- */
     .product-detail-container {
-        max-width: 1100px;
-        margin: 3rem auto;
-        background-color: #fff;
-        border-radius: 25px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-        overflow: hidden;
+        max-width: 1100px; margin: 0 auto 4rem auto; background-color: #fff;
+        border-radius: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); overflow: hidden;
     }
+    .product-main-info { display: flex; padding: 40px; gap: 50px; }
 
-    .product-main-info {
-        display: flex;
-        padding: 40px;
-        gap: 50px;
-    }
-
-    /* --- IMAGEN DEL PRODUCTO --- */
-    .product-image-wrapper {
-        flex: 1;
-        max-width: 500px;
-        position: relative;
-    }
-    .product-image-wrapper img {
-        width: 100%;
-        height: auto;
-        border-radius: 20px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-        object-fit: cover;
-    }
-
-    /* --- INFO DEL PRODUCTO --- */
-    .product-info-wrapper {
-        flex: 1.2;
-        display: flex;
-        flex-direction: column;
-    }
-    .product-brand {
-        color: #999;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        font-weight: 700;
-        letter-spacing: 1px;
-        margin-bottom: 0.5rem;
-    }
-    .product-title {
-        font-size: 2.8rem;
-        font-weight: 800;
-        color: #333;
-        line-height: 1.2;
-        margin-bottom: 1rem;
-    }
-    .product-rating-summary {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 2rem;
-    }
-    .stars-display { color: #FFC107; /* Color dorado para estrellas */ }
+    /* --- IMAGEN Y DETALLES --- */
+    .product-image-wrapper { flex: 1; max-width: 500px; }
+    .product-image-wrapper img { width: 100%; height: auto; border-radius: 20px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); object-fit: cover; }
+    .product-info-wrapper { flex: 1.2; display: flex; flex-direction: column; }
+    .product-brand { color: #999; text-transform: uppercase; font-size: 0.9rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .product-title { font-size: 2.8rem; font-weight: 800; color: #333; line-height: 1.2; margin-bottom: 1rem; }
+    .product-rating-summary { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+    .stars-display { color: #FFC107; display: flex; }
     .material-symbols-rounded.filled { font-variation-settings: 'FILL' 1; }
     .rating-text { color: #777; font-size: 0.95rem; }
+    .product-price { font-size: 2.5rem; color: #E88989; font-weight: 700; margin-bottom: 1.5rem; }
+    .product-description { font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 2rem; }
+    .product-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 3rem; }
+    .product-tag { background-color: #f0f8ed; color: #5a8c5a; padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; }
 
-    .product-price {
-        font-size: 2.5rem;
-        color: #E88989; /* Rosa */
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-    }
-    .product-description {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: #555;
-        margin-bottom: 2rem;
-    }
-    .product-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 3rem;
-    }
-    .product-tag {
-        background-color: #f0f8ed;
-        color: #5a8c5a;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
+    /* --- SECCIÓN INFERIOR (RESEÑAS, VIDEOS, RECOMENDACIONES) --- */
+    .details-lower-section { background-color: #fafafa; padding: 40px; border-top: 1px solid #eee; }
+    .section-title { font-size: 1.8rem; font-weight: 700; color: #444; margin-bottom: 2rem; display: flex; align-items: center; gap: 10px; }
 
-    /* --- SECCIÓN DE RESEÑAS Y VIDEOS --- */
-    .details-lower-section {
-        background-color: #fafafa;
-        padding: 40px;
-        border-top: 1px solid #eee;
-    }
-    .section-title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #444;
-        margin-bottom: 2rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    /* --- FORMULARIO DE RESEÑA (ESTRELLAS INTERACTIVAS) --- */
-    .review-form-card {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        margin-bottom: 3rem;
-    }
-    .star-rating-input {
-        display: flex;
-        flex-direction: row-reverse; /* Truco para que el hover funcione de izquierda a derecha */
-        justify-content: flex-end;
-        gap: 5px;
-        margin-bottom: 1.5rem;
-    }
+    /* --- FORMULARIO RESEÑA --- */
+    .review-form-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 3rem; }
+    .star-rating-input { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 5px; margin-bottom: 1.5rem; }
     .star-rating-input input { display: none; }
-    .star-rating-input label {
-        font-size: 2.5rem;
-        color: #ddd;
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-    /* Magia CSS para las estrellas: al pasar el mouse o seleccionar, se colorean */
-    .star-rating-input input:checked ~ label,
-    .star-rating-input label:hover,
-    .star-rating-input label:hover ~ label {
-        color: #FFC107;
-    }
-    .star-rating-input label .material-symbols-rounded {
-        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
-    }
-
-    .review-textarea {
-        width: 100%;
-        padding: 15px;
-        border: 2px solid #eee;
-        border-radius: 12px;
-        resize: vertical;
-        min-height: 100px;
-        font-family: inherit;
-        margin-bottom: 1rem;
-        transition: border-color 0.3s;
-    }
+    .star-rating-input label { font-size: 2.5rem; color: #ddd; cursor: pointer; transition: color 0.2s; }
+    .star-rating-input input:checked ~ label, .star-rating-input label:hover, .star-rating-input label:hover ~ label { color: #FFC107; }
+    .star-rating-input label .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48; }
+    .review-textarea { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; resize: vertical; min-height: 100px; font-family: inherit; margin-bottom: 1rem; transition: border-color 0.3s; }
     .review-textarea:focus { outline: none; border-color: #97a992; }
-    .btn-submit-review {
-        background-color: #97a992; color: white; padding: 12px 30px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.3s;
-    }
+    .btn-submit-review { background-color: #97a992; color: white; padding: 12px 30px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.3s; }
     .btn-submit-review:hover { background-color: #82947c; }
 
-    /* --- LISTA DE RESEÑAS --- */
+    /* --- LISTA RESEÑAS --- */
     .reviews-list { display: flex; flex-direction: column; gap: 20px; }
-    .review-card {
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        border: 1px solid #eee;
-    }
+    .review-card { background: white; padding: 25px; border-radius: 15px; border: 1px solid #eee; }
     .review-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
     .review-author { font-weight: 700; color: #333; display: flex; align-items: center; gap: 10px; }
     .review-avatar-placeholder { width: 35px; height: 35px; background-color: #E88989; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     .review-date { color: #999; font-size: 0.9rem; }
-    .review-stars { color: #FFC107; margin-bottom: 10px; }
+    .review-stars { color: #FFC107; margin-bottom: 10px; display: flex; }
     .review-text { color: #555; line-height: 1.6; }
 
-    /* --- VIDEOS (Estilo que ya tenías) --- */
-    .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px; }
+    /* --- VIDEOS Y RECOMENDACIONES --- */
+    .video-grid, .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-    
-    /* --- ESTADO VACÍO/INVITADO --- */
-    .guest-prompt-card {
-        background-color: #fff0f0; border: 2px dashed #E88989; padding: 30px;
-        border-radius: 15px; text-align: center; color: #d17a7a;
-    }
+    .guest-prompt-card { background-color: #fff0f0; border: 2px dashed #E88989; padding: 30px; border-radius: 15px; text-align: center; color: #d17a7a; }
     .guest-prompt-card a { color: #333; text-decoration: underline; font-weight: 700; }
-
-    /* --- INICIO: ESTILOS PARA BREADCRUMBS (MEJORADOS) --- */
-    .breadcrumb-nav {
-        max-width: 1100px; /* Alineado con el contenedor del producto */
-        margin: 1rem auto 2rem auto;
-        padding: 1rem 1.5rem;
-        background-color: #fff; /* Fondo blanco para destacar */
-        border-radius: 12px;    /* Bordes redondeados */
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* Sombra muy sutil */
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.9rem;
-    }
-    
-    .breadcrumb-list {
-        display: flex;
-        flex-wrap: wrap;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        align-items: center;
-    }
-    
-    .breadcrumb-item {
-        display: flex;
-        align-items: center;
-        color: #666;
-    }
-    
-    .breadcrumb-item a {
-        color: #777;
-        text-decoration: none;
-        transition: color 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 5px; /* Espacio para posibles iconos */
-    }
-    .breadcrumb-item a:hover {
-        color: #E88989; /* Rosa al pasar el mouse */
-    }
-    
-    /* Separador mejorado (icono chevron) */
-    .breadcrumb-item::after {
-        content: '›'; /* Usamos un carácter más bonito que '>' */
-        font-size: 1.2rem;
-        margin: 0 12px;
-        color: #ccc;
-        line-height: 1;
-    }
-    
-    .breadcrumb-item.active {
-        color: #E88989; /* El último elemento en rosa */
-        font-weight: 600;
-    }
-    
-    .breadcrumb-item.active::after {
-        content: none; /* Oculta el separador del último */
-    }
-    /* --- FIN: ESTILOS PARA BREADCRUMBS --- */
 
     @@media (max-width: 768px) {
         .product-main-info { flex-direction: column; padding: 20px; gap: 30px; }
@@ -261,18 +91,17 @@
 </style>
 
 @section Breadcrumbs {
-    <nav class="breadcrumb-nav" style="max-width: 1100px; margin: 0 auto; padding: 1rem 0;">
+    <nav class="breadcrumb-nav">
         <ol class="breadcrumb-list">
             <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Guest">Inicio</a></li>
             <li class="breadcrumb-item"><a asp-controller="PetShop" asp-action="Index">Categorías</a></li>
             <li class="breadcrumb-item"><a asp-controller="PetShop" asp-action="Productos" asp-route-tipo="@Model.TipoProducto">@Model.TipoProducto</a></li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.Nombre</li>
+            <li class="breadcrumb-item active">@Model.Nombre</li>
         </ol>
     </nav>
 }
 
 <div class="product-detail-container">
-    
     <div class="product-main-info">
         <div class="product-image-wrapper">
              <img src="@Model.UrlImagen" alt="@Model.Nombre" onerror="this.src='/images/placeholder.png';" />
@@ -280,7 +109,6 @@
         <div class="product-info-wrapper">
             <div class="product-brand">@Model.TipoProducto</div>
             <h1 class="product-title">@Model.Nombre</h1>
-            
             <div class="product-rating-summary">
                 <div class="stars-display">
                     @for(int i=1; i<=5; i++) {
@@ -289,17 +117,10 @@
                 </div>
                 <span class="rating-text">@promedio.ToString("0.0") (@totalResenas opiniones)</span>
             </div>
-
             <div class="product-price">S/. @Model.Precio.ToString("0.00")</div>
-            
-            <div class="product-description">
-                @Model.Descripcion
-            </div>
-
+            <div class="product-description">@Model.Descripcion</div>
             <div class="product-tags">
-                @foreach(var tag in Model.Tags) {
-                    <span class="product-tag">#@tag</span>
-                }
+                @foreach(var tag in Model.Tags) { <span class="product-tag">#@tag</span> }
             </div>
         </div>
     </div>
@@ -307,10 +128,7 @@
     <div class="details-lower-section">
         
         <div id="resenas-section" style="margin-bottom: 4rem;">
-            <h2 class="section-title">
-                <span class="material-symbols-rounded" style="color: #FFC107;">reviews</span>
-                Opiniones de Clientes
-            </h2>
+            <h2 class="section-title"><span class="material-symbols-rounded" style="color: #FFC107;">reviews</span> Opiniones de Clientes</h2>
 
             @if (SignInManager.IsSignedIn(User))
             {
@@ -319,7 +137,6 @@
                     <form asp-action="AgregarResena" method="post">
                         <input type="hidden" name="productoId" value="@Model.Id" />
                         @Html.AntiForgeryToken()
-                        
                         <div class="star-rating-input">
                             <input type="radio" id="star5" name="puntuacion" value="5" required /><label for="star5" title="Excelente"><span class="material-symbols-rounded">star</span></label>
                             <input type="radio" id="star4" name="puntuacion" value="4" /><label for="star4" title="Muy bueno"><span class="material-symbols-rounded">star</span></label>
@@ -327,7 +144,6 @@
                             <input type="radio" id="star2" name="puntuacion" value="2" /><label for="star2" title="Regular"><span class="material-symbols-rounded">star</span></label>
                             <input type="radio" id="star1" name="puntuacion" value="1" /><label for="star1" title="Malo"><span class="material-symbols-rounded">star</span></label>
                         </div>
-
                         <textarea name="texto" class="review-textarea" placeholder="¿Qué te pareció este producto? Cuéntanos tu experiencia..." required></textarea>
                         <button type="submit" class="btn-submit-review">Publicar Opinión</button>
                     </form>
@@ -351,15 +167,13 @@
                         <div class="review-card">
                             <div class="review-header">
                                 <div class="review-author">
-                                    <div class="review-avatar-placeholder">@resena.Usuario.UserName?.Substring(0, 1).ToUpper()</div>
-                                    @resena.Usuario.UserName
+                                    <div class="review-avatar-placeholder">@(resena.Usuario?.UserName?.Substring(0, 1).ToUpper() ?? "?")</div>
+                                    @(resena.Usuario?.UserName ?? "Usuario eliminado")
                                 </div>
                                 <div class="review-date">@resena.Fecha.ToString("dd MMM yyyy")</div>
                             </div>
                             <div class="review-stars">
-                                @for(int i=1; i<=5; i++) {
-                                    <span class="material-symbols-rounded @(i <= resena.Puntuacion ? "filled" : "")" style="font-size: 1.2rem;">star</span>
-                                }
+                                @for(int i=1; i<=5; i++) { <span class="material-symbols-rounded @(i <= resena.Puntuacion ? "filled" : "")" style="font-size: 1.2rem;">star</span> }
                             </div>
                             <p class="review-text">@resena.Texto</p>
                         </div>
@@ -374,11 +188,8 @@
 
         @if (videoIds.Any())
         {
-            <div class="video-reseñas-section">
-                <h2 class="section-title">
-                    <span class="material-symbols-rounded" style="color: #E88989;">smart_display</span>
-                    Reseñas en Video
-                </h2>
+            <div class="video-reseñas-section" style="margin-bottom: 4rem;">
+                <h2 class="section-title"><span class="material-symbols-rounded" style="color: #E88989;">smart_display</span> Reseñas en Video</h2>
                 <div class="video-grid">
                     @foreach(var videoId in videoIds)
                     {
@@ -390,4 +201,26 @@
             </div>
         }
 
-    </div> </div>
+        @if (recomendaciones != null && recomendaciones.Any())
+        {
+            <div class="recommendations-section" style="border-top: 2px solid #f0f0f0; padding-top: 3rem;">
+                <h2 class="section-title"><span class="material-symbols-rounded" style="color: #97a992;">neurology</span> Sugerencias para ti (IA)</h2>
+                <div class="product-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                    @foreach (var item in recomendaciones)
+                    {
+                        <div class="product-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s;">
+                            <div style="height: 180px; overflow: hidden;">
+                                 <img src="@item.UrlImagen" alt="@item.Nombre" style="width: 100%; height: 100%; object-fit: cover;" />
+                            </div>
+                            <div style="padding: 1rem;">
+                                <div style="font-weight: 700; margin-bottom: 0.5rem; height: 2.4em; overflow: hidden;">@item.Nombre</div>
+                                <a asp-action="Detalle" asp-route-id="@item.Id" style="color: #97a992; font-weight: 600; text-decoration: none;">Ver Producto</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

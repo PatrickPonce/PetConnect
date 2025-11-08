@@ -1,5 +1,8 @@
+@model IPagedList<PetConnect.Models.Noticia>
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
 @using System.Text.RegularExpressions
-@model IEnumerable<PetConnect.Models.Noticia>
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 
@@ -54,6 +57,50 @@
     .noticia-card.fijada .btn-fijar-admin {
         background-color: #ff8fab; 
     }
+    /* --- ESTILOS DE PAGINACIÓN --- */
+    .pagination {
+        display: inline-flex;
+        padding-left: 0;
+        list-style: none;
+        border-radius: 0.25rem;
+    }
+
+    .page-item {
+        margin: 0 2px;
+    }
+
+    .page-item .page-link {
+        position: relative;
+        display: block;
+        padding: 0.5rem 0.75rem;
+        line-height: 1.25;
+        color: #d67a7a; /* Tu color rosa */
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        text-decoration: none;
+    }
+
+    .page-item .page-link:hover {
+        color: #fff;
+        background-color: #d67a7a;
+        border-color: #d67a7a;
+    }
+
+    /* Estilo para la página actual */
+    .page-item.active .page-link {
+        z-index: 1;
+        color: #fff;
+        background-color: #72626e; /* Tu color oscuro */
+        border-color: #72626e;
+    }
+
+    /* Estilo para "Anterior/Siguiente" deshabilitado */
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
 </style>
 
 <div class="admin-header">
@@ -85,6 +132,16 @@
         </div>
     }
 </div>
+<div class="paginacion-container" style="text-align: center; margin-top: 2rem;">
+    @Html.PagedListPager(Model, page => Url.Action("Administrador", new { page }), new PagedListRenderOptions
+    {
+        ContainerDivClasses = new[] { "pagination-wrapper" },
+        UlElementClasses = new[] { "pagination" },
+        LiElementClasses = new[] { "page-item" },
+        PageClasses = new[] { "page-link" }
+    })
+</div>
+
 
 @section Scripts {
     <script>

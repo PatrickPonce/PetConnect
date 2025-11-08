@@ -28,7 +28,7 @@ namespace PetConnect.Controllers
         public async Task<IActionResult> Index(string busqueda, int? page)
         {
             ViewData["BusquedaActual"] = busqueda;
-            
+
             var query = _context.Servicios
                 .Include(s => s.VeterinariaDetalle) // Incluir detalles para la dirección
                 .Where(s => s.Tipo == TipoServicio.Veterinaria)
@@ -39,7 +39,7 @@ namespace PetConnect.Controllers
             {
                 query = query.Where(s => s.Nombre.ToLower().Contains(busqueda.ToLower()));
             }
-            
+
             int pageSize = 6;
             var pagedServicios = await query.ToPagedListAsync(page ?? 1, pageSize);
             var viewModels = new List<ServicioViewModel>();
@@ -51,7 +51,7 @@ namespace PetConnect.Controllers
                     .Where(f => f.UsuarioId == userId)
                     .Select(f => f.ServicioId)
                     .ToHashSetAsync();
-                
+
                 foreach (var servicio in pagedServicios)
                 {
                     viewModels.Add(new ServicioViewModel { Servicio = servicio, EsFavorito = favoritosIds.Contains(servicio.Id) });
@@ -64,7 +64,7 @@ namespace PetConnect.Controllers
                     viewModels.Add(new ServicioViewModel { Servicio = servicio, EsFavorito = false });
                 }
             }
-            
+
             var pagedViewModel = new StaticPagedList<ServicioViewModel>(viewModels, pagedServicios.GetMetaData());
             return View(pagedViewModel);
         }
@@ -90,7 +90,7 @@ namespace PetConnect.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AgregarComentario(int servicioId, string textoComentario)
         {
-            if (string.IsNullOrWhiteSpace(textoComentario)) 
+            if (string.IsNullOrWhiteSpace(textoComentario))
                 return Json(new { success = false, message = "El comentario no puede estar vacío." });
 
             var userId = _userManager.GetUserId(User);
@@ -127,31 +127,37 @@ namespace PetConnect.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleFavorito(int servicioId) // <-- CAMBIO: Recibimos un simple 'int'
+        public async Task<IActionResult> ToggleFavorito([FromBody] ToggleServicioRequest request)
         {
-            if (servicioId <= 0)
-            {
-                return BadRequest(new { success = false, message = "ID de servicio no válido." });
-            }
-
             var userId = _userManager.GetUserId(User);
+
             var favoritoExistente = await _context.FavoritosServicio
-                .FirstOrDefaultAsync(f => f.ServicioId == servicioId && f.UsuarioId == userId);
+                .FirstOrDefaultAsync(f => f.ServicioId == request.ServicioId && f.UsuarioId == userId);
 
             bool agregado;
             if (favoritoExistente != null)
             {
                 _context.FavoritosServicio.Remove(favoritoExistente);
-                agregado = false;
+                agregado = false; // Se quitó
             }
             else
             {
-                _context.FavoritosServicio.Add(new FavoritoServicio { ServicioId = servicioId, UsuarioId = userId });
-                agregado = true;
+                var nuevoFavorito = new FavoritoServicio
+                {
+                    ServicioId = request.ServicioId,
+                    UsuarioId = userId
+                };
+                _context.FavoritosServicio.Add(nuevoFavorito);
+                agregado = true; // Se añadió
             }
+
             await _context.SaveChangesAsync();
+
+            // Devolvemos la respuesta JSON que el script espera
             return Json(new { success = true, agregado = agregado });
         }
+
+
 
 
         [HttpPost]
@@ -192,4 +198,9 @@ namespace PetConnect.Controllers
             return View();
         }
     }
+}
+
+public class ToggleServicioRequest
+{
+    public int ServicioId { get; set; }
 }

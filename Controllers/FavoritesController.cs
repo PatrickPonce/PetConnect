@@ -40,8 +40,6 @@ public class FavoritesController : Controller
         // 4. AÑADIR: Obtener los Servicios (Veterinarias) Favoritos
         var serviciosQuery = _context.FavoritosServicio
             .Where(f => f.UsuarioId == userId)
-            .Include(f => f.Servicio) // Incluimos el objeto Servicio
-                .ThenInclude(s => s.VeterinariaDetalle) // Y sus detalles para tener la dirección
             .Select(f => f.Servicio);
         
 

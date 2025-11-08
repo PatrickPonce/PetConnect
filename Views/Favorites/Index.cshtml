@@ -135,6 +135,32 @@
             </section>
         }
 
+<!-- SECCIÓN DE VETERINARIAS (SERVICIOS) -->
+        @if (Model.ServiciosFavoritos.Any())
+        {
+            <section class="service-section">
+                <h2>Veterinarias</h2>
+                <div class="favorites-grid">
+                    @foreach (var servicio in Model.ServiciosFavoritos)
+                    {
+                        <div class="item-card" id="favorito-servicio-@servicio.Id">
+                             <button class="remove-favorito-btn" data-type="servicio" data-id="@servicio.Id" title="Quitar de favoritos">
+                                 <span class="material-symbols-outlined">favorite</span>
+                             </button>
+                            
+                            <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="Imagen de @servicio.Nombre" class="item-imagen" />
+                            <div class="item-contenido">
+                                <h3 class="item-nombre">@servicio.Nombre</h3>
+                                <p class="item-ubicacion">@servicio.VeterinariaDetalle?.Direccion?.Split(',').FirstOrDefault()</p>
+                                <a asp-controller="Servicio" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn-ver-mas">Ver más detalles</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+
         @if (Model.GuarderiasFavoritas.Any())
         {
             <section class="service-section">
@@ -253,6 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (type === 'noticia') {
                 url = '/Noticias/ToggleFavorito';
                 bodyObject = { noticiaId: id }; // <-- Objeto JSON
+            } else if (type === 'servicio') {
+                url = '/Servicio/ToggleFavorito';
+                bodyObject = { servicioId: id };
             } else {
                 console.error('Tipo desconocido:', type);
                 ocultarModalConfirmarUno();

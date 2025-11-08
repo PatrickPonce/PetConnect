@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Directorio de Servicios";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-dashboard-header {
+        text-align: center; margin-bottom: 4rem;
+    }
+    .admin-dashboard-title {
+        color: #333; font-weight: 800; font-size: 2.5rem; margin-bottom: 1rem;
+    }
+    .admin-dashboard-subtitle {
+        color: #777; font-size: 1.2rem; max-width: 600px; margin: 0 auto;
+    }
+    .admin-cards-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;
+    }
+    .admin-card {
+        background: white; border-radius: 20px; padding: 2.5rem 2rem;
+        text-align: center; text-decoration: none; color: #555;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.3s ease;
+        display: flex; flex-direction: column; align-items: center;
+    }
+    .admin-card:hover {
+        transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    }
+    .admin-card-icon {
+        width: 80px; height: 80px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 1.5rem; font-size: 2.5rem;
+    }
+    .admin-card h3 { font-weight: 700; margin-bottom: 0.5rem; color: #333; }
+    .admin-card p { font-size: 0.9rem; opacity: 0.8; }
+
+    /* Colores temáticos */
+    .card-veterinaria .admin-card-icon { background-color: #e3f2fd; color: #1565c0; }
+    .card-petshop .admin-card-icon { background-color: #fce4ec; color: #c2185b; }
+    .card-lugar .admin-card-icon { background-color: #e8f5e9; color: #2e7d32; }
+    .card-guarderia .admin-card-icon { background-color: #fff3e0; color: #e65100; }
+    .card-adopcion .admin-card-icon { background-color: #f3e5f5; color: #6a1b9a; }
+</style>
+
+<div class="container mt-5">
+    <div class="admin-dashboard-header">
+        <h1 class="admin-dashboard-title">Gestión del Directorio</h1>
+        <p class="admin-dashboard-subtitle">Selecciona el área que deseas administrar.</p>
+    </div>
+
+    <div class="admin-cards-grid">
+        <a asp-action="Listado" asp-route-tipo="Veterinaria" class="admin-card card-veterinaria">
+            <div class="admin-card-icon"><span class="material-symbols-outlined">medical_services</span></div>
+            <h3>Veterinarias</h3>
+            <p>Gestiona clínicas y hospitales.</p>
+        </a>
+        <a asp-action="Listado" asp-route-tipo="PetShop" class="admin-card card-petshop">
+            <div class="admin-card-icon"><span class="material-symbols-outlined">storefront</span></div>
+            <h3>Pet Shops</h3>
+            <p>Administra tiendas de productos.</p>
+        </a>
+        <a asp-action="Listado" asp-route-tipo="LugarPetFriendly" class="admin-card card-lugar">
+            <div class="admin-card-icon"><span class="material-symbols-outlined">pets</span></div>
+            <h3>Lugares Pet Friendly</h3>
+            <p>Restaurantes, parques y más.</p>
+        </a>
+        <a asp-action="Listado" asp-route-tipo="Guarderia" class="admin-card card-guarderia">
+            <div class="admin-card-icon"><span class="material-symbols-outlined">home_work</span></div>
+            <h3>Guarderías</h3>
+            <p>Hospedaje y cuidado temporal.</p>
+        </a>
+        <a asp-action="Listado" asp-route-tipo="Adopcion" class="admin-card card-adopcion">
+            <div class="admin-card-icon"><span class="material-symbols-outlined">favorite</span></div>
+            <h3>Adopción</h3>
+            <p>Gestiona refugios y adopciones.</p>
+        </a>
+    </div>
+</div>

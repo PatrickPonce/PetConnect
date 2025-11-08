@@ -1,0 +1,369 @@
+@model PetConnect.Models.Servicio
+@{
+    ViewData["Title"] = "Crear Servicio";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    /* Contenedor principal */
+    .create-service-container {
+        max-width: 950px;
+        margin: 3rem auto 5rem auto;
+        font-family: 'Poppins', sans-serif; /* Asegura la fuente correcta */
+    }
+
+    /* Tarjeta del formulario */
+    .form-card {
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.08); /* Sombra más suave */
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+    }
+
+    /* Encabezado con gradiente */
+    .form-header {
+        background: linear-gradient(135deg, #97a992 0%, #859f7e 100%);
+        padding: 3rem 2.5rem;
+        text-align: center;
+        color: white;
+    }
+    .form-header h2 {
+        font-weight: 800;
+        font-size: 2.4rem;
+        margin-bottom: 0.8rem;
+        letter-spacing: -0.5px;
+    }
+    .form-header p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* Cuerpo del formulario */
+    .form-body {
+        padding: 3rem 4rem;
+        background-color: #fff;
+    }
+
+    /* Secciones */
+    .form-section {
+        background-color: #fdfaf6; /* Fondo crema muy claro */
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin-bottom: 2.5rem;
+        border: 1px solid #f0ece3;
+    }
+
+    /* Títulos de sección con icono */
+    .section-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e8e4dc;
+    }
+    .section-icon {
+        color: #E88989;
+        font-size: 2rem;
+        background: #fff;
+        padding: 12px;
+        border-radius: 14px;
+        box-shadow: 0 4px 10px rgba(232, 137, 137, 0.15);
+    }
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #444;
+        margin: 0;
+    }
+
+    /* --- CONTROLES DE FORMULARIO MEJORADOS --- */
+    .form-label {
+        font-weight: 600;
+        color: #555;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block; /* Asegura que ocupe su propia línea */
+    }
+    /* Forzamos estilos para sobreescribir cualquier default roto */
+    .form-control, .form-select {
+        display: block;
+        width: 100%;
+        padding: 14px 18px;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #333;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 2px solid #e0e0e0 !important; /* Borde más visible */
+        border-radius: 12px;
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #97a992 !important;
+        box-shadow: 0 0 0 4px rgba(151, 169, 146, 0.15) !important;
+        outline: 0;
+    }
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical; /* Permite redimensionar solo verticalmente */
+    }
+
+    /* Área de subida de imagen */
+    .image-upload-area {
+        border: 3px dashed #e0e0e0;
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        display: block;
+    }
+    .image-upload-area:hover {
+        border-color: #97a992;
+        background-color: #f9fdf9;
+    }
+    .upload-icon {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+        display: block; /* Asegura que esté centrado */
+        margin-left: auto;
+        margin-right: auto;
+        transition: color 0.3s;
+    }
+    .image-upload-area:hover .upload-icon { color: #97a992; }
+    #imagePreview {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        display: none;
+        margin-top: 2rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Botones de acción */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 20px;
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid #eee;
+    }
+    .btn-admin-save {
+        background-color: #E88989; color: white; font-weight: 700; padding: 15px 40px; 
+        border-radius: 12px; border: none; transition: all 0.3s; font-size: 1.1rem; 
+        display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+    }
+    .btn-admin-save:hover { 
+        background-color: #d17a7a; transform: translateY(-3px); 
+        box-shadow: 0 10px 20px rgba(232, 137, 137, 0.2); color: white; 
+    }
+    .btn-admin-cancel {
+        background-color: #f0f0f0; color: #777; font-weight: 600; padding: 15px 30px; 
+        border-radius: 12px; text-decoration: none; transition: all 0.3s; font-size: 1.1rem;
+        display: inline-flex; align-items: center;
+    }
+    .btn-admin-cancel:hover { background-color: #e0e0e0; color: #333; }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .form-body { padding: 2rem 1.5rem; }
+        .form-section { padding: 1.5rem; }
+        .form-actions { flex-direction: column-reverse; }
+        .btn-admin-save, .btn-admin-cancel { width: 100%; justify-content: center; }
+    }
+</style>
+
+<div class="container create-service-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>Nuevo Servicio</h2>
+            <p>Añade una nueva veterinaria, tienda o lugar al directorio.</p>
+        </div>
+
+        <div class="form-body">
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4" role="alert"></div>
+
+                <div class="form-section">
+                    <div class="section-title-wrapper">
+                        <span class="material-symbols-outlined section-icon">info</span>
+                        <h3 class="section-title">Información General</h3>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <label asp-for="Nombre" class="form-label">Nombre del Servicio <span class="text-danger">*</span></label>
+                            <input asp-for="Nombre" class="form-control" placeholder="Ej: Veterinaria Patitas Felices" required />
+                            <span asp-validation-for="Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Tipo" class="form-label">Tipo de Servicio <span class="text-danger">*</span></label>
+                            <select asp-for="Tipo" class="form-select" id="TipoServicioSelect" asp-items="Html.GetEnumSelectList<PetConnect.Models.TipoServicio>()" required>
+                                <option value="">-- Seleccionar Tipo --</option>
+                            </select>
+                            <span asp-validation-for="Tipo" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="DescripcionCorta" class="form-label">Descripción Corta</label>
+                        <textarea asp-for="DescripcionCorta" class="form-control" rows="3" placeholder="Un breve resumen que aparecerá en las tarjetas del directorio..."></textarea>
+                        <div class="form-text text-muted mt-1">Máximo 200 caracteres recomendados.</div>
+                        <span asp-validation-for="DescripcionCorta" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label d-block mb-3">Imagen Principal</label>
+                        <label for="imagenArchivo" class="image-upload-area">
+                            <input type="file" name="imagenArchivo" id="imagenArchivo" accept="image/*" hidden onchange="previewImage(this)" />
+                            <span class="material-symbols-outlined upload-icon">cloud_upload</span>
+                            <p class="mb-1" style="font-weight: 600; color: #555; font-size: 1.1rem;">Haz clic para subir una imagen</p>
+                            <p class="text-muted small mb-0">o arrastra y suelta aquí (JPG, PNG)</p>
+                        </label>
+                        <div class="text-center">
+                            <img id="imagePreview" alt="Vista previa de la imagen" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="details-Veterinaria" class="dynamic-section form-section">
+                    <div class="section-title-wrapper">
+                        <span class="material-symbols-outlined section-icon">medical_services</span>
+                        <h3 class="section-title">Detalles de Veterinaria</h3>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Dirección Completa</label>
+                            <input name="VeterinariaDetalle.Direccion" class="form-control" placeholder="Av. Principal 123, Distrito" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono Principal</label>
+                            <input name="VeterinariaDetalle.Telefono" class="form-control" placeholder="(01) 123-4567" />
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Horario de Atención</label>
+                            <input name="VeterinariaDetalle.Horario" class="form-control" placeholder="Lun-Vie: 9am-6pm, Sab: 9am-1pm" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono de Emergencia (24h)</label>
+                            <input name="VeterinariaDetalle.TelefonoSecundario" class="form-control" placeholder="Solo si aplica..." />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                         <label class="form-label">Descripción Larga (Servicios, especialidades...)</label>
+                         <textarea name="VeterinariaDetalle.DescripcionLarga" class="form-control" rows="5" placeholder="Detalla todos los servicios que ofrece..."></textarea>
+                    </div>
+                </div>
+
+                <div id="details-PetShop" class="dynamic-section form-section">
+                    <div class="section-title-wrapper">
+                        <span class="material-symbols-outlined section-icon">storefront</span>
+                        <h3 class="section-title">Detalles de Pet Shop</h3>
+                    </div>
+                    <div class="mb-4">
+                         <label class="form-label">Dirección de la Tienda Física</label>
+                         <input name="PetShopDetalle.Direccion" class="form-control" placeholder="Si tiene local físico..." />
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Marcas Destacadas</label>
+                            <input name="PetShopDetalle.MarcasDestacadas" class="form-control" placeholder="Ej: Royal Canin, Hills, Purina..." />
+                            <div class="form-text text-muted">Separadas por comas.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Categorías de Productos</label>
+                            <input name="PetShopDetalle.CategoriasProductos" class="form-control" placeholder="Ej: Alimento, Juguetes, Ropa..." />
+                        </div>
+                    </div>
+                    <div class="form-check form-switch p-3 bg-white border rounded-3">
+                        <input class="form-check-input" type="checkbox" id="checkOnline" name="PetShopDetalle.OfreceCompraOnline" value="true" style="margin-left: 0; margin-right: 10px; cursor: pointer;">
+                        <label class="form-check-label fw-bold" for="checkOnline" style="cursor: pointer;">¿Ofrece compra online?</label>
+                    </div>
+                </div>
+
+                <div id="details-Adopcion" class="dynamic-section form-section">
+                    <div class="section-title-wrapper">
+                        <span class="material-symbols-outlined section-icon">volunteer_activism</span>
+                        <h3 class="section-title">Detalles de Adopción</h3>
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="FundacionNombre" class="form-label">Nombre de la Fundación / Albergue</label>
+                        <input asp-for="FundacionNombre" class="form-control" placeholder="Ej: Fundación Rayito de Sol" />
+                    </div>
+                     <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Dirección (Opcional)</label>
+                            <input name="AdopcionDetalle.Direccion" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono / WhatsApp de Contacto</label>
+                            <input name="AdopcionDetalle.Telefono" class="form-control" />
+                        </div>
+                    </div>
+                     <div class="mb-3">
+                         <label class="form-label">Requisitos y Proceso de Adopción</label>
+                         <textarea name="AdopcionDetalle.DescripcionLarga" class="form-control" rows="5" placeholder="Describe los pasos para adoptar..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a asp-action="Index" class="btn-admin-cancel">Cancelar</a>
+                    <button type="submit" class="btn-admin-save">
+                        <span class="material-symbols-outlined">save</span> Guardar Servicio
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // 1. Función para previsualizar imagen
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#imagePreview').attr('src', e.target.result).fadeIn();
+                    // Cambiamos el estilo del área de carga para indicar éxito
+                    $('.image-upload-area').css('border-color', '#97a992').css('background-color', '#f9fdf9');
+                    $('.upload-icon').css('color', '#97a992').text('check_circle');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 2. Lógica para mostrar/ocultar secciones dinámicas
+        $(document).ready(function() {
+            $('#TipoServicioSelect').change(function() {
+                $('.dynamic-section').slideUp(300); // Ocultar todas
+                
+                var selectedType = $("#TipoServicioSelect option:selected").text().replace(/\s+/g, '');
+                var targetSection = $('#details-' + selectedType);
+                
+                if (targetSection.length) {
+                    targetSection.delay(300).slideDown(300); // Mostrar la correcta con un pequeño retraso
+                }
+            });
+
+            // Disparar al cargar por si hay un valor seleccionado
+            $('#TipoServicioSelect').trigger('change');
+        });
+    </script>
+}

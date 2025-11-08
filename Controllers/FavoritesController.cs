@@ -34,7 +34,6 @@ public class FavoritesController : Controller
             .Where(f => f.UsuarioId == userId)
             .Select(f => f.Guarderia);
 
-<<<<<<< HEAD
         // 3. Noticias
         var noticiasQuery = _context.Noticias // Asumiendo que tienes una tabla FavoritosNoticia...
              // .Where(f => f.UsuarioId == userId) // ...necesitas implementar la lógica de favoritos de noticias
@@ -57,29 +56,27 @@ public class FavoritesController : Controller
         }
 
         // 5. Aplicar el filtro de búsqueda
-=======
 
         // --- INICIO DE LA INTEGRACIÓN DE SERVICIOS ---
 
         // 4. AÑADIR: Obtener los Servicios (Veterinarias) Favoritos
         var serviciosQuery = _context.FavoritosServicio
             .Where(f => f.UsuarioId == userId)
+            .Where(f => f.UsuarioId == userId)
+            .Include(f => f.Servicio) // Incluimos el Servicio
+                .ThenInclude(s => s.VeterinariaDetalle) // Incluimos los detalles si los necesitamos para el filtro
             .Select(f => f.Servicio);
         
 
         // 3. Aplicar el filtro de búsqueda a AMBAS listas
->>>>>>> Servicio-Veterinaria
         if (!string.IsNullOrEmpty(searchString))
         {
             lugaresQuery = lugaresQuery.Where(l => l.Nombre.Contains(searchString) || l.Ubicacion.Contains(searchString));
             guarderiasQuery = guarderiasQuery.Where(g => g.Nombre.Contains(searchString) || g.Ubicacion.Contains(searchString));
-<<<<<<< HEAD
             noticiasQuery = noticiasQuery.Where(n => n.Titulo.Contains(searchString) || n.Contenido.Contains(searchString)); // <-- Filtro de noticias corregido
             productosQuery = productosQuery.Where(p => p.Nombre.Contains(searchString)); // <-- Filtro de productos añadido
-=======
             noticiasQuery = noticiasQuery.Where(n => n.Titulo.Contains(searchString) || n.Contenido.Contains(searchString));
             serviciosQuery = serviciosQuery.Where(s => s.Nombre.Contains(searchString) || (s.VeterinariaDetalle != null && s.VeterinariaDetalle.Direccion.Contains(searchString)));
->>>>>>> Servicio-Veterinaria
         }
 
         // 6. Crear el ViewModel
@@ -88,11 +85,8 @@ public class FavoritesController : Controller
             LugaresFavoritos = await lugaresQuery.AsNoTracking().ToListAsync(),
             GuarderiasFavoritas = await guarderiasQuery.AsNoTracking().ToListAsync(),
             NoticiasFavoritas = await noticiasQuery.AsNoTracking().ToListAsync(),
-<<<<<<< HEAD
-            ProductosFavoritos = productosFavoritos // <-- Línea corregida
-=======
+            ProductosFavoritos = productosFavoritos, // <-- Línea corregida
             ServiciosFavoritos = await serviciosQuery.AsNoTracking().ToListAsync()
->>>>>>> Servicio-Veterinaria
         };
 
         return View(viewModel);

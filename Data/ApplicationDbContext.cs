@@ -85,14 +85,17 @@ namespace PetConnect.Data
             {
                 entity.HasKey(f => new { f.UsuarioId, f.NoticiaId });
                 entity.HasOne(f => f.Usuario)
-                    .WithMany() 
+                    .WithMany()
                     .HasForeignKey(f => f.UsuarioId)
-                    .OnDelete(DeleteBehavior.Restrict); 
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(f => f.Noticia)
                     .WithMany(n => n.Favoritos)
                     .HasForeignKey(f => f.NoticiaId);
             });
+            
+            modelBuilder.Entity<FavoritoServicio>()
+                .HasKey(f => new { f.ServicioId, f.UsuarioId });
            
         }   
     }

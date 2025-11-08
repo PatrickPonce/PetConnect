@@ -143,12 +143,12 @@ public class GuarderiasController : Controller
             try
             {
                 var subjectCliente = "Hemos recibido tu solicitud de cita en PetConnect";
-                var contentCliente = $@"<h1>¡Hola, {model.NombreCliente}!</h1><p>Recibimos tu solicitud de cita para <strong>{guarderia.Nombre}</strong> para el día <strong>{model.Fecha:dd/MM/yyyy}</strong>.</p><p>El equipo de la guardería se pondrá en contacto contigo a la brevedad para confirmar la disponibilidad.</p><p>¡Gracias por usar PetConnect!</p>";
+                var contentCliente = $@"<h1>¡Hola, {model.NombreCliente}!</h1><p>Recibimos tu solicitud de cita para <strong>{guarderia.Nombre}</strong> para el día <strong>{model.Fecha:dd/MM/yyyy}</strong>.</p><p>El equipo de la guardería se pondrá en contacto contigo a la brevedad para confirmar la disponibilidad.</p><p>¡Gracias por usar Purr & Paws!</p>";
                 await _emailService.SendEmailAsync(model.EmailCliente, subjectCliente, contentCliente);
 
                 var emailDueño = "correo.dueño.guarderia@ejemplo.com"; 
                 var subjectDueño = $"Nueva Solicitud de Cita de {model.NombreCliente}";
-                var contentDueño = $@"<h1>¡Nueva Solicitud de Cita!</h1><p>Has recibido una nueva solicitud a través de PetConnect:</p><ul><li><strong>Cliente:</strong> {model.NombreCliente}</li><li><strong>Email:</strong> {model.EmailCliente}</li><li><strong>Fecha Solicitada:</strong> {model.Fecha:dd/MM/yyyy}</li><li><strong>Mensaje:</strong> {(string.IsNullOrEmpty(model.Mensaje) ? "No se incluyó mensaje." : model.Mensaje)}</li></ul><p>Por favor, ponte en contacto con el cliente para confirmar.</p>";
+                var contentDueño = $@"<h1>¡Nueva Solicitud de Cita!</h1><p>Has recibido una nueva solicitud a través de Purr & Paws:</p><ul><li><strong>Cliente:</strong> {model.NombreCliente}</li><li><strong>Email:</strong> {model.EmailCliente}</li><li><strong>Fecha Solicitada:</strong> {model.Fecha:dd/MM/yyyy}</li><li><strong>Mensaje:</strong> {(string.IsNullOrEmpty(model.Mensaje) ? "No se incluyó mensaje." : model.Mensaje)}</li></ul><p>Por favor, ponte en contacto con el cliente para confirmar.</p>";
                 await _emailService.SendEmailAsync(emailDueño, subjectDueño, contentDueño);
 
                 return Json(new { success = true, message = "¡Solicitud enviada! Revisa tu correo para la confirmación." });

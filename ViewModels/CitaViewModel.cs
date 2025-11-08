@@ -1,3 +1,4 @@
+// Archivo: ViewModels/CitaViewModel.cs
 using System.ComponentModel.DataAnnotations;
 
 namespace PetConnect.ViewModels
@@ -11,11 +12,16 @@ namespace PetConnect.ViewModels
         public string NombreCliente { get; set; }
 
         [Required(ErrorMessage = "Tu email es requerido.")]
-        [EmailAddress(ErrorMessage = "Por favor, introduce un email válido.")]
+        [EmailAddress]
         public string EmailCliente { get; set; }
 
         [Required(ErrorMessage = "La fecha es requerida.")]
+        [DataType(DataType.Date)]
         public DateTime Fecha { get; set; }
+
+        [Required(ErrorMessage = "La hora es requerida.")] // <-- NUEVO
+        [DataType(DataType.Time)]
+        public TimeSpan Hora { get; set; } // <-- NUEVO
 
         public string? Mensaje { get; set; }
     }

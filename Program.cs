@@ -70,6 +70,16 @@ builder.Services.AddScoped<ConfiguracionSitioService>();
 builder.Services.AddScoped<AnimalApiService>();
 builder.Services.AddScoped<ChatbotService>();
 
+builder.Services.AddScoped<PexelsService>();
+
+builder.Services.AddScoped<YouTubeService>();
+
+builder.Services.AddScoped<GoogleSearchService>();
+
+builder.Services.AddScoped<ProductoService>();
+
+builder.Services.AddSingleton<RecommendationService>();
+
 // Configuración de Google Maps API Key
 var googleMapsApiKey = builder.Configuration["GoogleMaps:ApiKey"];
 builder.Services.AddSingleton(new GoogleMapsConfig { ApiKey = googleMapsApiKey });

@@ -1,31 +1,247 @@
-@model List<PetConnect.Models.Servicio>
 @{
-    ViewData["Title"] = "Pet Shops";
+    ViewData["Title"] = "Categorías de Pet Shop";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-<div class="main-content directorio-page">
-    <h1 class="directorio-title">Pet Shops</h1>
+<style>
+    .petshop-category-page {
+        max-width: 1200px;
+        margin: 2rem auto;
+        display: flex;
+        gap: 2rem;
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        overflow: hidden; /* Para contener los bordes redondeados */
+    }
 
-    <div class="search-bar-container">
-        <form asp-controller="PetShop" asp-action="Index" method="get">
-            <input name="busqueda" type="text" placeholder="Buscar en pet shops..." class="search-input" value="@ViewData["BusquedaActual"]" />
-            <button type="submit" class="search-button">
-                <span class="material-symbols-outlined">search</span>
-            </button>
-        </form>
-    </div>
+    /* --- Barra Lateral de Pestañas --- */
+    .petshop-sidebar {
+        flex: 0 0 280px; /* Ancho fijo para la barra lateral */
+        background-color: #fdfaf1; /* Color crema claro */
+        padding: 1.5rem 0;
+        border-right: 1px solid #eee;
+    }
 
-    <div class="service-cards-container">
-        @foreach (var servicio in Model)
-        {
-            <div class="service-card">
-                <img src="@(servicio.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="@servicio.Nombre" class="card-img-top" />
-                <div class="card-body">
-                    <h5 class="card-title">@servicio.Nombre</h5>
-                    <p class="card-text">@servicio.DescripcionCorta</p>
-                    <a asp-controller="PetShop" asp-action="Detalle" asp-route-id="@servicio.Id" class="btn btn-primary">Ver Detalles</a>
-                </div>
+    .petshop-tab-link {
+        display: flex;
+        align-items: center;
+        padding: 1.2rem 2rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #555;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        width: 100%;
+        border-left: 5px solid transparent; /* Indicador inactivo */
+    }
+
+    .petshop-tab-link:hover {
+        background-color: #fff;
+    }
+
+    .petshop-tab-link.active { /* Pestaña activa */
+        background-color: #fff;
+        color: #E88989; /* Color rosa/salmón */
+        border-left-color: #E88989;
+    }
+
+    .petshop-tab-link .material-symbols-outlined {
+        margin-right: 15px;
+        font-size: 1.8rem;
+    }
+
+    /* --- Contenido Principal (Subcategorías) --- */
+    .petshop-main-content {
+        flex: 1;
+        padding: 2.5rem 2rem;
+    }
+
+    .petshop-content-panel {
+        display: none; /* Ocultos por defecto */
+        animation: fadeIn 0.4s ease;
+    }
+    
+    .petshop-content-panel.active {
+        display: block; /* Solo se muestra el activo */
+    }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem 2rem;
+    }
+
+    .category-grid h3 { /* Títulos como "Accesorios y otros" */
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+        grid-column: 1 / -1; /* Ocupa toda la fila */
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 0.5rem;
+    }
+    
+    .category-grid a {
+        display: block;
+        color: #666;
+        text-decoration: none;
+        padding: 8px 0;
+        font-size: 1rem;
+        transition: color 0.2s;
+    }
+    .category-grid a:hover {
+        color: #ff8fab; /* Rosa */
+    }
+    
+    .brands-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 2rem;
+    }
+    .brand-logo {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80px;
+        transition: box-shadow 0.2s;
+    }
+    .brand-logo:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .brand-logo img {
+        max-width: 100%;
+        max-height: 50px;
+        filter: grayscale(100%);
+        opacity: 0.7;
+        transition: all 0.3s;
+    }
+    .brand-logo:hover img {
+        filter: grayscale(0%);
+        opacity: 1;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="petshop-category-page">
+    
+    <nav class="petshop-sidebar">
+        <button class="petshop-tab-link active" data-tab="perros">
+            <span class="material-symbols-outlined">pets</span> Perros
+        </button>
+        <button class="petshop-tab-link" data-tab="gatos">
+            <span class="material-symbols-outlined">pets</span> Gatos
+        </button>
+        <button class="petshop-tab-link" data-tab="marcas">
+            <span class="material-symbols-outlined">local_offer</span> Marcas
+        </button>
+    </nav>
+
+    <div class="petshop-main-content">
+
+        <div id="perros" class="petshop-content-panel active">
+            <div class="category-grid">
+                <h3>Accesorios y otros</h3>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Accesorios" asp-route-busqueda="Collar">Collares y bandanas</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Accesorios" asp-route-busqueda="Correa">Correas y arneses</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Accesorios" asp-route-busqueda="Dispensador">Dispensador de Comida</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Accesorios" asp-route-busqueda="Kennel">Kennels</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Accesorios" asp-route-busqueda="Plato">Platos y bebederos</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Accesorios" asp-route-busqueda="Ropa">Ropa</a>
+
+                <h3>Alimentos para perros</h3>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Comida" asp-route-busqueda="Especializado">Alimento Especializado</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Comida" asp-route-busqueda="Húmedo">Alimento Húmedo</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Comida" asp-route-busqueda="Seco">Alimento Seco</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Juguetes" asp-route-busqueda="Snack">Snacks</a>
+                
+                <h3>Salud e higiene</h3>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Higiene" asp-route-busqueda="Antipulgas">Antipulgas</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Higiene" asp-route-busqueda="Calmantes">Calmantes</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Perro" asp-route-tipo="Higiene" asp-route-busqueda="Shampoo">Shampoo</a>
             </div>
-        }
+        </div>
+
+        <div id="gatos" class="petshop-content-panel">
+            <div class="category-grid">
+                <h3>Accesorios y otros</h3>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Accesorios" asp-route-busqueda="Collar">Collares y bandanas</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Accesorios" asp-route-busqueda="Kennel">Kennels</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Accesorios" asp-route-busqueda="Plato">Platos y bebederos</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Accesorios" asp-route-busqueda="Rascador">Rascadores</a>
+                
+                <h3>Alimentos para gatos</h3>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Comida" asp-route-busqueda="Especializado">Alimento Especializado</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Comida" asp-route-busqueda="Húmedo">Alimento Húmedo</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Comida" asp-route-busqueda="Seco">Alimento Seco</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Juguetes" asp-route-busqueda="Snack">Snacks</a>
+
+                <h3>Salud e higiene</h3>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Higiene" asp-route-busqueda="Antipulgas">Antipulgas</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Higiene" asp-route-busqueda="Arena">Arena</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Higiene" asp-route-busqueda="Caja">Cajas y accesorios</a>
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-tag="Gato" asp-route-tipo="Higiene" asp-route-busqueda="Peine">Peines y cepillos</a>
+            </div>
+        </div>
+
+        <div id="marcas" class="petshop-content-panel">
+            <div class="brands-grid">
+                
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="Petco" class="brand-logo" title="Petco">
+                    <img src="https://logo.clearbit.com/petco.com" alt="Petco" />
+                </a>
+                
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="PetSmart" class="brand-logo" title="PetSmart">
+                    <img src="https://logo.clearbit.com/petsmart.com" alt="PetSmart" />
+                </a>
+
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="Chewy" class="brand-logo" title="Chewy">
+                    <img src="https://logo.clearbit.com/chewy.com" alt="Chewy" />
+                </a>
+                
+                <a asp-controller="PetShop" asp-action="Productos" asp-route-marca="Amazon Pets" class="brand-logo" title="Amazon Pets">
+                    <img src="https://logo.clearbit.com/amazon.com" alt="Amazon" />
+                </a>
+
+            </div>
+        </div>
+
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.petshop-tab-link');
+            const panels = document.querySelectorAll('.petshop-content-panel');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 1. Obtiene el 'data-tab' (ej. "perros")
+                    const targetId = this.dataset.tab;
+                    const targetPanel = document.getElementById(targetId);
+
+                    // 2. Quita 'active' de todas las pestañas y paneles
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.remove('active'));
+
+                    // 3. Añade 'active' solo a la pestaña clicada y su panel
+                    this.classList.add('active');
+                    if (targetPanel) {
+                        targetPanel.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+}

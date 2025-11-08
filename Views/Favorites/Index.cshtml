@@ -165,6 +165,31 @@
                 No se encontraron favoritos que coincidan con "@searchString".
             </p>
         }
+
+        @if (Model.ProductosFavoritos.Any())
+        {
+            <section class="service-section">
+                <h2>Productos Favoritos</h2>
+                <div class="favorites-grid">
+                    @foreach (var producto in Model.ProductosFavoritos)
+                    {
+                        <div class="item-card" id="favorito-producto-@producto.Id">
+                            <button class="remove-favorito-btn" data-type="producto" data-id="@producto.Id" title="Quitar de favoritos">
+                                <span class="material-symbols-outlined">favorite</span>
+                            </button>
+                            <img src="@(string.IsNullOrEmpty(producto.UrlImagen) ? "/images/placeholder.png" : producto.UrlImagen)" alt="Imagen de @producto.Nombre" class="item-imagen" />
+                            <div class="item-contenido">
+                                <h3 class="item-nombre">@producto.Nombre</h3>
+                                <p>S/. @producto.Precio.ToString("0.00")</p>
+                                <a asp-controller="PetShop" asp-action="Detalle" asp-route-id="@producto.Id" class="btn-ver-mas">Ver producto</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+
     }
     else
     {
@@ -253,6 +278,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (type === 'noticia') {
                 url = '/Noticias/ToggleFavorito';
                 bodyObject = { noticiaId: id }; // <-- Objeto JSON
+            } else if (type === 'producto') { // <-- AÑADIR ESTE 'ELSE IF'
+                url = '/PetShop/ToggleFavorito';
+                body = `productoId=${id}`;
             } else {
                 console.error('Tipo desconocido:', type);
                 ocultarModalConfirmarUno();

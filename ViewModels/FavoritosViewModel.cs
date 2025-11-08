@@ -10,11 +10,14 @@ namespace PetConnect.ViewModels
 
         public List<Noticia> NoticiasFavoritas { get; set; }
 
+        public List<ProductoPetShop> ProductosFavoritos { get; set; }
+
         public FavoritosViewModel()
         {
             LugaresFavoritos = new List<LugarPetFriendly>();
             GuarderiasFavoritas = new List<Guarderia>();
             NoticiasFavoritas = new List<Noticia>();
+            ProductosFavoritos = new List<ProductoPetShop>();
         }
     }
 }

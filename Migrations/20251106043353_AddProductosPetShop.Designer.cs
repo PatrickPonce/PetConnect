@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -12,9 +13,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251106043353_AddProductosPetShop")]
+    partial class AddProductosPetShop
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -398,36 +401,6 @@ namespace PetConnect.Migrations
                     b.ToTable("ComentariosLugar");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.Faq", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Categoria")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<int>("Orden")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Pregunta")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Respuesta")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Faqs");
-                });
-
             modelBuilder.Entity("PetConnect.Models.Favorito", b =>
                 {
                     b.Property<string>("UsuarioId")
@@ -755,41 +728,6 @@ namespace PetConnect.Migrations
                     b.ToTable("resenas");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.ResenaProducto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("ProductoPetShopId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Puntuacion")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Texto")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductoPetShopId");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("ResenasProducto");
-                });
-
             modelBuilder.Entity("PetConnect.Models.Servicio", b =>
                 {
                     b.Property<int>("Id")
@@ -1070,25 +1008,6 @@ namespace PetConnect.Migrations
                     b.Navigation("VeterinariaDetalle");
                 });
 
-            modelBuilder.Entity("PetConnect.Models.ResenaProducto", b =>
-                {
-                    b.HasOne("PetConnect.Models.ProductoPetShop", "Producto")
-                        .WithMany("Resenas")
-                        .HasForeignKey("ProductoPetShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Producto");
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("PetConnect.Models.VeterinariaDetalle", b =>
                 {
                     b.HasOne("PetConnect.Models.Servicio", "Servicio")
@@ -1124,8 +1043,6 @@ namespace PetConnect.Migrations
             modelBuilder.Entity("PetConnect.Models.ProductoPetShop", b =>
                 {
                     b.Navigation("Favoritos");
-
-                    b.Navigation("Resenas");
                 });
 
             modelBuilder.Entity("PetConnect.Models.Servicio", b =>

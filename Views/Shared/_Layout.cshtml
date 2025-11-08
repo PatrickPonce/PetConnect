@@ -19,12 +19,15 @@
     @* AQUÍ ESTÁ LA MAGIA: Llamamos a nuestra vista parcial reutilizable *@
     @await Html.PartialAsync("_Navbar")
 
+    @await RenderSectionAsync("Breadcrumbs", required: false)
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
+    @await Html.PartialAsync("_Footer")
     <div id="chatbot-fab" class="chatbot-fab">
         <span class="material-symbols-outlined">smart_toy</span>
     </div>
@@ -118,5 +121,7 @@
     </script>
     
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

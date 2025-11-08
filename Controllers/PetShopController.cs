@@ -1,51 +1,263 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using PetConnect.Models;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
+using PetConnect.Models;
+using PetConnect.Services;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using PetConnect.ViewModels;
 
-namespace PetConnect.Controllers
+public class PetShopController : Controller
 {
-    public class PetShopController : Controller
+    private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly PexelsService _pexelsService;
+    private readonly YouTubeService _youTubeService;
+    private readonly GoogleSearchService _googleSearchService; // Servicio añadido
+    private readonly RecommendationService _recommendationService;
+
+    public PetShopController(
+        ApplicationDbContext context,
+        UserManager<IdentityUser> userManager,
+        PexelsService pexelsService,
+        YouTubeService youTubeService,
+        GoogleSearchService googleSearchService,
+        RecommendationService recommendationService) // Inyección añadida
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+        _userManager = userManager;
+        _pexelsService = pexelsService;
+        _youTubeService = youTubeService;
+        _googleSearchService = googleSearchService; // Asignación añadida
+        _recommendationService = recommendationService;
+    }
 
-        public PetShopController(ApplicationDbContext context)
+    // --- ACCIÓN INDEX (MENÚ DE CATEGORÍAS) ---
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    // --- ACCIÓN DE GALERÍA (PRODUCTOS) ---
+    public async Task<IActionResult> Productos(string tipo, string busqueda, string tag, string marca) // Parámetro 'marca' añadido
+    {
+        // ============================================================
+        // NUEVA LÓGICA: SI HAY MARCA, USAMOS GOOGLE Y TERMINAMOS
+        // ============================================================
+        if (!string.IsNullOrEmpty(marca))
         {
-            _context = context;
+            ViewData["Title"] = $"Marca: {marca}";
+            ViewData["MarcaActual"] = marca; // Para resaltar en el menú lateral
+
+            // Llamamos a Google y obtenemos resultados externos
+            var productosExternos = await _googleSearchService.BuscarProductosExternos(marca);
+            
+            // Pasamos datos vacíos para los filtros para evitar errores en la vista
+            ViewData["TiposProducto"] = new List<string>();
+            ViewData["TipoActual"] = "Todos";
+
+            return View("Productos", productosExternos);
         }
-        public async Task<IActionResult> Index(string busqueda)
-        {
-            IQueryable<Servicio> query = _context.Servicios
-                .Where(s => s.Tipo == TipoServicio.PetShop)
-                .AsNoTracking();
+        // ============================================================
 
-            if (!string.IsNullOrEmpty(busqueda))
+        var productosQuery = _context.ProductosPetShop.AsQueryable();
+
+        // --- Filtros (BD Local) ---
+        if (!string.IsNullOrEmpty(busqueda))
+        {
+            productosQuery = productosQuery.Where(p => p.Nombre.ToLower().Contains(busqueda.ToLower()));
+        }
+        if (!string.IsNullOrEmpty(tipo) && tipo != "Todos")
+        {
+            productosQuery = productosQuery.Where(p => p.TipoProducto.ToLower() == tipo.ToLower());
+        }
+        if (!string.IsNullOrEmpty(tag))
+        {
+            productosQuery = productosQuery.Where(p => p.Tags.Contains(tag));
+        }
+
+        var productos = await productosQuery.ToListAsync();
+
+        // --- Favoritos (Solo para productos locales) ---
+        HashSet<int> favoritosIds = new HashSet<int>();
+        if (User.Identity.IsAuthenticated)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            favoritosIds = await _context.FavoritosProducto
+                .Where(f => f.UsuarioId == userId)
+                .Select(f => f.ProductoPetShopId)
+                .ToHashSetAsync();
+        }
+            
+        // --- ViewModels + Imágenes Pexels (CORREGIDO) ---
+        var productosVM = new List<ProductoViewModel>();
+        foreach (var prod in productos)
+        {
+            // 1. Obtener imagen de Pexels
+            string imagenPexels = await _pexelsService.ObtenerImagenAsync(prod.QueryImagen);
+            
+            // 2. Llenar el ViewModel PLANO
+            productosVM.Add(new ProductoViewModel { 
+                // Propiedades comunes (necesarias para la vista unificada)
+                Id = prod.Id,
+                Nombre = prod.Nombre,
+                Descripcion = prod.Descripcion,
+                Precio = prod.Precio,
+                UrlImagen = imagenPexels,
+                Tags = prod.Tags,
+                
+                // Propiedades específicas
+                EsExterno = false, // Es un producto interno
+                EsFavorito = favoritosIds.Contains(prod.Id),
+                Producto = prod // Mantenemos la referencia por si acaso
+            });
+        }
+
+        // --- Datos para la Vista ---
+        ViewData["TiposProducto"] = (await _context.ProductosPetShop.Select(p => p.TipoProducto).Distinct().ToListAsync());
+        ViewData["BusquedaActual"] = busqueda;
+        ViewData["TipoActual"] = tipo ?? "Todos";
+        ViewData["TagActual"] = tag; 
+
+        return View("Productos", productosVM);
+    }
+
+    // --- ACCIÓN DETALLE ACTUALIZADA CON ML ---
+    public async Task<IActionResult> Detalle(int id)
+    {
+        var producto = await _context.ProductosPetShop
+            .Include(p => p.Resenas)
+                .ThenInclude(r => r.Usuario)
+            .FirstOrDefaultAsync(p => p.Id == id);
+            
+        if (producto == null) return NotFound();
+        
+        // APIs existentes
+        producto.UrlImagen = await _pexelsService.ObtenerImagenAsync(producto.QueryImagen);
+        ViewBag.VideoIds = await _youTubeService.BuscarVideosAsync(producto.Nombre);
+
+        // --- INICIO: LÓGICA DE RECOMENDACIÓN ML.NET ---
+        var recomendaciones = new List<ProductoPetShop>();
+        if (User.Identity.IsAuthenticated)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            // 1. Obtenemos los IDs recomendados por la IA
+            var recommendedIds = await _recommendationService.GetRecommendationsAsync(userId, topN: 3);
+            
+            // 2. Si la IA no dio suficientes (ej. usuario nuevo), rellenamos con productos aleatorios
+            if (recommendedIds.Count < 3)
             {
-                query = query.Where(s => s.Nombre.Contains(busqueda));
-                ViewData["BusquedaActual"] = busqueda;
+                var randomIds = await _context.ProductosPetShop
+                    .Where(p => p.Id != id && !recommendedIds.Contains(p.Id))
+                    .OrderBy(r => Guid.NewGuid())
+                    .Take(3 - recommendedIds.Count)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+                recommendedIds.AddRange(randomIds);
             }
 
-            var petShops = await query.ToListAsync();
-            return View(petShops);
+            // 3. Cargamos los productos completos desde la BD
+            recomendaciones = await _context.ProductosPetShop
+                .Where(p => recommendedIds.Contains(p.Id))
+                .ToListAsync();
+
+            // 4. Cargamos sus imágenes de Pexels
+            foreach (var rec in recomendaciones)
+            {
+                rec.UrlImagen = await _pexelsService.ObtenerImagenAsync(rec.QueryImagen);
+            }
         }
-        public async Task<IActionResult> Detalle(int? id)
+        ViewBag.Recomendaciones = recomendaciones;
+        // --- FIN: LÓGICA DE RECOMENDACIÓN ML.NET ---
+        
+        return View(producto);
+    }
+
+    // --- NUEVA ACCIÓN: DETALLE PARA PRODUCTOS EXTERNOS (GOOGLE) ---
+    public IActionResult DetalleExterno(string nombre, string imagen, string descripcion, string url, string tienda)
+    {
+        var modelo = new ProductoViewModel
         {
-            if (id == null) return NotFound();
+            Nombre = nombre,
+            UrlImagen = imagen,
+            Descripcion = descripcion,
+            UrlExterna = url,
+            NombreTienda = tienda,
+            EsExterno = true,
+            Precio = 0 
+        };
+        return View(modelo);
+    }
 
-            var petShop = await _context.Servicios
-                .Include(s => s.PetShopDetalle) 
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == id && s.Tipo == TipoServicio.PetShop);
+    // --- ACCIÓN FAVORITOS (SOLO LOCALES) ---
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleFavorito(int productoId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
 
-            if (petShop == null) return NotFound();
+        var favoritoExistente = await _context.FavoritosProducto
+            .FirstOrDefaultAsync(f => f.ProductoPetShopId == productoId && f.UsuarioId == userId);
 
-            return View(petShop);
+        bool agregado;
+        if (favoritoExistente != null)
+        {
+            _context.FavoritosProducto.Remove(favoritoExistente);
+            agregado = false;
         }
+        else
+        {
+            _context.FavoritosProducto.Add(new FavoritoProducto { ProductoPetShopId = productoId, UsuarioId = userId });
+            agregado = true;
+        }
+
+        await _context.SaveChangesAsync();
+        return Json(new { success = true, agregado = agregado });
+    }
+
+
+    // --- NUEVA ACCIÓN: AGREGAR RESEÑA ---
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AgregarResena(int productoId, int puntuacion, string texto)
+    {
+        if (puntuacion < 1 || puntuacion > 5 || string.IsNullOrWhiteSpace(texto))
+        {
+            TempData["ErrorMessage"] = "Por favor, selecciona una calificación y escribe un comentario.";
+            return RedirectToAction("Detalle", new { id = productoId });
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        // Opcional: Evitar que un usuario comente dos veces el mismo producto
+        bool yaComento = await _context.ResenasProducto.AnyAsync(r => r.ProductoPetShopId == productoId && r.UsuarioId == userId);
+        if (yaComento)
+        {
+             TempData["ErrorMessage"] = "Ya has valorado este producto.";
+             return RedirectToAction("Detalle", new { id = productoId });
+        }
+
+        var nuevaResena = new ResenaProducto
+        {
+            ProductoPetShopId = productoId,
+            UsuarioId = userId,
+            Puntuacion = puntuacion,
+            Texto = texto,
+            Fecha = DateTime.UtcNow
+        };
+
+        _context.ResenasProducto.Add(nuevaResena);
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "¡Gracias por tu opinión!";
+        return RedirectToAction("Detalle", new { id = productoId });
     }
 }

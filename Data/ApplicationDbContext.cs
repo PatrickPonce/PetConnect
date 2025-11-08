@@ -28,6 +28,9 @@ namespace PetConnect.Data
         public DbSet<ComentarioGuarderia> ComentariosGuarderia { get; set; }
         public DbSet<FavoritoGuarderia> FavoritosGuarderia { get; set; }
         public DbSet<Favorito> Favoritos { get; set; }
+
+        public DbSet<ComentarioServicio> ComentariosServicio { get; set; }
+        public DbSet<FavoritoServicio> FavoritosServicio { get; set; }
         public object Configuration { get; internal set; }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }

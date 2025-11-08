@@ -15,6 +15,12 @@
     <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="9.4.1" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.ML" Version="4.0.3" />
+    <PackageReference Include="Microsoft.ML" Version="4.0.3" />
+    <PackageReference Include="Microsoft.ML.FastTree" Version="4.0.3" />
+    <PackageReference Include="Microsoft.ML.Recommender" Version="0.22.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Stripe.net" Version="49.1.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.10" />

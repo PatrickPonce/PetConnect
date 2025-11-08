@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
 using PetConnect.Models;
-using Microsoft.AspNetCore.Hosting; // Necesario para IWebHostEnvironment
+using Microsoft.AspNetCore.Hosting;
 using System;
 using System.IO;
 using System.Linq;
@@ -14,7 +14,7 @@ using X.PagedList;
 public class ServiciosAdminController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly IWebHostEnvironment _hostEnvironment; // Para manejar archivos
+    private readonly IWebHostEnvironment _hostEnvironment;
 
     public ServiciosAdminController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
     {
@@ -22,33 +22,41 @@ public class ServiciosAdminController : Controller
         _hostEnvironment = hostEnvironment;
     }
 
-    // --- 1. LISTADO (INDEX) ---
-    public async Task<IActionResult> Index(string searchString, TipoServicio? tipoFilter, int? page)
+    // --- 1. VISTA PRINCIPAL (CATEGORÍAS) ---
+    public IActionResult Index()
     {
-        var query = _context.Servicios.AsQueryable();
+        // Esta vista solo mostrará las tarjetas de categorías, no necesita datos.
+        return View();
+    }
+
+    // --- 2. LISTADO POR TIPO (TABLA) ---
+    public async Task<IActionResult> Listado(TipoServicio tipo, string searchString, int? page)
+    {
+        // Filtramos inicialmente por el tipo de servicio seleccionado
+        var query = _context.Servicios.Where(s => s.Tipo == tipo).AsQueryable();
 
         if (!string.IsNullOrEmpty(searchString))
         {
             query = query.Where(s => s.Nombre.ToLower().Contains(searchString.ToLower()));
         }
-        if (tipoFilter.HasValue)
-        {
-            query = query.Where(s => s.Tipo == tipoFilter.Value);
-        }
 
-        query = query.OrderBy(s => s.Tipo).ThenBy(s => s.Nombre);
+        query = query.OrderBy(s => s.Nombre);
 
         int pageSize = 10;
         int pageNumber = (page ?? 1);
+        
+        // Usamos ToPagedListAsync de X.PagedList
         var serviciosPaginados = await query.ToPagedListAsync(pageNumber, pageSize);
         
+        // Pasamos datos a la vista para mantener el estado de los filtros y el título
         ViewData["CurrentFilter"] = searchString;
-        ViewData["TipoFilter"] = tipoFilter;
+        ViewData["TipoActual"] = tipo;
+        ViewData["Title"] = $"Gestión de {tipo}";
 
         return View(serviciosPaginados);
     }
 
-    // --- 2. CREAR (CREATE) ---
+    // --- 3. CREAR (CREATE) ---
     public IActionResult Create()
     {
         return View();
@@ -60,7 +68,6 @@ public class ServiciosAdminController : Controller
     {
         if (ModelState.IsValid)
         {
-            // Manejo de imagen
             if (imagenArchivo != null)
             {
                 servicio.ImagenPrincipalUrl = await SubirImagen(imagenArchivo);
@@ -69,17 +76,24 @@ public class ServiciosAdminController : Controller
             _context.Add(servicio);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Servicio creado correctamente.";
-            return RedirectToAction(nameof(Index));
+            // Redirigimos al LISTADO del tipo correspondiente, no al índice general
+            return RedirectToAction(nameof(Listado), new { tipo = servicio.Tipo });
         }
         return View(servicio);
     }
 
-    // --- 3. EDITAR (EDIT) ---
+    // --- 4. EDITAR (EDIT) ---
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
 
-        var servicio = await _context.Servicios.FindAsync(id);
+        // Incluimos los detalles posibles para que se carguen en el formulario
+        var servicio = await _context.Servicios
+            .Include(s => s.VeterinariaDetalle)
+            .Include(s => s.PetShopDetalle)
+            .Include(s => s.AdopcionDetalle)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
         if (servicio == null) return NotFound();
         
         return View(servicio);
@@ -95,13 +109,12 @@ public class ServiciosAdminController : Controller
         {
             try
             {
-                // Si subieron una nueva imagen, la guardamos y reemplazamos la URL
                 if (nuevaImagen != null)
                 {
-                    // (Opcional: podrías borrar la imagen anterior aquí si quisieras ahorrar espacio)
                     servicio.ImagenPrincipalUrl = await SubirImagen(nuevaImagen);
                 }
-                // Si no subieron nada, mantenemos la URL que ya tenía (asegúrate de tener un hidden input en la vista)
+                // Si no hay nueva imagen, EF Core mantendrá la URL existente si usamos Update correctamente
+                // o si la vista envía el valor en un campo oculto (recomendado).
 
                 _context.Update(servicio);
                 await _context.SaveChangesAsync();
@@ -112,12 +125,12 @@ public class ServiciosAdminController : Controller
                 if (!_context.Servicios.Any(e => e.Id == servicio.Id)) return NotFound();
                 else throw;
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Listado), new { tipo = servicio.Tipo });
         }
         return View(servicio);
     }
 
-    // --- 4. ELIMINAR (DELETE) ---
+    // --- 5. ELIMINAR (DELETE) ---
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
@@ -125,39 +138,33 @@ public class ServiciosAdminController : Controller
         var servicio = await _context.Servicios.FindAsync(id);
         if (servicio != null)
         {
-            // (Opcional: borrar la imagen del servidor al eliminar el servicio)
+            // Guardamos el tipo antes de borrar para poder redirigir
+            var tipo = servicio.Tipo;
             _context.Servicios.Remove(servicio);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Servicio eliminado correctamente.";
+            return RedirectToAction(nameof(Listado), new { tipo = tipo });
         }
+        // Si falla, volvemos al índice principal por seguridad
         return RedirectToAction(nameof(Index));
     }
 
-    // --- MÉTODO AUXILIAR PARA SUBIR IMÁGENES ---
+    // --- MÉTODO AUXILIAR ---
     private async Task<string> SubirImagen(IFormFile archivo)
     {
         string wwwRootPath = _hostEnvironment.WebRootPath;
         string fileName = Path.GetFileNameWithoutExtension(archivo.FileName);
         string extension = Path.GetExtension(archivo.FileName);
-        
-        // Generamos un nombre único para evitar colisiones
         string nuevoNombre = $"{fileName}_{DateTime.Now.Ticks}{extension}";
         string pathDestino = Path.Combine(wwwRootPath, "images", "servicios");
 
-        // Aseguramos que la carpeta exista
-        if (!Directory.Exists(pathDestino))
-        {
-            Directory.CreateDirectory(pathDestino);
-        }
+        if (!Directory.Exists(pathDestino)) Directory.CreateDirectory(pathDestino);
 
-        string pathCompleto = Path.Combine(pathDestino, nuevoNombre);
-
-        using (var fileStream = new FileStream(pathCompleto, FileMode.Create))
+        using (var fileStream = new FileStream(Path.Combine(pathDestino, nuevoNombre), FileMode.Create))
         {
             await archivo.CopyToAsync(fileStream);
         }
 
-        // Devolvemos la ruta relativa para guardar en la BD
         return $"/images/servicios/{nuevoNombre}";
     }
 }

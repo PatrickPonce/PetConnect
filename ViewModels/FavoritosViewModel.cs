@@ -11,6 +11,7 @@ namespace PetConnect.ViewModels
         public List<Noticia> NoticiasFavoritas { get; set; }
 
         public List<ProductoPetShop> ProductosFavoritos { get; set; }
+        public List<Servicio> ServiciosFavoritos { get; set; }
 
         public FavoritosViewModel()
         {
@@ -18,6 +19,7 @@ namespace PetConnect.ViewModels
             GuarderiasFavoritas = new List<Guarderia>();
             NoticiasFavoritas = new List<Noticia>();
             ProductosFavoritos = new List<ProductoPetShop>();
+            ServiciosFavoritos = new List<Servicio>();
         }
     }
 }

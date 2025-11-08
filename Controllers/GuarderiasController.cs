@@ -156,7 +156,7 @@ public class GuarderiasController : Controller
                 var subjectCliente = $"Confirmación de tu solicitud de cita en {guarderia.Nombre}";
                 var contentCliente = $@"
                     <div style='font-family: Arial, sans-serif; color: #3a6e4cff; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;'>
-                        <img src='{urlImagenLogo}' alt='Logo de PetConnect' style='max-width: 150px; height: auto; display: block; margin-bottom: 20px;'/>
+                        <img src='{urlImagenLogo}' alt='Logo de Purr & Paws' style='max-width: 150px; height: auto; display: block; margin: 0 auto 20px auto;'/>
                         <h2 style='color: #4A4A4A;'>¡Hola, {model.NombreCliente}!</h2>
                         <p>Hemos recibido correctamente tu solicitud de cita para <strong style='color: #5a4fcf;'>{guarderia.Nombre}</strong>.</p>
                         <p>Estos son los detalles que registramos:</p>

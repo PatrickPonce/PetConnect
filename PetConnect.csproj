@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="9.4.1" />
+    <PackageReference Include="brevo_csharp" Version="1.1.1" />
     <PackageReference Include="Google.Cloud.AIPlatform.V1" Version="3.56.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="9.0.10" />

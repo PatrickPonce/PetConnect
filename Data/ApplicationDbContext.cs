@@ -48,6 +48,7 @@ namespace PetConnect.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // --- CONFIGURACIONES DE RELACIONES (YA LAS TENÍAS) ---
             modelBuilder.Entity<Servicio>()
                 .HasOne(s => s.AdopcionDetalle)
                 .WithOne(ad => ad.Servicio)
@@ -68,21 +69,29 @@ namespace PetConnect.Data
                 .WithOne(psd => psd.Servicio)
                 .HasForeignKey<PetShopDetalle>(psd => psd.ServicioId);
             
-            
-            // Configuración para la clave compuesta de FavoritoLugar
+            modelBuilder.Entity<Servicio>()
+                .HasOne(s => s.LugarPetFriendlyDetalle)
+                .WithOne(l => l.Servicio)
+                .HasForeignKey<LugarPetFriendlyDetalle>(l => l.ServicioId);
+
+            modelBuilder.Entity<Servicio>()
+                .HasOne(s => s.GuarderiaDetalle)
+                .WithOne(g => g.Servicio)
+                .HasForeignKey<GuarderiaDetalle>(g => g.ServicioId);
+
+            // --- CONFIGURACIONES DE CLAVES COMPUESTAS (YA LAS TENÍAS) ---
             modelBuilder.Entity<FavoritoLugar>()
                 .HasKey(f => new { f.LugarPetFriendlyId, f.UsuarioId });
 
-            // Configuración para la clave compuesta de FavoritoGuarderia
             modelBuilder.Entity<FavoritoGuarderia>()
                 .HasKey(f => new { f.GuarderiaId, f.UsuarioId });
             
-            // ... (después de la clave de FavoritoGuarderia)
             modelBuilder.Entity<FavoritoProducto>()
                 .HasKey(f => new { f.ProductoPetShopId, f.UsuarioId });
             
             modelBuilder.Entity<Favorito>()
             .HasKey(f => new { f.UsuarioId, f.NoticiaId });
+
             modelBuilder.Entity<Favorito>(entity =>
             {
                 entity.HasKey(f => new { f.UsuarioId, f.NoticiaId });
@@ -98,16 +107,39 @@ namespace PetConnect.Data
 
             modelBuilder.Entity<FavoritoServicio>()
                 .HasKey(f => new { f.ServicioId, f.UsuarioId });
-                
-            modelBuilder.Entity<Servicio>()
-                .HasOne(s => s.LugarPetFriendlyDetalle)
-                .WithOne(l => l.Servicio)
-                .HasForeignKey<LugarPetFriendlyDetalle>(l => l.ServicioId);
 
-            modelBuilder.Entity<Servicio>()
-                .HasOne(s => s.GuarderiaDetalle)
-                .WithOne(g => g.Servicio)
-                .HasForeignKey<GuarderiaDetalle>(g => g.ServicioId);
+                
+            // --- ✅ INICIO DE LA CORRECCIÓN COMPLETA ---
+            // Configura TODAS las claves primarias 'Id' (int) para que sean autoincrementables
+            
+            // Tablas Principales
+            modelBuilder.Entity<Noticia>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<Servicio>().Property(e => e.Id).UseIdentityByDefaultColumn(); // <-- ¡ESTA ES LA LÍNEA MÁS IMPORTANTE PARA TU ERROR!
+            modelBuilder.Entity<LugarPetFriendly>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<Guarderia>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<ProductoPetShop>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<Faq>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<ConfiguracionSitio>().Property(e => e.Id).UseIdentityByDefaultColumn();
+
+            // Tablas de Detalles
+            modelBuilder.Entity<VeterinariaDetalle>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<PetShopDetalle>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<AdopcionDetalle>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<LugarPetFriendlyDetalle>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<GuarderiaDetalle>().Property(e => e.Id).UseIdentityByDefaultColumn();
+
+            // Tablas de Comentarios y Reseñas
+            modelBuilder.Entity<Comentario>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<ComentarioLugar>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<ComentarioGuarderia>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<ComentarioServicio>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<Resena>().Property(e => e.Id).UseIdentityByDefaultColumn();
+            modelBuilder.Entity<ResenaProducto>().Property(e => e.Id).UseIdentityByDefaultColumn();
+
+            // Tablas de Favoritos (solo si tienen su propia PK 'Id', como FavoritoServicio)
+            modelBuilder.Entity<FavoritoServicio>().Property(e => e.Id).UseIdentityByDefaultColumn();
+
+            // --- FIN DE LA CORRECCIÓN ---
         }   
     }
 }

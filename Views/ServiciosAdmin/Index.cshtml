@@ -127,11 +127,12 @@
 
     <div class="admin-cards-grid">
         
-        <a asp-action="Listado" asp-route-tipo="@PetConnect.Models.TipoServicio.Veterinaria" class="admin-card card-veterinaria">
+        <div class="admin-card card-veterinaria">
             <div class="admin-card-icon"><span class="material-symbols-outlined">medical_services</span></div>
             <h3>Veterinarias</h3>
             <p>Gestiona clínicas y hospitales.</p>
-        </a>
+            <a asp-controller="VeterinariasAdmin" asp-action="Index" class="card-link"></a>
+        </div>
 
         <div class="admin-card card-petshop">
             <div class="card-icon-container" style="background-color: #fce4ec;">
@@ -156,10 +157,11 @@
             <a asp-controller="GuarderiasAdmin" asp-action="Index" class="card-link"></a>
         </div>
 
-        <a asp-action="Listado" asp-route-tipo="@PetConnect.Models.TipoServicio.Adopcion" class="admin-card card-adopcion">
+        <div class="admin-card card-adopcion">
             <div class="admin-card-icon"><span class="material-symbols-outlined">favorite</span></div>
             <h3>Adopción</h3>
             <p>Gestiona refugios y adopciones.</p>
-        </a>
+            <a asp-controller="AdopcionAdmin" asp-action="Index" class="card-link"></a>
+        </div>
     </div>
 </div>

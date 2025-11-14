@@ -118,9 +118,9 @@ namespace PetConnect.Controllers
             return View(lugar);
         }
 
-        // POST: Admin/Lugares/Eliminar/5
-        [HttpPost, ActionName("Delete")]
-        [Route("Eliminar/{id:int}")]
+        // POST: Admin/Lugares/DeleteConfirmed/5
+        [HttpPost]
+        [Route("DeleteConfirmed/{id:int}")] // <-- CORRECCIÓN AQUÍ
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

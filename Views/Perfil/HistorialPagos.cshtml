@@ -1,0 +1,62 @@
+@model IEnumerable<PetConnect.Models.Pago>
+
+@{
+    ViewData["Title"] = "Historial de Pagos";
+    Layout = "_Layout"; 
+}
+
+<!-- Contenedor principal con el estilo de tarjeta -->
+<div class="account-card">
+
+    <h1>@ViewData["Title"]</h1>
+    <p>Aquí puedes ver un resumen de todas tus transacciones.</p>
+
+    @if (Model.Any())
+    {
+        <table class="table table-hover" style="border-collapse: separate; border-spacing: 0 10px;">
+            <thead style="border-bottom: 1px solid #dee2e6;">
+                <tr>
+                    <th style="border: none;">Fecha</th>
+                    <th style="border: none;">Descripción</th>
+                    <th style="border: none;">Monto</th>
+                    <th style="border: none;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pago in Model)
+                {
+                    <tr style="background-color: #f8f9fa; border-radius: 8px;">
+                        <td style="vertical-align: middle; padding: 1rem;">@pago.FechaCreacion.ToLocalTime().ToString("g")</td>
+                        <td style="vertical-align: middle; padding: 1rem;">@pago.Descripcion</td>
+                        <td style="vertical-align: middle; padding: 1rem;">@pago.Monto.ToString("C", new System.Globalization.CultureInfo("es-PE")) (@pago.Moneda.ToUpper())</td>
+                        <td style="vertical-align: middle; padding: 1rem;">
+                            @{
+                                string badgeClass = "bg-secondary";
+                                switch (pago.Estado?.ToLower())
+                                {
+                                    case "completado": badgeClass = "bg-success"; break;
+                                    case "fallido": badgeClass = "bg-danger"; break;
+                                    case "pendiente": badgeClass = "bg-warning text-dark"; break;
+                                }
+                            }
+                            <span class="badge @badgeClass" style="font-size: 0.9rem; padding: 0.5em 0.7em;">@pago.Estado</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <!-- Aplicamos el nuevo estilo a la caja de información -->
+        <div class="info-box-custom">
+            Aún no has realizado ninguna transacción.
+        </div>
+    }
+
+    <div class="mt-4">
+        <!-- Aplicamos el nuevo estilo al botón de "Volver" -->
+        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn-profile-secondary">Volver al Perfil</a>
+    </div>
+
+</div>

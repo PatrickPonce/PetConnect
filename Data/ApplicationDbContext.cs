@@ -44,6 +44,8 @@ namespace PetConnect.Data
         public DbSet<LugarPetFriendlyDetalle> LugarPetFriendlyDetalles { get; set; }
         public DbSet<GuarderiaDetalle> GuarderiaDetalles { get; set; }
 
+        public DbSet<Pago> Pagos { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

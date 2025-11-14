@@ -1131,3 +1131,75 @@ a.listing-card-v2 { text-decoration: none; color: inherit; }
     border-radius: 8px;
     text-align: center;
 }
+
+/* ========================================= */
+/* Estilos para la Página de Confirmación    */
+/* ========================================= */
+
+/* Contenedor exterior: su única función es centrar la tarjeta en la pantalla */
+.confirmation-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    min-height: calc(100vh - 220px); 
+}
+
+/* Contenedor interior: esta es la tarjeta blanca visible */
+.confirmation-box {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 3rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+    max-width: 600px; /* Ancho máximo de la tarjeta */
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Estilo para el icono de check verde */
+.confirmation-icon {
+    color: #28a745;
+    margin-bottom: 1.5rem;
+}
+
+.confirmation-icon svg {
+    width: 70px; 
+    height: 70px;
+}
+
+/* Título principal: "¡Reserva Confirmada!" */
+.confirmation-title {
+    font-size: 2.2rem; /* Ligeramente ajustado */
+    font-weight: 700;
+    color: #343a40;
+    margin-bottom: 0.5rem;
+}
+
+/* Subtítulo: "Gracias por confirmar..." */
+.confirmation-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+    margin-bottom: 2.5rem;
+}
+
+/* Botón principal de acción */
+.btn-confirmation-primary {
+    background-color: #ea7e7e; /* Tono rosado de la imagen */
+    color: #ffffff;
+    padding: 14px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-confirmation-primary:hover {
+    background-color: #e06868; /* Tono más intenso al pasar el mouse */
+    color: #ffffff;
+    transform: translateY(-2px);
+}

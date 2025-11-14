@@ -219,7 +219,7 @@ namespace PetConnect.Controllers
                         ServicioId = null, // Esto se podría mejorar pasando el ID en los metadatos de Stripe
                         Monto = (decimal)(session.AmountTotal.HasValue ? session.AmountTotal.Value / 100.0 : 0),
                         Moneda = session.Currency,
-                        Descripcion = $"Reserva de Cita (ID de Sesión: {session.Id})",
+                        Descripcion = "Reserva de Cita al Veterinario",
                         Estado = "Completado",
                         FechaCreacion = DateTime.UtcNow
                     };

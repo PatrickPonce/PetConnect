@@ -152,12 +152,9 @@ namespace PetConnect.Controllers
             }
 
             await _context.SaveChangesAsync();
-
-            // Devolvemos la respuesta JSON que el script espera
+            
             return Json(new { success = true, agregado = agregado });
         }
-
-
 
 
         [HttpPost]
@@ -185,7 +182,9 @@ namespace PetConnect.Controllers
                     },
                 },
                 Mode = "payment",
-                SuccessUrl = $"{domain}/Servicio/ReservaConfirmada",
+                // --- CORRECCIÓN APLICADA AQUÍ ---
+                // Stripe adjuntará el ID de sesión a esta URL al redirigir
+                SuccessUrl = $"{domain}/Servicio/ReservaConfirmada?session_id={{CHECKOUT_SESSION_ID}}",
                 CancelUrl = $"{domain}/Servicio/Detalle/{id}",
             };
             var service = new SessionService();
@@ -193,14 +192,51 @@ namespace PetConnect.Controllers
             return Redirect(session.Url);
         }
 
-        public IActionResult ReservaConfirmada()
+        [HttpGet]
+        public async Task<IActionResult> ReservaConfirmada([FromQuery] string session_id)
         {
+            if (string.IsNullOrEmpty(session_id))
+            {
+                return RedirectToAction("Index");
+            }
+            
+            var sessionService = new SessionService();
+            Session session = await sessionService.GetAsync(session_id);
+            
+            // Comprobamos si el pago fue realmente exitoso
+            if (session.PaymentStatus == "paid")
+            {
+                // Evitamos duplicados: comprobamos si ya guardamos este pago
+                var pagoExistente = await _context.Pagos.FirstOrDefaultAsync(p => p.StripeSessionId == session.Id);
+                if (pagoExistente == null)
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    
+                    var nuevoPago = new Pago
+                    {
+                        UsuarioId = userId,
+                        StripeSessionId = session.Id,
+                        ServicioId = null, // Esto se podría mejorar pasando el ID en los metadatos de Stripe
+                        Monto = (decimal)(session.AmountTotal.HasValue ? session.AmountTotal.Value / 100.0 : 0),
+                        Moneda = session.Currency,
+                        Descripcion = $"Reserva de Cita (ID de Sesión: {session.Id})",
+                        Estado = "Completado",
+                        FechaCreacion = DateTime.UtcNow
+                    };
+
+                    _context.Pagos.Add(nuevoPago);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            // Mostramos la página de "gracias" al usuario
             return View();
         }
+        
     }
-}
 
-public class ToggleServicioRequest
-{
-    public int ServicioId { get; set; }
+    public class ToggleServicioRequest
+    {
+        public int ServicioId { get; set; }
+    }
 }

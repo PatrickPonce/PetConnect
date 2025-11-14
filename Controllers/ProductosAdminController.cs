@@ -6,11 +6,12 @@ using PetConnect.Models;
 using System.Linq;
 using System.Threading.Tasks;
 using X.PagedList;
+using System.Collections.Generic;
 
 namespace PetConnect.Controllers
 {
     [Authorize(Roles = "Admin")]
-    [Route("Admin/Productos")] // Una ruta limpia para el admin
+     // Una ruta limpia para el admin
     public class ProductosAdminController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,8 +22,8 @@ namespace PetConnect.Controllers
         }
 
         // GET: Admin/Productos
-        [Route("")]
-        [Route("Index")]
+        
+        
         public async Task<IActionResult> Index(string searchString, int? page)
         {
             ViewData["CurrentFilter"] = searchString;
@@ -41,7 +42,7 @@ namespace PetConnect.Controllers
         }
 
         // GET: Admin/Productos/Crear
-        [Route("Crear")]
+        
         public IActionResult Create()
         {
             // Pasamos un modelo vacío con valores por defecto si es necesario
@@ -60,7 +61,7 @@ namespace PetConnect.Controllers
 
         // POST: Admin/Productos/Crear
         [HttpPost]
-        [Route("Crear")]
+        
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Nombre,Descripcion,Precio,TipoProducto,QueryImagen")] ProductoPetShop producto, string tagsString)
         {
@@ -90,7 +91,7 @@ namespace PetConnect.Controllers
         }
 
         // GET: Admin/Productos/Editar/5
-        [Route("Editar/{id:int}")]
+        
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -104,7 +105,7 @@ namespace PetConnect.Controllers
 
         // POST: Admin/Productos/Editar/5
         [HttpPost]
-        [Route("Editar/{id:int}")]
+        
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, string tagsString)
         {
@@ -148,7 +149,7 @@ namespace PetConnect.Controllers
         }
 
         // GET: Admin/Productos/Eliminar/5
-        [Route("Eliminar/{id:int}")]
+        
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -158,8 +159,8 @@ namespace PetConnect.Controllers
         }
 
         // POST: Admin/Productos/Eliminar/5
-        [HttpPost, ActionName("Delete")]
-        [Route("Eliminar/{id:int}")]
+        [HttpPost]
+        
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

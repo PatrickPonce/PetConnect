@@ -22,36 +22,45 @@ public class DashboardAdminController : Controller
         _userManager = userManager;
     }
 
+    // --- MÉTODO INDEX TOTALMENTE ACTUALIZADO ---
     public async Task<IActionResult> Index()
     {
         var model = new DashboardViewModel();
 
-        // 1. KPIs
+        // --- 1. KPIs (Indicadores Clave) ---
+        
+        // Contamos usuarios y noticias (esto estaba bien)
         model.TotalUsuarios = await _userManager.Users.CountAsync();
-        model.TotalServicios = await _context.Servicios.CountAsync();
         model.TotalNoticias = await _context.Noticias.CountAsync();
-        // (Asumiendo que tienes una tabla unificada de reseñas o sumas varias)
-        model.TotalResenas = await _context.Resenas.CountAsync() 
-                           + await _context.Comentarios.CountAsync(); // Ejemplo combinado
 
-        // 2. Datos para Gráficos (Servicios por Tipo)
-        var serviciosPorTipo = await _context.Servicios
-            .GroupBy(s => s.Tipo)
-            .Select(g => new { Tipo = g.Key, Cantidad = g.Count() })
-            .ToListAsync();
+        // CORRECCIÓN: Contamos el total de reseñas de TODAS las tablas de reseñas/comentarios
+        int totalResenasProductos = await _context.ResenasProducto.CountAsync();
+        int totalComentariosNoticias = await _context.Comentarios.CountAsync();
+        int totalComentariosLugares = await _context.ComentariosLugar.CountAsync();
+        int totalComentariosGuarderias = await _context.ComentariosGuarderia.CountAsync();
+        int totalComentariosServicios = await _context.ComentariosServicio.CountAsync();
+        model.TotalResenas = totalResenasProductos + totalComentariosNoticias + totalComentariosLugares + totalComentariosGuarderias + totalComentariosServicios;
 
-        model.CantidadVeterinarias = serviciosPorTipo.FirstOrDefault(s => s.Tipo == TipoServicio.Veterinaria)?.Cantidad ?? 0;
-        model.CantidadPetShops = serviciosPorTipo.FirstOrDefault(s => s.Tipo == TipoServicio.PetShop)?.Cantidad ?? 0;
-        model.CantidadLugares = serviciosPorTipo.FirstOrDefault(s => s.Tipo == TipoServicio.LugarPetFriendly)?.Cantidad ?? 0;
-        model.CantidadGuarderias = serviciosPorTipo.FirstOrDefault(s => s.Tipo == TipoServicio.Guarderia)?.Cantidad ?? 0;
-        model.CantidadAdopcion = serviciosPorTipo.FirstOrDefault(s => s.Tipo == TipoServicio.Adopcion)?.Cantidad ?? 0;
 
-        // 3. Datos para Gráfico de Usuarios (Simulado por ahora, ya que Identity no guarda fecha de registro fácilmente por defecto)
-        // Para hacerlo real, necesitarías añadir un campo 'FechaRegistro' a tu usuario personalizado.
-        model.UsuariosPorMes = new int[] { 5, 8, 12, 15, 22, 30, 45, 50, 55, 60, 75, 80 }; // Datos de ejemplo
+        // --- 2. Datos para Gráfico y KPI de Servicios (LA CORRECCIÓN PRINCIPAL) ---
+        
+        // Obtenemos los recuentos de cada tabla independiente
+        model.CantidadVeterinarias = await _context.Servicios.CountAsync(s => s.Tipo == TipoServicio.Veterinaria);
+        model.CantidadAdopcion = await _context.Servicios.CountAsync(s => s.Tipo == TipoServicio.Adopcion);
+        model.CantidadPetShops = await _context.ProductosPetShop.CountAsync(); // <-- Lee de ProductosPetShop
+        model.CantidadLugares = await _context.LugaresPetFriendly.CountAsync(); // <-- Lee de LugaresPetFriendly
+        model.CantidadGuarderias = await _context.Guarderias.CountAsync(); // <-- Lee de Guarderias
 
-        // 4. Actividad Reciente (Simulada con datos reales mezclados)
-        // Aquí podrías hacer una unión de las últimas noticias, comentarios, nuevos usuarios, etc.
+        // CORRECCIÓN: El KPI "TotalServicios" ahora es la suma de todas las categorías
+        model.TotalServicios = model.CantidadVeterinarias + model.CantidadAdopcion + model.CantidadPetShops + model.CantidadLugares + model.CantidadGuarderias;
+
+
+        // --- 3. Datos para Gráfico de Usuarios (Sin cambios) ---
+        // (Esto sigue siendo un ejemplo, necesitarías una lógica de BD real para agrupar por mes)
+        model.UsuariosPorMes = new int[] { 5, 8, 12, 15, 22, 30, 45, 50, 55, 60, 75, 80 };
+
+
+        // --- 4. Actividad Reciente (Sin cambios) ---
         var ultimasNoticias = await _context.Noticias.OrderByDescending(n => n.FechaPublicacion).Take(3).ToListAsync();
         foreach (var noticia in ultimasNoticias)
         {
@@ -63,7 +72,6 @@ public class DashboardAdminController : Controller
                 ColorIcono = "#4CAF50" // Verde
             });
         }
-        // (Añade aquí más actividades reales de otras tablas si quieres)
 
         return View(model);
     }

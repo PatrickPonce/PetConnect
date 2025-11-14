@@ -75,6 +75,11 @@
                             <span class="material-symbols-outlined">person</span>
                             Ver perfil
                         </a>
+
+                        <a asp-controller="Perfil" asp-action="HistorialPagos">
+                            <span class="material-symbols-outlined">receipt_long</span>
+                            Historial de pagos
+                        </a>
                         
                         <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
                             <button type="submit">

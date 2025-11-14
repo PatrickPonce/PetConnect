@@ -9,7 +9,7 @@
     var logoVersion = await configService.ObtenerValorAsync("UrlLogoVersion", "1");
     var logoUrlConVersion = $"{logoUrl}?v={logoVersion}";
 
-    var urlBanner = await configService.ObtenerValorAsync("UrlBanner", "/images/veterinaria_banner.jpg");
+    var urlBanner = await configService.ObtenerValorAsync("UrlBanner", "/images/ima_banner.jpg");
     var bannerVersion = await configService.ObtenerValorAsync("UrlBannerVersion", "1");
     var bannerUrlConVersion = $"{urlBanner}?v={bannerVersion}";
 }
@@ -31,43 +31,48 @@
     .text-highlight { color: #E88989; /* Amarillo */ }
     .text-primary-custom { color: #E88989; /* Rosa */ }
     
-    /* --- 1. HERO SECTION --- */
-    .hero-section {
-        position: relative;
-        min-height: 480px; /* Un poco más alto para impactar */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: white;
-        padding: 2rem;
-        margin-bottom: 4rem;
-        /* Bordes redondeados solo abajo para un look moderno */
-        border-radius: 0 0 50px 50px;
-        overflow: hidden;
-        /* Imagen de fondo dinámica (se define en el HTML) + fallback de color */
-        background-color: #97a992; /* Color de respaldo si la imagen falla */
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat; /* Importante para que no se repita */
-    }
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .hero-title {
-        font-family: 'Fredoka', sans-serif;
-        font-size: 3.5rem;
-        margin-bottom: 1.5rem;
-        line-height: 1.2;
-    }
-    .hero-subtitle {
-        font-size: 1.4rem;
-        opacity: 0.9;
-        margin-bottom: 2.5rem;
-    }
+/* --- 1. HERO SECTION (SOLO CON SOMBRA) --- */
+.hero-section {
+    position: relative;
+    min-height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #E88989;
+    padding: 2rem;
+    margin-bottom: 4rem;
+    border-radius: 0 0 50px 50px;
+    overflow: hidden;
+    background-color: #97a992;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    /* Sombra de texto suave para 'despegar' las letras del fondo */
+    text-shadow: 2px 2px 8px #3f413f61;
+}
+
+.hero-subtitle {
+    font-size: 1.4rem;
+    opacity: 0.9;
+    margin-bottom: 2.5rem;
+    /* La misma sombra para mantener consistencia */
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.7);
+}
     .hero-btn {
         background-color: #E88989; /* Amarillo vibrante */
         color: #333;

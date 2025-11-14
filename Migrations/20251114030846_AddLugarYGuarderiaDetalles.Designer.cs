@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PetConnect.Data;
@@ -12,9 +13,11 @@ using PetConnect.Data;
 namespace PetConnect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251114030846_AddLugarYGuarderiaDetalles")]
+    partial class AddLugarYGuarderiaDetalles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -409,9 +412,6 @@ namespace PetConnect.Migrations
                     b.Property<DateTime>("FechaComentario")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("GuarderiaId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ServicioId")
                         .HasColumnType("integer");
 
@@ -424,8 +424,6 @@ namespace PetConnect.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GuarderiaId");
 
                     b.HasIndex("ServicioId");
 
@@ -535,15 +533,10 @@ namespace PetConnect.Migrations
                     b.Property<string>("UsuarioId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("GuarderiaId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
                     b.HasKey("ServicioId", "UsuarioId");
-
-                    b.HasIndex("GuarderiaId");
 
                     b.HasIndex("UsuarioId");
 
@@ -617,15 +610,18 @@ namespace PetConnect.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Descripcion")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DireccionCompleta")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("ServicioId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Telefono")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -707,18 +703,22 @@ namespace PetConnect.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Categoria")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Descripcion")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DireccionCompleta")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("ServicioId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Telefono")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -1055,7 +1055,7 @@ namespace PetConnect.Migrations
             modelBuilder.Entity("PetConnect.Models.ComentarioGuarderia", b =>
                 {
                     b.HasOne("PetConnect.Models.Guarderia", "Guarderia")
-                        .WithMany()
+                        .WithMany("Comentarios")
                         .HasForeignKey("GuarderiaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1092,10 +1092,6 @@ namespace PetConnect.Migrations
 
             modelBuilder.Entity("PetConnect.Models.ComentarioServicio", b =>
                 {
-                    b.HasOne("PetConnect.Models.Guarderia", null)
-                        .WithMany("Comentarios")
-                        .HasForeignKey("GuarderiaId");
-
                     b.HasOne("PetConnect.Models.Servicio", "Servicio")
                         .WithMany("Comentarios")
                         .HasForeignKey("ServicioId")
@@ -1135,7 +1131,7 @@ namespace PetConnect.Migrations
             modelBuilder.Entity("PetConnect.Models.FavoritoGuarderia", b =>
                 {
                     b.HasOne("PetConnect.Models.Guarderia", "Guarderia")
-                        .WithMany()
+                        .WithMany("Favoritos")
                         .HasForeignKey("GuarderiaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1191,10 +1187,6 @@ namespace PetConnect.Migrations
 
             modelBuilder.Entity("PetConnect.Models.FavoritoServicio", b =>
                 {
-                    b.HasOne("PetConnect.Models.Guarderia", null)
-                        .WithMany("Favoritos")
-                        .HasForeignKey("GuarderiaId");
-
                     b.HasOne("PetConnect.Models.Servicio", "Servicio")
                         .WithMany("Favoritos")
                         .HasForeignKey("ServicioId")

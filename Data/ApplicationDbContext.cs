@@ -41,6 +41,8 @@ namespace PetConnect.Data
         public DbSet<ResenaProducto> ResenasProducto { get; set; }
 
         public DbSet<Faq> Faqs { get; set; }
+        public DbSet<LugarPetFriendlyDetalle> LugarPetFriendlyDetalles { get; set; }
+        public DbSet<GuarderiaDetalle> GuarderiaDetalles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -93,10 +95,19 @@ namespace PetConnect.Data
                     .WithMany(n => n.Favoritos)
                     .HasForeignKey(f => f.NoticiaId);
             });
-            
+
             modelBuilder.Entity<FavoritoServicio>()
                 .HasKey(f => new { f.ServicioId, f.UsuarioId });
-           
+                
+            modelBuilder.Entity<Servicio>()
+                .HasOne(s => s.LugarPetFriendlyDetalle)
+                .WithOne(l => l.Servicio)
+                .HasForeignKey<LugarPetFriendlyDetalle>(l => l.ServicioId);
+
+            modelBuilder.Entity<Servicio>()
+                .HasOne(s => s.GuarderiaDetalle)
+                .WithOne(g => g.Servicio)
+                .HasForeignKey<GuarderiaDetalle>(g => g.ServicioId);
         }   
     }
 }

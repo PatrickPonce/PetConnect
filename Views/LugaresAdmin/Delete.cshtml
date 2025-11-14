@@ -1,0 +1,32 @@
+@model PetConnect.Models.LugarPetFriendly
+
+@{
+    ViewData["Title"] = "Eliminar Lugar";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .delete-container { max-width: 600px; margin: 4rem auto; background: #fff; padding: 3rem; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+    .delete-title { color: #dc3545; font-weight: 700; font-size: 2rem; margin-bottom: 1rem; }
+    .delete-item-name { font-size: 1.3rem; font-weight: 600; color: #333; margin-bottom: 2rem; }
+    .btn-admin-danger { background-color: #dc3545; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.3s; }
+    .btn-admin-danger:hover { background-color: #c82333; }
+    .btn-admin-secondary { background-color: #f0f0f0; color: #555; padding: 12px 30px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600; font-size: 1rem; text-decoration: none; transition: background 0.3s; }
+    .btn-admin-secondary:hover { background-color: #e0e0e0; }
+</style>
+
+<div class="delete-container">
+    <h2 class="delete-title">¿Estás seguro?</h2>
+    <p>Estás a punto de eliminar permanentemente el lugar:</p>
+    <h3 class="delete-item-name">@Model.Nombre</h3>
+    <hr class="my-4">
+    
+    <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-action="Index" class="btn-admin-secondary">Cancelar</a>
+            <button type="submit" class="btn-admin-danger">Sí, Eliminar</button>
+        </div>
+    </form>
+</div>

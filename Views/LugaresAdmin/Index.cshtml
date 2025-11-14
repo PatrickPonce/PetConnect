@@ -1,19 +1,13 @@
+@model IPagedList<PetConnect.Models.LugarPetFriendly>
 @using X.PagedList.Mvc.Core
 @using X.PagedList
-@using PetConnect.Models
-@model IPagedList<PetConnect.Models.Servicio>
 
 @{
-    // Título dinámico (ej. "Gestión de Veterinarias")
-    ViewData["Title"] = ViewData["Title"]; 
+    ViewData["Title"] = "Gestión de Lugares Pet Friendly";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    // Obtenemos el tipo actual para los enlaces
-    var tipoActual = (TipoServicio)ViewData["TipoActual"];
 }
 
 <style>
-    /* ... (Pega aquí todos los estilos <style> de tu archivo Index.cshtml anterior) ... */
-    /* ... (los estilos de .admin-table, .service-img-container, .badge-veterinaria, etc.) ... */
     .admin-container-stable { min-height: 600px; }
     .admin-page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
     .admin-page-title-group { display: flex; align-items: center; gap: 15px; }
@@ -26,51 +20,38 @@
     .filter-form { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
     .filter-group { flex: 1; min-width: 200px; }
     .filter-label { font-weight: 700; color: #555; margin-bottom: 8px; font-size: 0.9rem; }
-    .filter-input, .filter-select { width: 100%; padding: 10px 15px; border: 2px solid #eee; border-radius: 10px; transition: border-color 0.3s; }
-    .filter-input:focus, .filter-select:focus { border-color: #97a992; outline: none; }
+    .filter-input { width: 100%; padding: 10px 15px; border: 2px solid #eee; border-radius: 10px; transition: border-color 0.3s; }
+    .filter-input:focus { border-color: #97a992; outline: none; }
     .btn-filter { background-color: #97a992; color: white; font-weight: 700; padding: 10px 25px; border-radius: 10px; border: none; transition: background 0.3s; }
     .btn-filter:hover { background-color: #82947c; }
     .btn-clear { background-color: #f5f5f5; color: #555; font-weight: 600; padding: 10px 20px; border-radius: 10px; text-decoration: none; border: 1px solid #ddd; transition: all 0.3s; }
     .btn-clear:hover { background-color: #eee; color: #333; }
     .admin-table-card { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; }
-    .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+    .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .admin-table th { background-color: #f8f9fa; color: #777; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; padding: 1.2rem; border-bottom: 2px solid #eee; text-align: left; }
     .admin-table td { padding: 1rem 1.2rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .col-img { width: 80px; } .col-name { width: 30%; } .col-desc { width: auto; } .col-actions { width: 120px; text-align: right !important; }
-    .service-img-container { width: 50px; height: 50px; border-radius: 10px; overflow: hidden; background-color: #f0f0f0; border: 1px solid #eee; }
-    .service-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .service-type-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
-    .badge-veterinaria { background-color: #e3f2fd; color: #1565c0; }
-    .badge-petshop { background-color: #fce4ec; color: #c2185b; }
-    .badge-lugar { background-color: #e8f5e9; color: #2e7d32; }
-    .badge-guarderia { background-color: #fff3e0; color: #e65100; }
-    .badge-adopcion { background-color: #f3e5f5; color: #6a1b9a; }
+    .col-actions { width: 120px; text-align: right !important; }
     .action-btn { width: 35px; height: 35px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all 0.2s; color: #555; background-color: #f5f5f5; text-decoration: none; margin-left: 5px; }
     .action-btn:hover { background-color: #eee; color: #333; transform: translateY(-2px); }
     .btn-edit:hover { background-color: #e3f2fd; color: #1976d2; }
     .btn-delete:hover { background-color: #ffebee; color: #d32f2f; }
     .pagination-container { margin-top: 2rem; display: flex; justify-content: center; }
-    .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; }
-    .page-item .page-link { padding: 8px 14px; border: 1px solid #ddd; border-radius: 8px; color: #555; text-decoration: none; transition: all 0.2s; background: white; }
-    .page-item .page-link:hover { border-color: #97a992; color: #97a992; }
-    .page-item.active .page-link { background-color: #97a992; color: white; border-color: #97a992; }
-    .page-item.disabled .page-link { opacity: 0.5; pointer-events: none; }
 </style>
 
 <div class="container mt-5 admin-container-stable">
     
     <div class="admin-page-header">
         <div class="admin-page-title-group">
-            <a asp-action="Index" class="btn-back" title="Volver al panel principal">
+            <a asp-controller="ServiciosAdmin" asp-action="Index" class="btn-back" title="Volver al Directorio de Servicios">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
             <div>
                 <h1 class="admin-page-title">@ViewData["Title"]</h1>
-                <p style="color: #777; margin-top: 5px; margin-bottom: 0;">Administrando servicios de esta categoría.</p>
+                <p style="color: #777; margin-top: 5px; margin-bottom: 0;">Administrando lugares pet friendly.</p>
             </div>
         </div>
-        <a asp-action="Create" asp-route-tipo="@tipoActual" class="btn-add-new">
-            <span class="material-symbols-outlined">add_business</span> Nuevo
+        <a asp-action="Create" class="btn-add-new">
+            <span class="material-symbols-outlined">add_location_alt</span> Nuevo Lugar
         </a>
     </div>
 
@@ -82,16 +63,14 @@
     }
 
     <div class="filters-card">
-        <form asp-action="Listado" method="get" class="filter-form">
-            <input type="hidden" name="tipo" value="@tipoActual" />
-            
+        <form asp-action="Index" method="get" class="filter-form">
             <div class="filter-group">
-                <label class="filter-label">Buscar por nombre</label>
-                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="filter-input" placeholder="Buscar en esta categoría..." />
+                <label class="filter-label">Buscar por nombre, categoría o ubicación</label>
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="filter-input" placeholder="Buscar lugar..." />
             </div>
             <div style="align-self: flex-end; display: flex; gap: 10px;">
                 <button type="submit" class="btn-filter">Filtrar</button>
-                <a asp-action="Listado" asp-route-tipo="@tipoActual" class="btn-clear">Limpiar</a>
+                <a asp-action="Index" class="btn-clear">Limpiar</a>
             </div>
         </form>
     </div>
@@ -100,9 +79,10 @@
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th class="col-img">Imagen</th>
-                    <th class="col-name">Nombre</th>
-                    <th class="col-desc">Descripción Corta</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Ubicación (Distrito)</th>
+                    <th>Dirección</th>
                     <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -110,8 +90,8 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="4" class="text-center" style="padding: 3rem; color: #999; font-style: italic;">
-                            No hay servicios de este tipo registrados.
+                        <td colspan="5" class="text-center" style="padding: 3rem; color: #999; font-style: italic;">
+                            No hay lugares registrados.
                         </td>
                     </tr>
                 }
@@ -120,27 +100,21 @@
                     @foreach (var item in Model)
                     {
                         <tr>
-                            <td>
-                                <div class="service-img-container">
-                                    <img src="@(item.ImagenPrincipalUrl ?? "/images/placeholder.png")" alt="@item.Nombre" class="service-img" onerror="this.src='/images/placeholder.png'" />
-                                </div>
-                            </td>
                             <td style="font-weight: 600; color: #333;" title="@item.Nombre">
                                 @item.Nombre
                             </td>
-                            <td style="color: #777;" title="@item.DescripcionCorta">
-                                @(item.DescripcionCorta?.Length > 80 ? item.DescripcionCorta.Substring(0, 80) + "..." : item.DescripcionCorta)
+                            <td title="@item.Categoria">@item.Categoria</td>
+                            <td title="@item.Ubicacion">@item.Ubicacion</td>
+                            <td title="@item.DireccionCompleta">
+                                @(item.DireccionCompleta?.Length > 50 ? item.DireccionCompleta.Substring(0, 50) + "..." : item.DireccionCompleta)
                             </td>
                             <td class="col-actions">
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit" title="Editar">
                                     <span class="material-symbols-outlined" style="font-size: 1.2rem;">edit</span>
                                 </a>
-                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display: inline-block;" onsubmit="return confirm('¿Eliminar este servicio permanentemente?');">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="action-btn btn-delete" title="Eliminar">
-                                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>
-                                    </button>
-                                </form>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="action-btn btn-delete" title="Eliminar">
+                                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>
+                                </a>
                             </td>
                         </tr>
                     }
@@ -150,7 +124,7 @@
     </div>
 
     <div class="pagination-container">
-        @Html.PagedListPager(Model, page => Url.Action("Listado", new { page, tipo = tipoActual, searchString = ViewData["CurrentFilter"] }),
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewData["CurrentFilter"] }),
             new PagedListRenderOptions {
                 LiElementClasses = new string[] { "page-item" },
                 PageClasses = new string[] { "page-link" },
@@ -162,5 +136,4 @@
                 LinkToNextPageFormat = "Siguiente"
             })
     </div>
-
 </div>

@@ -1,63 +1,168 @@
 @model List<PetConnect.Models.Api.AnimalViewModel>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
 @{
     ViewData["Title"] = "Adopción de Mascotas";
+    var busquedaActual = ViewData["BusquedaActual"] as string;
+    bool estaLogueado = SignInManager.IsSignedIn(User);
 }
 
-<div class="directorio-page-v2">
-    <!-- BANNER DE LA PÁGINA -->
-    <div class="hero-banner">
-        <img src="~/images/banners/adopcion-banner.jpg" alt="Animales esperando adopción" />
-        <div class="hero-text"><h1>Adopta un Amigo</h1></div>
+<style>
+    /* Hero Banner (similar al de tu página Guest) */
+    .adoption-banner {
+        position: relative;
+        min-height: 300px; /* Altura del banner */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        border-radius: 0 0 40px 40px;
+        overflow: hidden;
+        background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('@Model.FirstOrDefault()?.UrlImagen'); /* Usa la primera imagen como fondo */
+        background-size: cover;
+        background-position: center;
+    }
+    .adoption-banner-title {
+        font-family: 'Fredoka', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+    .page-title-container {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+    }
+    /* Estilos para la barra de búsqueda (los tenías en Adopcion.css) */
+    .search-bar-container {
+        max-width: 700px;
+        margin: 0 auto 3rem auto;
+        position: relative;
+    }
+    .search-input {
+        width: 100%;
+        padding: 18px 60px 18px 25px;
+        border: 2px solid #eee;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+    .search-input:focus {
+        border-color: #97a992;
+        box-shadow: 0 5px 15px rgba(151, 169, 146, 0.2);
+    }
+    .search-button {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        bottom: 10px;
+        width: 50px;
+        border: none;
+        border-radius: 50%;
+        background-color: #E88989;
+        color: white;
+        cursor: pointer;
+        font-size: 1.5rem;
+    }
+    /* Estilos para la tarjeta (los tenías en Adopcion.css) */
+    .listing-grid-v2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+    .listing-card-v2 {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .listing-card-v2:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .card-image-v2 {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+    .card-info-v2 {
+        padding: 1.5rem;
+    }
+    .card-type-v2 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #E88989;
+        text-transform: uppercase;
+    }
+    .card-title-v2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0.25rem 0 0.75rem 0;
+    }
+    .card-details-v2 {
+        font-size: 0.95rem;
+        color: #555;
+        line-height: 1.6;
+    }
+    /* ✅ 2. ARREGLO DE "VER MÁS": Estilos para las nuevas etiquetas de datos */
+    .card-details-v2 .listing-card-label {
+        font-weight: 600;
+        color: #333;
+        display: block;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="adoption-banner">
+    <h1 class="adoption-banner-title">Adopta un Amigo</h1>
+</div>
+
+<div class="container" style="max-width: 1200px;">
+
+    <div class="page-title-container">
+        <h2 class="page-title">Encuentra a tu compañero de vida</h2>
     </div>
 
-    <div class="content-wrapper">
-        <h2 class="page-subtitle">Encuentra a tu compañero de vida</h2>
+    <form asp-action="Index" method="get">
+        <div class="search-bar-container">
+            <input type="text" name="busqueda" class="search-input" placeholder="Busca por raza, temperamento o tipo (perro/gato)" value="@busquedaActual" />
+            <button type="submit" class="search-button">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+        </div>
+    </form>
 
-        <!-- TU BUSCADOR -->
-        <section class="search-section-adopcion">
-            <form asp-controller="Adopcion" asp-action="Index" method="get" class="search-form">
-                <span class="material-symbols-outlined search-icon-input">search</span>
-                <input name="busqueda" type="text" class="search-input" placeholder="Busca por raza, temperamento o tipo (perro/gato)" value="@ViewData["BusquedaActual"]" />
-                <button type="submit" class="search-button">
-                    <span class="material-symbols-outlined">tune</span>
-                    <span class="material-symbols-outlined">search</span>
-                </button>
-            </form>
-        </section>
-
-        <!-- LISTADO DE ANIMALES -->
-        @if (Model.Any())
+    <div class="listing-grid-v2">
+        @foreach (var animal in Model)
         {
-            <div class="listing-grid-v2">
-                @foreach (var animal in Model)
-                {
-                    <div class="listing-card-v2">
-                        <div class="card-image">
-                            <img src="@animal.UrlImagen" alt="Foto de @animal.Nombre" />
-                        </div>
-                        <div class="card-content">
-                            <div class="card-header">
-                                <span class="card-category">@animal.Tipo</span>
-                                <button class="card-favorite-btn"><span class="material-symbols-outlined">favorite</span></button>
-                            </div>
-                            <h3 class="card-title">@animal.Nombre</h3>
-                            <p class="card-location">
-                                <span class="material-symbols-outlined">psychology</span>
-                                @animal.Temperamento
-                            </p>
-                        </div>
-                        <div class="card-footer">
-                            <a href="#" class="btn-ver-mas">Ver más <span class="material-symbols-outlined">arrow_forward</span></a>
-                        </div>
+            <div class="listing-card-v2">
+                <img src="@animal.UrlImagen" alt="@animal.Nombre" class="card-image-v2" onerror="this.src='/images/placeholder.png';" />
+                <div class="card-info-v2">
+                    
+                    <span class="card-type-v2">@animal.Tipo</span>
+                    <h3 class="card-title-v2">@animal.Nombre</h3>
+                    
+                    <div class="card-details-v2">
+                        <span class="listing-card-label">Temperamento:</span>
+                        @animal.Temperamento
+
+                        <span class="listing-card-label">Origen:</span>
+                        @animal.Origen
                     </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="text-center">
-                <p>No se encontraron animales que coincidan con tu búsqueda.</p>
-                <a asp-action="Index">Ver todos los animales disponibles</a>
+
+                    </div>
             </div>
         }
     </div>

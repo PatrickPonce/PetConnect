@@ -1,11 +1,27 @@
-@* Views/Servicio/ReservaConfirmada.cshtml *@
 @{
     ViewData["Title"] = "Reserva Confirmada";
+    Layout = "_Layout";
 }
 
-<div class="text-center" style="padding: 80px 20px;">
-    <span class="material-symbols-outlined" style="font-size: 80px; color: green;">check_circle</span>
-    <h1 class="display-4">¡Reserva Confirmada!</h1>
-    <p class="lead">Gracias por confirmar tu cita. Hemos enviado los detalles a tu correo electrónico (simulación).</p>
-    <a asp-controller="Servicio" asp-action="Index" class="btn btn-secondary">Volver al Directorio de Veterinarias</a>
+<div class="confirmation-wrapper">
+
+    <div class="confirmation-box">
+
+        <div class="confirmation-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+
+        <h1 class="confirmation-title">¡Reserva Confirmada!</h1>
+
+        <p class="confirmation-subtitle">
+            Gracias por confirmar tu cita. Hemos enviado los detalles a tu correo electrónico (simulación).
+        </p>
+
+        <a asp-controller="Directorio" asp-action="Index" class="btn-confirmation-primary">
+            Volver al Directorio de Servicios
+        </a>
+
+    </div>
 </div>

@@ -1203,3 +1203,55 @@ a.listing-card-v2 { text-decoration: none; color: inherit; }
     color: #ffffff;
     transform: translateY(-2px);
 }
+
+/* ========================================= */
+/* === INICIO DE LA CORRECCIÓN RESPONSIVE === */
+/* ========================================= */
+/* Estas reglas se aplican a pantallas de 992px o menos (tablets y móviles) */
+
+@media (max-width: 992px) {
+
+    /* 1. Arregla los contenedores de Login y Registro */
+    .login-container,
+    .register-container {
+        /* Cambia la dirección de las columnas (de horizontal a vertical) */
+        flex-direction: column;
+        
+        /* Ajusta el tamaño para que quepa en el móvil */
+        width: 90%;
+        height: auto; /* Altura automática */
+        max-width: 500px;
+    }
+
+    /* 2. Arregla las secciones internas */
+    .login-container .welcome-section,
+    .login-container .form-section,
+    .register-container .welcome-section,
+    .register-container .form-section {
+        /* Hacemos que cada sección ocupe el 100% del ancho */
+        flex-basis: 100%;
+        width: 100%;
+    }
+
+    /* 3. Arregla los bordes y el padding */
+    .welcome-section {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        
+        /* Ajusta los bordes para el layout vertical */
+        border-radius: 20px 20px 0 0; /* Bordes superiores redondeados */
+        border-right: none;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .form-section {
+        padding: 2.5rem 1.5rem;
+        border-radius: 0 0 20px 20px; /* Bordes inferiores redondeados */
+    }
+
+    /* 4. (Opcional) Ajusta el tamaño del texto de bienvenida en móviles */
+    .welcome-section h1 {
+        font-size: 2rem;
+    }
+}
+/* === FIN DE LA CORRECCIÓN RESPONSIVE === */

@@ -1,62 +1,84 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PetConnect.Data;   
+using PetConnect.Data;
 using PetConnect.Models;
-using Microsoft.EntityFrameworkCore;  
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
-using PetConnect.Services;
+using System.Linq;
+using System;
 
 [Authorize(Roles = "Admin")]
 public class ConfiguracionController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _hostEnvironment;
-    private readonly ConfiguracionSitioService _configService;
 
-    public ConfiguracionController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment, ConfiguracionSitioService configService)
+    public ConfiguracionController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
     {
         _context = context;
         _hostEnvironment = hostEnvironment;
-        _configService = configService;
     }
 
     public async Task<IActionResult> Index()
     {
-        ViewBag.ColorPrincipal = await _configService.ObtenerValorAsync("AdminColorPrincipal", "#97a992");
-        ViewBag.ColorSecundario = await _configService.ObtenerValorAsync("AdminColorSecundario", "#f3d9d7");
         var configuraciones = await _context.ConfiguracionesSitio.ToDictionaryAsync(c => c.Clave, c => c.Valor);
         ViewBag.Configuraciones = configuraciones;
         return View();
     }
-    
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Guardar(string nombreSitio, IFormFile logo, IFormFile banner)
+    public async Task<IActionResult> Guardar(string nombreSitio, IFormFile? logo, IFormFile? banner)
     {
-        await GuardarConfiguracion("NombreSitio", nombreSitio);
-
-        if (logo != null && logo.Length > 0)
+        try
         {
-            string urlLogo = await GuardarImagen(logo, "logo");
-            await GuardarConfiguracion("UrlLogo", urlLogo);
-            await GuardarConfiguracion("UrlLogoVersion", DateTime.Now.Ticks.ToString());
+            // 1. Guardar Nombre del Sitio
+            if (!string.IsNullOrWhiteSpace(nombreSitio))
+            {
+                await GuardarConfiguracion("NombreSitio", nombreSitio.Trim());
+            }
+
+            // 2. Guardar Logo (si se subió uno nuevo)
+            if (logo != null && logo.Length > 0)
+            {
+                if (!EsImagenValida(logo))
+                {
+                    TempData["ErrorMessage"] = "El archivo de Logo no es una imagen válida (solo JPG, PNG, GIF).";
+                    return RedirectToAction("Index");
+                }
+                string urlLogo = await GuardarImagen(logo, "logo");
+                await GuardarConfiguracion("UrlLogo", urlLogo);
+                await GuardarConfiguracion("UrlLogoVersion", DateTime.Now.Ticks.ToString());
+            }
+
+            // 3. Guardar Banner (si se subió uno nuevo)
+            if (banner != null && banner.Length > 0)
+            {
+                if (!EsImagenValida(banner))
+                {
+                    TempData["ErrorMessage"] = "El archivo de Banner no es una imagen válida (solo JPG, PNG, GIF).";
+                    return RedirectToAction("Index");
+                }
+                string urlBanner = await GuardarImagen(banner, "banner");
+                await GuardarConfiguracion("UrlBanner", urlBanner);
+                await GuardarConfiguracion("UrlBannerVersion", DateTime.Now.Ticks.ToString());
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "¡Configuración actualizada correctamente!";
+        }
+        catch (Exception ex)
+        {
+            // En un caso real, loguearíamos 'ex'
+            TempData["ErrorMessage"] = "Ocurrió un error al guardar la configuración. Inténtalo de nuevo.";
         }
 
-        if (banner != null && banner.Length > 0)
-        {
-            string urlBanner = await GuardarImagen(banner, "banner");
-            await GuardarConfiguracion("UrlBanner", urlBanner);
-            await GuardarConfiguracion("UrlBannerVersion", DateTime.Now.Ticks.ToString());
-        }
-
-        await _context.SaveChangesAsync();
-
-        TempData["SuccessMessage"] = "¡Configuración guardada con éxito!";
         return RedirectToAction("Index");
     }
+
+    // --- MÉTODOS AUXILIARES ---
 
     private async Task GuardarConfiguracion(string clave, string valor)
     {
@@ -74,10 +96,16 @@ public class ConfiguracionController : Controller
     private async Task<string> GuardarImagen(IFormFile archivo, string nombreBase)
     {
         string wwwRootPath = _hostEnvironment.WebRootPath;
-        string carpetaDestino = Path.Combine(wwwRootPath, "images");
+        string carpetaDestino = Path.Combine(wwwRootPath, "images", "config"); // Guardar en subcarpeta 'config' para orden
+
+        if (!Directory.Exists(carpetaDestino))
+        {
+            Directory.CreateDirectory(carpetaDestino);
+        }
 
         string extension = Path.GetExtension(archivo.FileName);
-        string nombreArchivo = $"{nombreBase}{extension}";
+        // Usamos un nombre fijo para reemplazar el anterior, o podrías usar timestamps para evitar caché
+        string nombreArchivo = $"{nombreBase}_custom{extension}"; 
         string rutaCompleta = Path.Combine(carpetaDestino, nombreArchivo);
 
         using (var fileStream = new FileStream(rutaCompleta, FileMode.Create))
@@ -85,34 +113,14 @@ public class ConfiguracionController : Controller
             await archivo.CopyToAsync(fileStream);
         }
 
-        return $"/images/{nombreArchivo}";
+        return $"/images/config/{nombreArchivo}";
     }
-    // Pega esto dentro de tu clase ConfiguracionController
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GuardarTema(string colorPrincipal, string colorSecundario, int? noticiaId)
+    private bool EsImagenValida(IFormFile archivo)
     {
-        if (string.IsNullOrEmpty(colorPrincipal) || string.IsNullOrEmpty(colorSecundario))
-        {
-            TempData["ErrorMessage"] = "Los colores no pueden estar vacíos.";
-        }
-        else
-        {
-            // Llama al servicio para guardar los nuevos valores
-            await _configService.GuardarValorAsync("AdminColorPrincipal", colorPrincipal);
-            await _configService.GuardarValorAsync("AdminColorSecundario", colorSecundario);
-            TempData["SuccessMessage"] = "Tema actualizado correctamente.";
-        }
-        
-        // Si recibimos un noticiaId, volvemos a la página de detalle de admin
-        if (noticiaId.HasValue)
-        {
-            return RedirectToAction("DetalleAdmin", "Noticias", new { id = noticiaId.Value });
-        }
-        
-        // Si no, volvemos al índice de configuración
-        return RedirectToAction("Index");
+        // Validación simple por extensión y tipo MIME
+        var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+        return extensionesPermitidas.Contains(extension) && archivo.ContentType.StartsWith("image/");
     }
 }

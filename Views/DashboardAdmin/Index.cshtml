@@ -1,129 +1,269 @@
 @model PetConnect.ViewModels.DashboardViewModel
 @{
-    ViewData["Title"] = "Dashboard Admin";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml"; // Layout de Admin
+    ViewData["Title"] = "Dashboard Principal";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-    body { background-color: #fdfaf1; font-family: 'Poppins', sans-serif; }
-    .dashboard-container { padding: 2rem; }
-    .dashboard-title { text-align: center; font-size: 2.5rem; font-weight: bold; color: #ff8fab; margin-bottom: 3rem; }
-    .chart-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2.5rem; margin-bottom: 3rem; }
-    .chart-card { background-color: white; padding: 1.5rem 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.07); }
-    .chart-card h2 { font-size: 1.5rem; font-weight: 600; color: #555; margin-bottom: 1.5rem; text-align: center; }
-    /* Ajuste para que los gráficos no sean gigantes */
-    .chart-container { position: relative; height: 350px; width: 100%; }
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    .dashboard-title {
+        color: #333; font-weight: 800; font-size: 2.2rem; margin: 0;
+    }
+    .dashboard-subtitle {
+        color: #777; font-size: 1.1rem;
+    }
 
-     /* Estilos para los botones de paginación (simulados) */
-    .pagination-controls { display: flex; justify-content: space-between; margin-top: 2rem; }
-    .btn-pagination { background-color: #6c757d; color: white; padding: 10px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; }
-    .btn-pagination:hover { background-color: #5a6268; }
-    .btn-pagination.disabled { background-color: #b0b0b0; cursor: not-allowed; } /* Estilo para botón deshabilitado */
+    /* Tarjetas de KPI */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    .kpi-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.3s;
+    }
+    .kpi-card:hover {
+        transform: translateY(-5px);
+    }
+    .kpi-icon {
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem;
+    }
+    .kpi-info h3 {
+        font-size: 2rem; font-weight: 800; margin: 0; color: #333; line-height: 1.1;
+    }
+    .kpi-info p {
+        color: #777; margin: 0; font-size: 0.95rem; font-weight: 600;
+    }
+    /* Colores de KPI */
+    .kpi-users .kpi-icon { background-color: #e3f2fd; color: #2196f3; }
+    .kpi-services .kpi-icon { background-color: #fce4ec; color: #e91e63; }
+    .kpi-news .kpi-icon { background-color: #e8f5e9; color: #4caf50; }
+    .kpi-reviews .kpi-icon { background-color: #fff3e0; color: #ff9800; }
 
+    /* Gráficos y Tablas */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr; /* El gráfico principal ocupa más espacio */
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    .dashboard-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        display: flex;             /* <-- NECESARIO PARA QUE EL HIJO SE EXPANDA BIEN */
+        flex-direction: column;    /* <-- NECESARIO */
+    }
+    .card-header-custom {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 1.5rem;
+        flex-shrink: 0; /* <-- Evita que el header se aplaste */
+    }
+    .card-title-custom {
+        font-size: 1.3rem; font-weight: 700; color: #444; margin: 0;
+    }
 
+    /* --- NUEVO: CONTENEDOR PARA ESTABILIZAR GRÁFICOS --- */
+    .chart-container {
+        position: relative;
+        flex-grow: 1;      /* Ocupa el espacio restante en la tarjeta */
+        min-height: 300px; /* Altura mínima garantizada */
+        max-height: 350px; /* Altura máxima para evitar estiramientos locos */
+        width: 100%;
+    }
+
+    /* Lista de Actividad */
+    .activity-list {
+        list-style: none; padding: 0; margin: 0;
+    }
+    .activity-item {
+        display: flex; align-items: flex-start; gap: 15px;
+        padding: 1rem 0; border-bottom: 1px solid #f5f5f5;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; flex-shrink: 0;
+    }
+    .activity-content h4 {
+        font-size: 0.95rem; font-weight: 600; color: #333; margin: 0 0 5px 0;
+    }
+    .activity-time {
+        font-size: 0.85rem; color: #999;
+    }
+
+    @@media (max-width: 992px) {
+        .dashboard-grid { grid-template-columns: 1fr; }
+        .chart-container { min-height: 250px; } /* Un poco más pequeño en móviles */
+    }
 </style>
 
-<div class="dashboard-container">
-    <h1 class="dashboard-title">Dashboard Principal</h1>
+<div class="container mt-4">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Dashboard Principal</h1>
+        <p class="dashboard-subtitle">Bienvenido de nuevo, Administrador. Aquí tienes un resumen de tu plataforma.</p>
+    </div>
 
-    <div class="chart-section">
-        <div class="chart-card">
-            <h2>Gestión de Directorio de Servicios</h2>
-            <div class="chart-container">
-                <canvas id="serviciosChart"></canvas>
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-users">
+            <div class="kpi-icon"><span class="material-symbols-outlined">group</span></div>
+            <div class="kpi-info">
+                <h3>@Model.TotalUsuarios</h3>
+                <p>Usuarios Totales</p>
             </div>
         </div>
-        <div class="chart-card">
-            <h2>Usuarios Registrados (Ejemplo)</h2>
-             <div class="chart-container">
-                <canvas id="usuariosChart"></canvas>
+        <div class="kpi-card kpi-card-servicios">
+            <span class="material-symbols-outlined">storefront</span>
+            <div>
+                <h3>@Model.TotalServicios</h3>
+                <p>Directorio (Productos y Servicios)</p>
+            </div>
+        </div>
+        <div class="kpi-card kpi-news">
+            <div class="kpi-icon"><span class="material-symbols-outlined">newspaper</span></div>
+            <div class="kpi-info">
+                <h3>@Model.TotalNoticias</h3>
+                <p>Noticias Publicadas</p>
+            </div>
+        </div>
+        <div class="kpi-card kpi-reviews">
+            <div class="kpi-icon"><span class="material-symbols-outlined">star</span></div>
+            <div class="kpi-info">
+                <h3>@Model.TotalResenas</h3>
+                <p>Interacciones</p>
             </div>
         </div>
     </div>
 
-    <div class="chart-section" style="grid-template-columns: 1fr;"> <div class="chart-card">
-            <h2>Noticias Publicadas por Año</h2>
-             <div class="chart-container">
-                <canvas id="noticiasChart"></canvas>
-             </div>
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="card-header-custom">
+                <h3 class="card-title-custom">Crecimiento de Usuarios (Año Actual)</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="usersChart"></canvas>
+            </div>
         </div>
-     </div>
 
-     <div class="pagination-controls">
-         <a href="#" class="btn-pagination disabled">Anterior página</a> <a href="#" class="btn-pagination">Siguiente página</a>
-     </div>
+        <div class="dashboard-card">
+            <div class="card-header-custom">
+                <h3 class="card-title-custom">Distribución de Servicios</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="servicesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <div class="card-header-custom">
+            <h3 class="card-title-custom">Actividad Reciente en la Plataforma</h3>
+            <a asp-controller="Configuracion" asp-action="Index" class="btn btn-sm btn-outline-secondary">Ver Configuración</a>
+        </div>
+        <ul class="activity-list">
+            @if (Model.UltimasActividades.Any())
+            {
+                foreach (var actividad in Model.UltimasActividades)
+                {
+                    <li class="activity-item">
+                        <div class="activity-icon" style="background-color: @actividad.ColorIcono;">
+                            <span class="material-symbols-outlined">@actividad.Icono</span>
+                        </div>
+                        <div class="activity-content">
+                            <h4>@actividad.Descripcion</h4>
+                            <span class="activity-time">@actividad.Fecha</span>
+                        </div>
+                    </li>
+                }
+            }
+            else
+            {
+                <li class="text-muted text-center py-3">No hay actividad reciente para mostrar.</li>
+            }
+        </ul>
+    </div>
 
 </div>
 
 @section Scripts {
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+    <script>
+        // Configuración común para que los gráficos sean responsivos pero no se estiren
+        Chart.defaults.maintainAspectRatio = false;
+        Chart.defaults.responsive = true;
 
-        // --- Gráfico 1: Servicios (Pie Chart) ---
-        const ctxServicios = document.getElementById('serviciosChart').getContext('2d');
-        const serviciosData = {
-            labels: @Html.Raw(Json.Serialize(Model.ConteoServiciosPorTipo.Keys)),
-            datasets: [{
-                label: 'Cantidad',
-                data: @Html.Raw(Json.Serialize(Model.ConteoServiciosPorTipo.Values)),
-                backgroundColor: [ // Colores como en tu imagen
-                    '#4A90E2', // Azul (Veterinarias)
-                    '#F5A623', // Naranja (Guardería)
-                    '#7ED321', // Verde (Pet Friendly)
-                    '#E88989', // Rosa (Adopción) - Color de tu botón primario
-                    '#50E3C2'  // Turquesa (Pet Shop)
-                ],
-                hoverOffset: 4
-            }]
-        };
-        new Chart(ctxServicios, {
-            type: 'doughnut', // 'pie' o 'doughnut' (dona)
-            data: serviciosData,
+        // --- Gráfico de Usuarios (Línea) ---
+        var ctxUsers = document.getElementById('usersChart').getContext('2d');
+        var usersChart = new Chart(ctxUsers, {
+            type: 'line',
+            data: {
+                labels: @Json.Serialize(Model.MesesLabels),
+                datasets: [{
+                    label: 'Nuevos Usuarios',
+                    data: @Json.Serialize(Model.UsuariosPorMes),
+                    borderColor: '#97a992',
+                    backgroundColor: 'rgba(151, 169, 146, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#97a992',
+                    pointBorderWidth: 3,
+                    pointRadius: 5
+                }]
+            },
             options: {
-                responsive: true,
-                maintainAspectRatio: false, // Permite que se ajuste al contenedor
-                plugins: {
-                    legend: { position: 'bottom' } // Leyenda abajo
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
                 }
             }
         });
 
-        // --- Gráfico 2: Usuarios (Line Chart - Ejemplo) ---
-         const ctxUsuarios = document.getElementById('usuariosChart').getContext('2d');
-         const usuariosData = {
-            labels: @Html.Raw(Json.Serialize(Model.EtiquetasTiempoUsuarios)),
-            datasets: [{
-                label: 'Usuarios Nuevos',
-                data: @Html.Raw(Json.Serialize(Model.DatosConteoUsuarios)),
-                fill: false,
-                borderColor: '#F5A623', // Naranja
-                tension: 0.1
-            }]
-         };
-         new Chart(ctxUsuarios, {
-            type: 'line',
-            data: usuariosData,
-             options: { responsive: true, maintainAspectRatio: false }
-         });
-
-        // --- Gráfico 3: Noticias (Line Chart) ---
-        const ctxNoticias = document.getElementById('noticiasChart').getContext('2d');
-         const noticiasData = {
-            labels: @Html.Raw(Json.Serialize(Model.EtiquetasTiempoNoticias)),
-            datasets: [{
-                label: 'Noticias Publicadas',
-                data: @Html.Raw(Json.Serialize(Model.DatosConteoNoticias)),
-                fill: false,
-                borderColor: '#50E3C2', // Turquesa
-                tension: 0.1
-            }]
-         };
-         new Chart(ctxNoticias, {
-            type: 'line',
-            data: noticiasData,
-             options: { responsive: true, maintainAspectRatio: false }
-         });
-
-    });
-</script>
+        // --- Gráfico de Servicios (Dona) ---
+        var ctxServices = document.getElementById('servicesChart').getContext('2d');
+        var servicesChart = new Chart(ctxServices, {
+            type: 'doughnut',
+            data: {
+                labels: ['Veterinarias', 'Pet Shops', 'Lugares', 'Guarderías', 'Adopción'],
+                datasets: [{
+                    data: [
+                        @Model.CantidadVeterinarias, 
+                        @Model.CantidadPetShops, 
+                        @Model.CantidadLugares, 
+                        @Model.CantidadGuarderias, 
+                        @Model.CantidadAdopcion
+                    ],
+                    backgroundColor: ['#4A90E2', '#50E3C2', '#F5A623', '#9013FE', '#E88989'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 11 } } }
+                },
+                layout: {
+                    padding: 10
+                }
+            }
+        });
+    </script>
 }

@@ -9,6 +9,8 @@ using static AspNet.Security.OAuth.GitHub.GitHubAuthenticationConstants;
 using Microsoft.ML; 
 using Microsoft.Extensions.ML;
 using PetConnect.MlNet;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 // ------------------------------------
 // --- CONFIGURACIÓN DE SERVICIOS ---
@@ -101,6 +103,9 @@ builder.Services.AddPredictionEnginePool<NoticiaRatingInput, NoticiaRatingPredic
     .FromFile("RecommendationModel.zip", true);
 
 builder.Services.AddScoped<MlNetRecommendationService>();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<ApplicationDbContext>();
 
 var app = builder.Build();
 

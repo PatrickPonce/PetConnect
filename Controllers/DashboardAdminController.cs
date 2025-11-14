@@ -1,21 +1,20 @@
-// Controllers/DashboardAdminController.cs
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetConnect.Data;
-using PetConnect.Models; // Necesario para TipoServicio y Noticia
+using PetConnect.Models;
 using PetConnect.ViewModels;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
-[Authorize(Roles = "Admin")] // Solo Admins
+[Authorize(Roles = "Admin")]
 public class DashboardAdminController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<IdentityUser> _userManager; // Para contar usuarios
 
     public DashboardAdminController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
@@ -23,41 +22,57 @@ public class DashboardAdminController : Controller
         _userManager = userManager;
     }
 
+    // --- MÉTODO INDEX TOTALMENTE ACTUALIZADO ---
     public async Task<IActionResult> Index()
     {
-        var viewModel = new DashboardViewModel();
+        var model = new DashboardViewModel();
 
-        // --- 1. Datos para Gráfico de Servicios ---
-        viewModel.ConteoServiciosPorTipo.Add("Veterinarias", await _context.Servicios.CountAsync(s => s.Tipo == TipoServicio.Veterinaria));
-        viewModel.ConteoServiciosPorTipo.Add("Pet Friendly", await _context.LugaresPetFriendly.CountAsync()); // Contamos la tabla separada
-        viewModel.ConteoServiciosPorTipo.Add("Guardería", await _context.Guarderias.CountAsync()); // Contamos la tabla separada
-        viewModel.ConteoServiciosPorTipo.Add("Adopción", await _context.Servicios.CountAsync(s => s.Tipo == TipoServicio.Adopcion));
-        viewModel.ConteoServiciosPorTipo.Add("Pet Shop", await _context.Servicios.CountAsync(s => s.Tipo == TipoServicio.PetShop));
+        // --- 1. KPIs (Indicadores Clave) ---
+        
+        // Contamos usuarios y noticias (esto estaba bien)
+        model.TotalUsuarios = await _userManager.Users.CountAsync();
+        model.TotalNoticias = await _context.Noticias.CountAsync();
 
-        // --- 2. Datos para Gráfico de Usuarios Registrados ---
-        // IMPORTANTE: IdentityUser no guarda fecha de registro por defecto.
-        // Usaremos datos de EJEMPLO. Para datos reales, necesitarías añadir
-        // una propiedad de FechaRegistro al crear el usuario.
-        viewModel.EtiquetasTiempoUsuarios = new List<string> { "2020", "2021", "2022", "2023", "2024", "2025" };
-        viewModel.DatosConteoUsuarios = new List<int> { 10, 65, 30, 150, 50, 90 }; // Datos inventados
-
-        // --- 3. Datos para Gráfico de Noticias Publicadas ---
-        var noticiasPorAno = await _context.Noticias
-                                    .GroupBy(n => n.FechaPublicacion.Year) // Agrupamos por año
-                                    .Select(g => new { Ano = g.Key, Count = g.Count() })
-                                    .OrderBy(x => x.Ano)
-                                    .ToListAsync();
-
-        viewModel.EtiquetasTiempoNoticias = noticiasPorAno.Select(x => x.Ano.ToString()).ToList();
-        viewModel.DatosConteoNoticias = noticiasPorAno.Select(x => x.Count).ToList();
-
-         // Aseguramos que haya datos de ejemplo si no hay noticias aún
-         if (!viewModel.EtiquetasTiempoNoticias.Any()) {
-             viewModel.EtiquetasTiempoNoticias = new List<string> { "2024", "2025" };
-             viewModel.DatosConteoNoticias = new List<int> { 0, 0 };
-         }
+        // CORRECCIÓN: Contamos el total de reseñas de TODAS las tablas de reseñas/comentarios
+        int totalResenasProductos = await _context.ResenasProducto.CountAsync();
+        int totalComentariosNoticias = await _context.Comentarios.CountAsync();
+        int totalComentariosLugares = await _context.ComentariosLugar.CountAsync();
+        int totalComentariosGuarderias = await _context.ComentariosGuarderia.CountAsync();
+        int totalComentariosServicios = await _context.ComentariosServicio.CountAsync();
+        model.TotalResenas = totalResenasProductos + totalComentariosNoticias + totalComentariosLugares + totalComentariosGuarderias + totalComentariosServicios;
 
 
-        return View(viewModel);
+        // --- 2. Datos para Gráfico y KPI de Servicios (LA CORRECCIÓN PRINCIPAL) ---
+        
+        // Obtenemos los recuentos de cada tabla independiente
+        model.CantidadVeterinarias = await _context.Servicios.CountAsync(s => s.Tipo == TipoServicio.Veterinaria);
+        model.CantidadAdopcion = await _context.Servicios.CountAsync(s => s.Tipo == TipoServicio.Adopcion);
+        model.CantidadPetShops = await _context.ProductosPetShop.CountAsync(); // <-- Lee de ProductosPetShop
+        model.CantidadLugares = await _context.LugaresPetFriendly.CountAsync(); // <-- Lee de LugaresPetFriendly
+        model.CantidadGuarderias = await _context.Guarderias.CountAsync(); // <-- Lee de Guarderias
+
+        // CORRECCIÓN: El KPI "TotalServicios" ahora es la suma de todas las categorías
+        model.TotalServicios = model.CantidadVeterinarias + model.CantidadAdopcion + model.CantidadPetShops + model.CantidadLugares + model.CantidadGuarderias;
+
+
+        // --- 3. Datos para Gráfico de Usuarios (Sin cambios) ---
+        // (Esto sigue siendo un ejemplo, necesitarías una lógica de BD real para agrupar por mes)
+        model.UsuariosPorMes = new int[] { 5, 8, 12, 15, 22, 30, 45, 50, 55, 60, 75, 80 };
+
+
+        // --- 4. Actividad Reciente (Sin cambios) ---
+        var ultimasNoticias = await _context.Noticias.OrderByDescending(n => n.FechaPublicacion).Take(3).ToListAsync();
+        foreach (var noticia in ultimasNoticias)
+        {
+            model.UltimasActividades.Add(new ActividadReciente
+            {
+                Descripcion = $"Nueva noticia publicada: {noticia.Titulo}",
+                Fecha = noticia.FechaPublicacion.ToString("dd/MM/yyyy HH:mm"),
+                Icono = "article",
+                ColorIcono = "#4CAF50" // Verde
+            });
+        }
+
+        return View(model);
     }
 }

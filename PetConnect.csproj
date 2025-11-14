@@ -10,6 +10,7 @@
   <ItemGroup>
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     <None Update="TextClassificationModel.zip" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="RecommendationModel.zip" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

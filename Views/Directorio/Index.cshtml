@@ -1,68 +1,167 @@
 @{
     ViewData["Title"] = "Directorio de Servicios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="main-content directorio-page">
-    
-    <h1 class="directorio-title">Servicios</h1>
-    
-    <div class="search-bar-container">
-        <input type="text" placeholder="¿Qué estás buscando?" class="search-input"/>
-        <button class="search-button">
-            <span class="material-symbols-outlined">search</span>
-        </button>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<style>
+    /* (Todos tus estilos CSS de .directory-header, .service-card, etc. están perfectos) */
+    body {
+        background-color: #fdfaf1;
+    }
+    .directory-header {
+        position: relative;
+        min-height: 350px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        padding: 2rem;
+        margin-bottom: 4rem;
+        border-radius: 0 0 40px 40px;
+        overflow: hidden;
+        /* ✅ NUEVA IMAGEN DE BANNER */
+        background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.pexels.com/photos/320014/pexels-photo-320014.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+        background-size: cover;
+        background-position: center;
+    }
+    .directory-header-title {
+        font-family: 'Fredoka', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+    .directory-header-subtitle {
+        font-size: 1.3rem;
+        max-width: 600px;
+        margin: 0 auto;
+        opacity: 0.9;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    }
+    .directory-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem 4rem 1rem;
+    }
+    .directory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+    .service-card {
+        position: relative;
+        min-height: 380px;
+        border-radius: 20px;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end; /* Alinea el texto al fondo */
+        text-decoration: none;
+        color: white;
+    }
+    .service-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%);
+        z-index: 1;
+        transition: opacity 0.3s;
+    }
+    .service-card:hover::before {
+        opacity: 0.8;
+    }
+    .service-card-content {
+        position: relative;
+        z-index: 2;
+        padding: 2rem;
+    }
+    .service-card-icon {
+        font-size: 2.8rem;
+        font-variation-settings: 'FILL' 1;
+        color: #E88989; /* Color rosa de tu marca */
+        margin-bottom: 0.5rem;
+    }
+    .service-card-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 0;
+    }
+    .service-card-desc {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-top: 0.5rem;
+    }
+</style>
+
+<div class="directory-header">
+    <div>
+        <h1 class="directory-header-title">Directorio de Servicios</h1>
+        <p class="directory-header-subtitle">Encuentra todo lo que necesitas para el bienestar de tu compañero en un solo lugar.</p>
     </div>
+</div>
 
-    <div class="category-grid">
-        
-        <div class="category-row">
-            <!-- ESTE ES EL ENLACE CORREGIDO -->
-            <a class="category-card" asp-controller="Servicio" asp-action="Index">
-                <div class="card-icon">
-                    <span class="material-symbols-outlined">pets</span>
-                </div>
-                <span class="card-name">Veterinarias</span>
-                <span class="material-symbols-outlined card-arrow">expand_more</span>
-            </a>
+<div class="directory-container">
+    <div class="directory-grid">
 
-            <!-- Los otros enlaces todavía son placeholders -->
-            <!-- Enlace a la lista de PET SHOPS -->
-            <a class="category-card" asp-controller="PetShop" asp-action="Index">
-                <div class="card-icon">
-                 <span class="material-symbols-outlined">storefront</span>
-             </div>
-            <span class="card-name">Pet Shop</span>
-            <span class="material-symbols-outlined card-arrow">expand_more</span>
-            </a>
+        <a asp-controller="Servicio" asp-action="Index" class="service-card" 
+           style="background-image: url('https://images.pexels.com/photos/6235234/pexels-photo-6235234.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');">
+            <div class="service-card-content">
+                <span class="material-symbols-outlined service-card-icon">medical_services</span>
+                <h3 class="service-card-title">Veterinarias</h3>
+                <p class="service-card-desc">Clínicas y hospitales para su salud.</p>
+            </div>
+        </a>
 
+        <a asp-controller="PetShop" asp-action="Index" class="service-card"
+           style="background-image: url('https://images.pexels.com/photos/4588052/pexels-photo-4588052.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');">
+            <div class="service-card-content">
+                <span class="material-symbols-outlined service-card-icon">storefront</span>
+                <h3 class="service-card-title">Pet Shop</h3>
+                <p class="service-card-desc">Alimento, juguetes y accesorios.</p>
+            </div>
+        </a>
 
-            <!-- ESTA ES LA SOLUCIÓN -->
-            <a class="category-card" asp-controller="Lugares" asp-action="Index">
-                <div class="card-icon">
-                    <span class="material-symbols-outlined">signpost</span>
-                </div>
-                <span class="card-name">Lugares Pet Friendly</span>
-                <span class="material-symbols-outlined card-arrow">expand_more</span>
-            </a>
+        <a asp-controller="Lugares" asp-action="Index" class="service-card"
+           style="background-image: url('https://images.pexels.com/photos/5732473/pexels-photo-5732473.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');">
+            <div class="service-card-content">
+                <span class="material-symbols-outlined service-card-icon">pets</span>
+                <h3 class="service-card-title">Lugares Pet Friendly</h3>
+                <p class="service-card-desc">Restaurantes, cafés y parques.</p>
+            </div>
+        </a>
 
-        </div>
+        <a asp-controller="Guarderias" asp-action="Index" class="service-card"
+           style="background-image: url('https://images.pexels.com/photos/825947/pexels-photo-825947.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');">
+            <div class="service-card-content">
+                <span class="material-symbols-outlined service-card-icon">home_work</span>
+                <h3 class="service-card-title">Guarderías</h3>
+                <p class="service-card-desc">Hospedaje y cuidado temporal.</p>
+            </div>
+        </a>
 
-        <div class="category-row">
-            <a class="category-card" asp-controller="Guarderias" asp-action="Index">
-                <div class="card-icon">
-                    <span class="material-symbols-outlined">night_shelter</span>
-                </div>
-                <span class="card-name">Guardería</span>
-                <span class="material-symbols-outlined card-arrow">expand_more</span>
-            </a>
+        <a asp-controller="Adopcion" asp-action="Index" class="service-card"
+           style="background-image: url('https://images.pexels.com/photos/4056462/pexels-photo-4056462.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');">
+            <div class="service-card-content">
+                <span class="material-symbols-outlined service-card-icon">volunteer_activism</span>
+                <h3 class="service-card-title">Adopción de Mascotas</h3>
+                <p class="service-card-desc">Encuentra a tu nuevo mejor amigo.</p>
+            </div>
+        </a>
 
-            <a asp-controller="Adopcion" asp-action="Index" class="category-card">
-                <div class="card-icon">
-                    <span class="material-symbols-outlined">volunteer_activism</span>
-                </div>
-                <span class="card-name">Adopción De Mascotas</span>
-                <span class="material-symbols-outlined card-arrow">expand_more</span>
-            </a>
-        </div>
-        
     </div>
+</div>

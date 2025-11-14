@@ -7,7 +7,7 @@ namespace PetConnect.Models.Api
     public class ProxyCheckResponse
     {
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [JsonPropertyName("country")]
         public string Pais { get; set; }

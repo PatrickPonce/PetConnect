@@ -10,6 +10,7 @@
     <meta name="viewport" content="width=device-width" />
     <title>@ViewData["Title"] - Purr & Paws</title>
     <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
     <div class="register-container">
@@ -18,13 +19,39 @@
             <p>Amor, cuidado y diversión para cada patita.</p>
         </div>
         <div class="form-section">
-            <form id="registerForm" method="post">
-                <h4>Crear cuenta</h4>
-                <button type="button" class="btn-custom btn-google">
-                    <img src="~/images/google-icon.png" alt="Google Icon" style="height: 1.2em; vertical-align: middle; margin-right: 10px;" />
-                    Iniciar sesión con Google
-                </button>
+
+            @if (Model.ExternalLogins?.Count > 0)
+            {
+                <h4>Crear cuenta con</h4>
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                    <div>
+                        @foreach (var provider in Model.ExternalLogins)
+                        {
+                            // Botón de GitHub con estilo, igual que en Login.cshtml
+                            if (provider.Name == "GitHub")
+                            {
+                                <button type="submit" name="provider" value="@provider.Name" class="btn-custom btn-github">
+                                    <i class="fab fa-github" style="margin-right: 10px;"></i>
+                                    Continuar con @provider.DisplayName
+                                </button>
+                            }
+                            else
+                            {
+                                // Botón genérico para otros proveedores externos
+                                <button type="submit" class="btn-custom btn-google" name="provider" value="@provider.Name">
+                                    Continuar con @provider.DisplayName
+                                </button>
+                            }
+                        }
+                    </div>
+                </form>
                 <p>o con el Email</p>
+            }
+            else
+            {
+                <h4>Crear cuenta</h4>
+            }
+            <form id="registerForm" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                 <div class="form-group-custom">
                     <label asp-for="Input.NombreCompleto" class="form-label-custom"></label>
@@ -48,20 +75,16 @@
                 </div>
                 <button id="register-submit" type="submit" class="btn-custom btn-register">Registrarme</button>
                 <p>
-                    <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="btn-custom btn-link">¿Ya tienes cuenta? Iniciar sesión</a>
+                    <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="btn-custom btn-link">
+                        ¿Ya tienes cuenta? Iniciar sesión
+                    </a>
                 </p>
                 <p>
                     <a href="~/Home/Index" class="btn-custom btn-link">Volver a la página de inicio</a>
                 </p>
             </form>
-            @if (Model.ExternalLogins?.Count > 0)
-            {
-                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                    <input type="hidden" name="Provider" value="Google" />
-                    <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
-                </form>
-            }
-        </div>
+            
+            </div>
     </div>
     @section Scripts {
         <partial name="_ValidationScriptsPartial" />

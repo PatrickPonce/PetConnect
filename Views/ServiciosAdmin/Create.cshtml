@@ -351,19 +351,32 @@
 
         // 2. Lógica para mostrar/ocultar secciones dinámicas
         $(document).ready(function() {
-            $('#TipoServicioSelect').change(function() {
-                $('.dynamic-section').slideUp(300); // Ocultar todas
-                
-                var selectedType = $("#TipoServicioSelect option:selected").text().replace(/\s+/g, '');
-                var targetSection = $('#details-' + selectedType);
-                
-                if (targetSection.length) {
-                    targetSection.delay(300).slideDown(300); // Mostrar la correcta con un pequeño retraso
-                }
-            });
+            function toggleDetailSections() {
+                $('.dynamic-section').slideUp(300); // Ocultar todas las secciones
 
-            // Disparar al cargar por si hay un valor seleccionado
-            $('#TipoServicioSelect').trigger('change');
+                var selectedValue = $('#TipoServicioSelect').val();
+                
+                // Mapeamos los valores del enum a los IDs de las secciones
+                var sectionMap = {
+                    '1': '#details-Veterinaria',     // TipoServicio.Veterinaria
+                    '2': '#details-PetShop',          // TipoServicio.PetShop
+                    '3': '#details-LugarPetFriendly', // Implementado para el futuro
+                    '4': '#details-Guarderia',        // Implementado para el futuro
+                    '5': '#details-Adopcion'          // TipoServicio.Adopcion
+                };
+                
+                var targetSectionId = sectionMap[selectedValue];
+                
+                if (targetSectionId && $(targetSectionId).length) {
+                    $(targetSectionId).delay(300).slideDown(300);
+                }
+            }
+
+            // Llama a la función cuando cambia el select
+            $('#TipoServicioSelect').change(toggleDetailSections);
+
+            // Llama a la función al cargar la página por si hay un valor preseleccionado (importante para la vista de Edición)
+            toggleDetailSections();
         });
     </script>
 }

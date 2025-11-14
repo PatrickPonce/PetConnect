@@ -64,21 +64,51 @@ public class ServiciosAdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Servicio servicio, IFormFile? imagenArchivo)
+    public async Task<IActionResult> Create(Servicio servicio, IFormFile? imagenArchivo, 
+        VeterinariaDetalle veterinariaDetalle, 
+        PetShopDetalle petShopDetalle, 
+        AdopcionDetalle adopcionDetalle)
     {
+        // Eliminamos los detalles del ModelState porque solo uno será válido,
+        // y los otros generarían errores de validación innecesarios.
+        ModelState.Remove("VeterinariaDetalle");
+        ModelState.Remove("PetShopDetalle");
+        ModelState.Remove("AdopcionDetalle");
+
         if (ModelState.IsValid)
         {
+            // 1. Subir la imagen si existe
             if (imagenArchivo != null)
             {
                 servicio.ImagenPrincipalUrl = await SubirImagen(imagenArchivo);
             }
 
+            // 2. LÓGICA CLAVE: Asignar el objeto de detalle correcto basado en el Tipo
+            switch (servicio.Tipo)
+            {
+                case TipoServicio.Veterinaria:
+                    servicio.VeterinariaDetalle = veterinariaDetalle;
+                    break;
+                case TipoServicio.PetShop:
+                    servicio.PetShopDetalle = petShopDetalle;
+                    // El valor del checkbox llega como 'on' si está marcado
+                    servicio.PetShopDetalle.OfreceCompraOnline = Request.Form.ContainsKey("PetShopDetalle.OfreceCompraOnline");
+                    break;
+                case TipoServicio.Adopcion:
+                    servicio.AdopcionDetalle = adopcionDetalle;
+                    break;
+                // Añadir casos para Guarderia y LugarPetFriendly en el futuro
+            }
+            
+            // 3. Añadir el servicio (EF Core guardará también el detalle asociado)
             _context.Add(servicio);
             await _context.SaveChangesAsync();
+            
             TempData["SuccessMessage"] = "Servicio creado correctamente.";
-            // Redirigimos al LISTADO del tipo correspondiente, no al índice general
             return RedirectToAction(nameof(Listado), new { tipo = servicio.Tipo });
         }
+
+        // Si el modelo no es válido, volvemos a la vista
         return View(servicio);
     }
 

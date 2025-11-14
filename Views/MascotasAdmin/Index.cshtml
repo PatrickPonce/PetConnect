@@ -1,9 +1,9 @@
-@model IPagedList<PetConnect.Models.Servicio>
+@model IPagedList<PetConnect.Models.Mascota>
 @using X.PagedList.Mvc.Core
 @using X.PagedList
 
 @{
-    ViewData["Title"] = "Gestión de Adopción";
+    ViewData["Title"] = "Gestión de Mascotas en Adopción";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -49,11 +49,11 @@
             </a>
             <div>
                 <h1 class="admin-page-title">@ViewData["Title"]</h1>
-                <p style="color: #777; margin-top: 5px; margin-bottom: 0;">Administrando refugios y centros de adopción.</p>
+                <p style="color: #777; margin-top: 5px; margin-bottom: 0;">Gestionando mascotas añadidas manualmente.</p>
             </div>
         </div>
         <a asp-action="Create" class="btn-add-new">
-            <span class="material-symbols-outlined">favorite</span> Nuevo Centro
+            <span class="material-symbols-outlined">add</span> Nueva Mascota
         </a>
     </div>
 
@@ -67,8 +67,8 @@
     <div class="filters-card">
         <form asp-action="Index" method="get" class="filter-form">
             <div class="filter-group">
-                <label class="filter-label">Buscar por nombre</label>
-                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="filter-input" placeholder="Buscar centro de adopción..." />
+                <label class="filter-label">Buscar por nombre, tipo o raza</label>
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="filter-input" placeholder="Buscar mascota..." />
             </div>
             <div style="align-self: flex-end; display: flex; gap: 10px;">
                 <button type="submit" class="btn-filter">Filtrar</button>
@@ -82,8 +82,10 @@
             <thead>
                 <tr>
                     <th>Imagen</th>
-                    <th>Nombre (Fundación)</th>
-                    <th>Descripción Corta</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Raza</th>
+                    <th>Contacto (Refugio)</th>
                     <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -91,8 +93,8 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="4" class="text-center" style="padding: 3rem; color: #999; font-style: italic;">
-                            No hay centros de adopción registrados.
+                        <td colspan="6" class="text-center" style="padding: 3rem; color: #999; font-style: italic;">
+                            No hay mascotas registradas manualmente.
                         </td>
                     </tr>
                 }
@@ -103,15 +105,15 @@
                         <tr>
                             <td>
                                 <div class="service-img-container">
-                                    <img src="@(string.IsNullOrEmpty(item.ImagenPrincipalUrl) ? "/images/placeholder.png" : item.ImagenPrincipalUrl)" alt="@item.Nombre" class="service-img" onerror="this.src='/images/placeholder.png'" />
+                                    <img src="@(string.IsNullOrEmpty(item.UrlImagen) ? "/images/placeholder.png" : item.UrlImagen)" alt="@item.Nombre" class="service-img" onerror="this.src='/images/placeholder.png'" />
                                 </div>
                             </td>
                             <td style="font-weight: 600; color: #333;" title="@item.Nombre">
-                                @(item.FundacionNombre ?? item.Nombre)
+                                @item.Nombre
                             </td>
-                            <td title="@item.DescripcionCorta">
-                                @(item.DescripcionCorta?.Length > 80 ? item.DescripcionCorta.Substring(0, 80) + "..." : item.DescripcionCorta)
-                            </td>
+                            <td title="@item.Tipo">@item.Tipo</td>
+                            <td title="@item.Raza">@item.Raza</td>
+                            <td title="@item.Contacto">@item.Contacto</td>
                             <td class="col-actions">
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit" title="Editar">
                                     <span class="material-symbols-outlined" style="font-size: 1.2rem;">edit</span>

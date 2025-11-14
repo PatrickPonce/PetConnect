@@ -45,6 +45,7 @@ namespace PetConnect.Data
         public DbSet<GuarderiaDetalle> GuarderiaDetalles { get; set; }
 
         public DbSet<Pago> Pagos { get; set; }
+        public DbSet<Mascota> Mascotas { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -142,6 +143,7 @@ namespace PetConnect.Data
             modelBuilder.Entity<FavoritoServicio>().Property(e => e.Id).UseIdentityByDefaultColumn();
 
             // --- FIN DE LA CORRECCIÓN ---
+            modelBuilder.Entity<Mascota>().Property(e => e.Id).UseIdentityByDefaultColumn();
         }   
     }
 }

@@ -1,7 +1,7 @@
-@model PetConnect.Models.Servicio
+@model PetConnect.Models.Mascota
 
 @{
-    ViewData["Title"] = "Eliminar Centro de Adopción";
+    ViewData["Title"] = "Eliminar Mascota";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -17,7 +17,7 @@
 
 <div class="delete-container">
     <h2 class="delete-title">¿Estás seguro?</h2>
-    <p>Estás a punto de eliminar permanentemente el centro:</p>
+    <p>Estás a punto de eliminar permanentemente a:</p>
     <h3 class="delete-item-name">@Model.Nombre</h3>
     <hr class="my-4">
     

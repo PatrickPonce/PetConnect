@@ -320,6 +320,32 @@
                     </div>
                 </div>
 
+                <div id="details-LugarPetFriendly" class="dynamic-section form-section" style="display:none;">
+                    <div class="section-title-wrapper">
+                        <span class="material-symbols-outlined section-icon">pets</span>
+                        <h3 class="section-title">Detalles de Lugar Pet Friendly</h3>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6"><label class="form-label">Categoría (Restaurante, Parque, etc.)</label><input name="LugarPetFriendlyDetalle.Categoria" class="form-control" /></div>
+                        <div class="col-md-6"><label class="form-label">Teléfono</label><input name="LugarPetFriendlyDetalle.Telefono" class="form-control" /></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Dirección Completa</label><input name="LugarPetFriendlyDetalle.DireccionCompleta" class="form-control" /></div>
+                </div>
+                
+                <!-- DETALLES DE GUARDERÍA -->
+                <div id="details-Guarderia" class="dynamic-section form-section" style="display:none;">
+                    <div class="section-title-wrapper">
+                        <span class="material-symbols-outlined section-icon">night_shelter</span>
+                        <h3 class="section-title">Detalles de Guardería</h3>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6"><label class="form-label">Dirección Completa</label><input name="GuarderiaDetalle.DireccionCompleta" class="form-control" /></div>
+                        <div class="col-md-6"><label class="form-label">Teléfono</label><input name="GuarderiaDetalle.Telefono" class="form-control" /></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Descripción (Servicios, precios...)</label><textarea name="GuarderiaDetalle.Descripcion" class="form-control" rows="5"></textarea></div>
+                </div>
+
+
                 <div class="form-actions">
                     <a asp-action="Index" class="btn-admin-cancel">Cancelar</a>
                     <button type="submit" class="btn-admin-save">

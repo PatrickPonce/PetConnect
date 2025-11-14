@@ -70,6 +70,7 @@ builder.Services.AddScoped<ConfiguracionSitioService>();
 builder.Services.AddScoped<AnimalApiService>();
 builder.Services.AddScoped<ChatbotService>();
 
+
 builder.Services.AddScoped<PexelsService>();
 
 builder.Services.AddScoped<YouTubeService>();

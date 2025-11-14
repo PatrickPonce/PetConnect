@@ -9,17 +9,20 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using X.PagedList;
+using Microsoft.Extensions.Logging;
 
 [Authorize(Roles = "Admin")]
 public class ServiciosAdminController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _hostEnvironment;
+    private readonly ILogger<ServiciosAdminController> _logger;
 
-    public ServiciosAdminController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
+    public ServiciosAdminController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment, ILogger<ServiciosAdminController> logger)
     {
         _context = context;
         _hostEnvironment = hostEnvironment;
+        _logger = logger;
     }
 
     // --- 1. VISTA PRINCIPAL (CATEGORÍAS) ---
@@ -64,43 +67,56 @@ public class ServiciosAdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Servicio servicio, IFormFile? imagenArchivo, 
-        VeterinariaDetalle veterinariaDetalle, 
-        PetShopDetalle petShopDetalle, 
-        AdopcionDetalle adopcionDetalle)
+    public async Task<IActionResult> Create(
+        [Bind("Id,Nombre,Tipo,DescripcionCorta,FundacionNombre")] Servicio servicio, 
+        IFormFile? imagenArchivo)
     {
-        // Eliminamos los detalles del ModelState porque solo uno será válido,
-        // y los otros generarían errores de validación innecesarios.
-        ModelState.Remove("VeterinariaDetalle");
-        ModelState.Remove("PetShopDetalle");
-        ModelState.Remove("AdopcionDetalle");
-
+        // 1. Validamos SOLO el objeto 'Servicio' principal.
+        // Los detalles aún no existen, así que no hay nada que validar sobre ellos.
         if (ModelState.IsValid)
         {
-            // 1. Subir la imagen si existe
             if (imagenArchivo != null)
             {
                 servicio.ImagenPrincipalUrl = await SubirImagen(imagenArchivo);
             }
 
-            // 2. LÓGICA CLAVE: Asignar el objeto de detalle correcto basado en el Tipo
+            // 2. Dependiendo del TIPO, creamos el objeto de detalle y lo rellenamos
+            //    MANUALMENTE desde el formulario (Request.Form).
             switch (servicio.Tipo)
             {
                 case TipoServicio.Veterinaria:
-                    servicio.VeterinariaDetalle = veterinariaDetalle;
+                    var vetDetalle = new VeterinariaDetalle();
+                    await TryUpdateModelAsync(vetDetalle, "VeterinariaDetalle", v => v.Direccion, v => v.Telefono, v => v.Horario, v => v.TelefonoSecundario, v => v.DescripcionLarga);
+                    servicio.VeterinariaDetalle = vetDetalle;
                     break;
+                    
                 case TipoServicio.PetShop:
+                    var petShopDetalle = new PetShopDetalle();
+                    await TryUpdateModelAsync(petShopDetalle, "PetShopDetalle", p => p.Direccion, p => p.MarcasDestacadas, p => p.CategoriasProductos);
+                    petShopDetalle.OfreceCompraOnline = Request.Form.ContainsKey("PetShopDetalle.OfreceCompraOnline");
                     servicio.PetShopDetalle = petShopDetalle;
-                    // El valor del checkbox llega como 'on' si está marcado
-                    servicio.PetShopDetalle.OfreceCompraOnline = Request.Form.ContainsKey("PetShopDetalle.OfreceCompraOnline");
                     break;
+                    
                 case TipoServicio.Adopcion:
+                    var adopcionDetalle = new AdopcionDetalle();
+                    await TryUpdateModelAsync(adopcionDetalle, "AdopcionDetalle", a => a.Direccion, a => a.Telefono, a => a.DescripcionLarga);
                     servicio.AdopcionDetalle = adopcionDetalle;
                     break;
-                // Añadir casos para Guarderia y LugarPetFriendly en el futuro
+                    
+                case TipoServicio.LugarPetFriendly:
+                    var lugarDetalle = new LugarPetFriendlyDetalle();
+                    await TryUpdateModelAsync(lugarDetalle, "LugarPetFriendlyDetalle", l => l.Categoria, l => l.DireccionCompleta, l => l.Telefono);
+                    servicio.LugarPetFriendlyDetalle = lugarDetalle;
+                    break;
+                    
+                case TipoServicio.Guarderia:
+                    var guarderiaDetalle = new GuarderiaDetalle();
+                    await TryUpdateModelAsync(guarderiaDetalle, "GuarderiaDetalle", g => g.DireccionCompleta, g => g.Telefono, g => g.Descripcion);
+                    servicio.GuarderiaDetalle = guarderiaDetalle;
+                    break;
             }
             
-            // 3. Añadir el servicio (EF Core guardará también el detalle asociado)
+            // 3. Guardamos el objeto 'Servicio' completo con su detalle ya asignado.
             _context.Add(servicio);
             await _context.SaveChangesAsync();
             
@@ -108,7 +124,8 @@ public class ServiciosAdminController : Controller
             return RedirectToAction(nameof(Listado), new { tipo = servicio.Tipo });
         }
 
-        // Si el modelo no es válido, volvemos a la vista
+        // Si el ModelState del 'Servicio' principal falla, volvemos a la vista.
+        _logger.LogWarning("ModelState no fue válido al crear el servicio.");
         return View(servicio);
     }
 
